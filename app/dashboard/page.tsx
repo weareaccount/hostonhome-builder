@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { ProjectService, Project } from '@/lib/projects'
 import { Button } from '@/components/ui/button'
@@ -344,10 +343,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
-                <div className="flex items-center">
-                  <img src="/logo-hostonhome.png" alt="HostOnHome" width={180} height={32} style={{ display: 'block' }} />
-                  <span className="sr-only">HostonHome Dashboard</span>
-                </div>
+                <h1 className="text-2xl font-bold text-gray-900">HostonHome Dashboard</h1>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-gray-700">Modalità Test - Non autenticato</span>
@@ -602,10 +598,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
-                <div className="flex items-center">
-                  <img src="/logo-hostonhome.png" alt="HostOnHome" width={180} height={32} style={{ display: 'block' }} />
-                  <span className="sr-only">HostonHome Dashboard</span>
-                </div>
+                <h1 className="text-2xl font-bold text-gray-900">HostonHome Dashboard</h1>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-gray-700">Ciao, {user.email}</span>
@@ -658,10 +651,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex items-center">
-                <img src="/logo-hostonhome.png" alt="HostOnHome" width={180} height={32} style={{ display: 'block' }} />
-                <span className="sr-only">HostonHome Dashboard</span>
-              </div>
+              <h1 className="text-2xl font-bold text-gray-900">HostonHome Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-700">Ciao, {user.email}</span>
