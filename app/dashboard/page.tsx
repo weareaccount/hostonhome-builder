@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { ProjectService, Project } from '@/lib/projects'
+import { ProjectService } from '@/lib/projects'
+import type { Project } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Plus, Edit, Trash, Eye, User, Phone, Building, MapPin, ExternalLink, Settings, Star, Calendar, Check, X, Pencil, Save, ChevronDown, ChevronRight, Menu } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -509,7 +510,7 @@ export default function Dashboard() {
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900">I Tuoi Progetti</h2>
                 <Button 
-                  onClick={() => setShowLayoutSelector(!showLayoutSelector)} 
+                  onClick={handleCreateProject} 
                   className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                 >
                   <Plus className="w-4 h-4" />
