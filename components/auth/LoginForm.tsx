@@ -204,11 +204,7 @@ export function LoginForm() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Image src="/logo-hostonhome.png" alt="HostOnHome" width={140} height={32} />
-                <span className="hidden sm:inline text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Senza commissioni</span>
               </div>
-              <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-blue-600 hover:text-blue-700">
-                {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
-              </button>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
@@ -290,6 +286,16 @@ export function LoginForm() {
                 {loading ? 'Caricamento...' : (isLogin ? 'Accedi' : 'Crea account')}
                 {!loading && <ArrowRight className="w-4 h-4"/>}
               </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-blue-600 hover:text-blue-700 text-sm"
+                >
+                  {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
+                </button>
+              </div>
 
               <div className="text-center text-xs text-gray-500">
                 Registrandoti accetti i Termini e l'Informativa Privacy.
