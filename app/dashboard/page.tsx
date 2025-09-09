@@ -654,16 +654,16 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 h-auto py-3 sm:h-16 sm:py-0">
+            <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <img src="/logo-hostonhome.png" alt="HostOnHome" width={160} height={28} style={{ display: 'block' }} />
+                <img src="/logo-hostonhome.png" alt="HostOnHome" width={140} height={28} style={{ display: 'block' }} />
                 <span className="sr-only">Dashboard</span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Ciao, {user.email}</span>
-              <Button variant="outline" onClick={signOut}>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="text-gray-700 max-w-[40vw] truncate">Ciao, {user.email}</span>
+              <Button variant="outline" size="sm" onClick={signOut}>
                 Esci
               </Button>
             </div>
