@@ -188,23 +188,23 @@ function AdminDashboardContent() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 h-auto py-3 sm:h-16 sm:py-0">
             <div className="flex items-center gap-3">
               <Shield className="w-8 h-8 text-blue-600" />
               <div className="flex items-center">
-                <img src="/logo-hostonhome.png" alt="HostOnHome" width={160} height={28} style={{ display: 'block' }} />
+                <img src="/logo-hostonhome.png" alt="HostOnHome" width={140} height={28} style={{ display: 'block' }} />
                 <span className="sr-only">Dashboard Amministratori</span>
               </div>
             </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
                   <Crown className="w-4 h-4 text-yellow-500" />
                   <span>Pannello Amministratori</span>
                 </div>
-                <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
+                <Button variant="outline" size="sm" onClick={() => window.location.href = '/dashboard'}>
                   Dashboard Utente
                 </Button>
-                <Button variant="outline" onClick={adminLogout} className="text-red-600 border-red-600 hover:bg-red-50">
+                <Button variant="outline" size="sm" onClick={adminLogout} className="text-red-600 border-red-600 hover:bg-red-50">
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout Admin
                 </Button>
@@ -215,7 +215,7 @@ function AdminDashboardContent() {
 
       {/* Stats Overview */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
           <Card className="p-6">
             <div className="flex items-center justify-between">
@@ -274,9 +274,9 @@ function AdminDashboardContent() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="p-6 mb-6">
+        <Card className="p-4 sm:p-6 mb-6">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
@@ -286,7 +286,7 @@ function AdminDashboardContent() {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" onClick={() => setShowFilters(v => !v)} className={showFilters ? 'bg-blue-50 border-blue-200' : ''}>
+              <Button variant="outline" size="sm" onClick={() => setShowFilters(v => !v)} className={showFilters ? 'bg-blue-50 border-blue-200' : ''}>
                 <Filter className="w-4 h-4 mr-2" /> Filtri
               </Button>
               <div className="flex items-center gap-2">
@@ -301,7 +301,7 @@ function AdminDashboardContent() {
             </div>
 
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 border-t pt-4">
                 <select value={planFilter} onChange={(e) => { setPlanFilter(e.target.value); setPage(1); }} className="border rounded-md px-3 py-2 text-sm bg-white">
                   <option value="">Tutti i piani</option>
                   <option value="BASE">BASE</option>
@@ -355,7 +355,7 @@ function AdminDashboardContent() {
         </Card>
 
         {/* Users List */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <AnimatePresence>
           {filteredUsers.map((userData) => (
             <motion.div key={userData.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
