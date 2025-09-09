@@ -519,6 +519,18 @@ export function ElementorStyleBuilder({
   // Navigazione mobile: Libreria / Anteprima / (Modifica tramite inline editor della preview)
   const [mobileTab, setMobileTab] = useState<'widgets' | 'preview'>('widgets');
 
+  // Imposta automaticamente il device su mobile quando lo schermo è piccolo
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const setInitial = () => {
+        if (window.innerWidth < 768) setDeviceType('mobile');
+      };
+      setInitial();
+      window.addEventListener('resize', setInitial);
+      return () => window.removeEventListener('resize', setInitial);
+    }
+  }, []);
+
   const handleThemeChange = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
     setTheme(newTheme);
     // Salvataggio automatico quando cambia il tema
@@ -801,12 +813,12 @@ export function ElementorStyleBuilder({
 
       {/* Navigazione mobile (segment control) */}
       <div className="md:hidden sticky top-14 z-40 bg-white border-b border-gray-200 px-3 py-2">
-        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm">
           <button
             type="button"
             onClick={() => setMobileTab('widgets')}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium',
+              'px-4 py-1.5 text-sm font-medium',
               mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
             )}
           >
@@ -816,7 +828,7 @@ export function ElementorStyleBuilder({
             type="button"
             onClick={() => setMobileTab('preview')}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium border-l border-gray-200',
+              'px-4 py-1.5 text-sm font-medium border-l border-gray-200',
               mobileTab === 'preview' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
             )}
           >
@@ -886,10 +898,15 @@ export function ElementorStyleBuilder({
 
       {/* Floating Save button su mobile */}
       <div className="md:hidden fixed bottom-4 right-4 z-50">
-        <Button onClick={onSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
-          <Save className="w-4 h-4 mr-2" />
-          Salva
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setMobileTab(mobileTab === 'widgets' ? 'preview' : 'widgets')} className="bg-white border-gray-300">
+            {mobileTab === 'widgets' ? 'Anteprima' : 'Sezioni'}
+          </Button>
+          <Button onClick={onSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
+            <Save className="w-4 h-4 mr-2" />
+            Salva
+          </Button>
+        </div>
       </div>
 
 
