@@ -516,6 +516,8 @@ export function ElementorStyleBuilder({
   const [theme, setTheme] = useState(site.theme);
   const [deviceType, setDeviceType] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [saving, setSaving] = useState(false);
+  // Navigazione mobile: Libreria / Anteprima / (Modifica tramite inline editor della preview)
+  const [mobileTab, setMobileTab] = useState<'widgets' | 'preview'>('widgets');
 
   const handleThemeChange = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
     setTheme(newTheme);
@@ -797,8 +799,64 @@ export function ElementorStyleBuilder({
         saving={saving}
       />
 
-      {/* Main Builder Area */}
-      <div className="flex-1 flex flex-col md:flex-row min-h-0">
+      {/* Navigazione mobile (segment control) */}
+      <div className="md:hidden sticky top-14 z-40 bg-white border-b border-gray-200 px-3 py-2">
+        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setMobileTab('widgets')}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium',
+              mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
+            )}
+          >
+            Sezioni
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('preview')}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium border-l border-gray-200',
+              mobileTab === 'preview' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
+            )}
+          >
+            Anteprima
+          </button>
+        </div>
+      </div>
+
+      {/* Area mobile: mostra una vista alla volta */}
+      <div className="md:hidden flex-1 min-h-0">
+        {mobileTab === 'widgets' && (
+          <WidgetLibrary
+            onAddSection={handleAddSection}
+            onSectionsChange={onSectionsChange}
+            availableSections={availableSections}
+            maxSections={maxSections}
+            currentSections={sections}
+            plan={(user as any)?.plan}
+          />
+        )}
+        {mobileTab === 'preview' && (
+          <CanvasArea
+            sections={sections}
+            onSectionsChange={onSectionsChange}
+            layoutType={layoutType}
+            theme={theme}
+            onThemeChange={handleThemeChange}
+            onSectionSelect={setSelectedSectionId}
+            selectedSectionId={selectedSectionId}
+            onSectionUpdate={handleSectionUpdate}
+            onSectionDelete={handleSectionDelete}
+            onSectionPublish={handlePublishSection}
+            onSectionUnpublish={handleUnpublishSection}
+            deviceType={deviceType}
+          />
+        )}
+      </div>
+
+      {/* Layout desktop/tablet: 3 colonne */}
+      <div className="hidden md:flex flex-1 min-h-0">
         {/* Left Sidebar - Semplificata */}
         <WidgetLibrary
           onAddSection={handleAddSection}
@@ -824,6 +882,14 @@ export function ElementorStyleBuilder({
           onSectionUnpublish={handleUnpublishSection}
           deviceType={deviceType}
         />
+      </div>
+
+      {/* Floating Save button su mobile */}
+      <div className="md:hidden fixed bottom-4 right-4 z-50">
+        <Button onClick={onSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
+          <Save className="w-4 h-4 mr-2" />
+          Salva
+        </Button>
       </div>
 
 
