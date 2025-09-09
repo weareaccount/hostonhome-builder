@@ -343,7 +343,9 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-gray-900">HostonHome Dashboard</h1>
+                <div className="flex items-center">
+                  <img src="/logo-hostonhome.png" alt="HostOnHome" width={160} height={28} style={{ display: 'block' }} />
+                </div>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-gray-700">Modalità Test - Non autenticato</span>
@@ -598,7 +600,9 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-gray-900">HostonHome Dashboard</h1>
+                <div className="flex items-center">
+                  <img src="/logo-hostonhome.png" alt="HostOnHome" width={160} height={28} style={{ display: 'block' }} />
+                </div>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-gray-700">Ciao, {user.email}</span>
@@ -651,7 +655,10 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">HostonHome Dashboard</h1>
+              <div className="flex items-center">
+                <img src="/logo-hostonhome.png" alt="HostOnHome" width={160} height={28} style={{ display: 'block' }} />
+                <span className="sr-only">Dashboard</span>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-700">Ciao, {user.email}</span>
