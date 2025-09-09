@@ -80,19 +80,14 @@ const BuilderHeader = ({
   onDeviceChange: (device: 'desktop' | 'tablet' | 'mobile') => void;
   saving: boolean;
 }) => {
+  const [showThemePanel, setShowThemePanel] = React.useState(false);
   return (
-    <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
-      {/* Left - Theme Info */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700">Tema:</span>
-          <div className="bg-gray-100 rounded-md px-3 py-1">
-            <span className="text-sm font-medium text-gray-900">Host On Home</span>
-          </div>
-        </div>
-
-        {/* Responsive Controls */}
-        <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-1">
+    <div className="h-auto bg-white border-b border-gray-200 px-3 sm:px-6 shadow-sm">
+      <div className="flex items-center justify-between py-2">
+        {/* Left - Controls */}
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Responsive Controls */}
+          <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-1">
           <Button 
             variant={deviceType === 'desktop' ? 'default' : 'ghost'} 
             size="sm" 
@@ -120,67 +115,81 @@ const BuilderHeader = ({
           >
             <Smartphone className="w-4 h-4" />
           </Button>
-        </div>
-      </div>
-
-      {/* Center - Title */}
-      <div className="flex items-center space-x-2">
-        <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-          <span className="text-white font-bold text-sm">H</span>
-        </div>
-        <span className="text-base font-semibold text-gray-900">HostonHome Builder</span>
-        {saving && (
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span>Salvando...</span>
           </div>
-        )}
-      </div>
+          {/* Tema: visibile su desktop, su mobile c'è il pulsante */}
+          <div className="hidden sm:flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">Tema:</span>
+            <div className="bg-gray-100 rounded-md px-3 py-1">
+              <span className="text-sm font-medium text-gray-900">Host On Home</span>
+            </div>
+          </div>
+        </div>
 
-      {/* Right - Theme Controls */}
-      <div className="flex items-center space-x-4">
-        {/* Font Selector */}
+        {/* Center - Title */}
         <div className="flex items-center space-x-2">
-          <Type className="w-4 h-4 text-gray-600" />
-          <select
-            value={theme.font}
-            onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
-            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+            <span className="text-white font-bold text-sm">H</span>
+          </div>
+          <span className="text-base sm:text-base font-semibold text-gray-900">HostonHome Builder</span>
+          {saving && (
+            <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span>Salvando...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Right - Theme Controls */}
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Mobile: pulsante Tema */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="sm:hidden"
+            onClick={() => setShowThemePanel(true)}
           >
-            {AVAILABLE_FONTS.map(font => (
-              <option key={font.key} value={font.key}>
-                {font.name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <Palette className="w-4 h-4 mr-2" /> Tema
+          </Button>
 
-        {/* Color Selector */}
-        <div className="flex items-center space-x-2">
-          <Palette className="w-4 h-4 text-gray-600" />
-          <div className="flex space-x-1">
-            {AVAILABLE_COLORS.map(color => (
-              <button
-                key={color.key}
-                onClick={() => onThemeChange({ ...theme, accent: color.key })}
-                className={cn(
-                  "w-6 h-6 rounded-full border-2 transition-all",
-                  theme.accent === color.key 
-                    ? "border-gray-800 scale-110" 
-                    : "border-gray-300 hover:border-gray-500"
-                )}
-                style={{ backgroundColor: color.color }}
-                title={color.name}
-              />
-            ))}
+          {/* Desktop: selettori visibili */}
+          <div className="hidden sm:flex items-center space-x-2">
+            <Type className="w-4 h-4 text-gray-600" />
+            <select
+              value={theme.font}
+              onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
+              className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {AVAILABLE_FONTS.map(font => (
+                <option key={font.key} value={font.key}>
+                  {font.name}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+          <div className="hidden sm:flex items-center space-x-2">
+            <Palette className="w-4 h-4 text-gray-600" />
+            <div className="flex space-x-1">
+              {AVAILABLE_COLORS.map(color => (
+                <button
+                  key={color.key}
+                  onClick={() => onThemeChange({ ...theme, accent: color.key })}
+                  className={cn(
+                    "w-6 h-6 rounded-full border-2 transition-all",
+                    theme.accent === color.key 
+                      ? "border-gray-800 scale-110" 
+                      : "border-gray-300 hover:border-gray-500"
+                  )}
+                  style={{ backgroundColor: color.color }}
+                  title={color.name}
+                />
+              ))}
+            </div>
+          </div>
 
-        {/* PULSANTE SALVA INTEGRATO */}
-        <div className="flex items-center space-x-3">
+          {/* PULSANTE SALVA */}
           <Button
             onClick={onSave}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+            className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
             size="sm"
           >
             <Save className="w-4 h-4 mr-2" />
@@ -188,6 +197,49 @@ const BuilderHeader = ({
           </Button>
         </div>
       </div>
+
+      {/* Theme panel (mobile) */}
+      {showThemePanel && (
+        <div className="sm:hidden fixed inset-0 z-50 bg-black/40">
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-900">Tema</span>
+              <button onClick={() => setShowThemePanel(false)} className="text-gray-600 text-sm">Chiudi</button>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">Font</span>
+                <select
+                  value={theme.font}
+                  onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
+                  className="text-sm border border-gray-300 rounded px-2 py-1 bg-white"
+                >
+                  {AVAILABLE_FONTS.map(font => (
+                    <option key={font.key} value={font.key}>{font.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div className="text-sm text-gray-700 mb-2">Colore Accento</div>
+                <div className="flex items-center gap-2">
+                  {AVAILABLE_COLORS.map(color => (
+                    <button
+                      key={color.key}
+                      onClick={() => onThemeChange({ ...theme, accent: color.key })}
+                      className={cn(
+                        "w-8 h-8 rounded-full border-2",
+                        theme.accent === color.key ? 'border-gray-900' : 'border-gray-300'
+                      )}
+                      style={{ backgroundColor: color.color }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -240,10 +292,10 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
   return (
     <div className="w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 h-auto md:h-full flex-shrink-0 flex flex-col sticky top-14 md:static z-10">
       {/* HEADER MIGLIORATO CON ANIMAZIONI */}
-      <div className="p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="p-4 sm:p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="text-center">
           {/* TITOLO CON ANIMAZIONE */}
-          <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="flex items-center justify-center space-x-3 mb-3 sm:mb-4">
             <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
               <Plus className="w-5 h-5 text-white" />
             </div>
@@ -251,7 +303,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
           </div>
           
           {/* PROGRESS BAR ANIMATA */}
-          <div className="relative mb-4">
+          <div className="relative mb-3 sm:mb-4">
             <div className="bg-gray-200 rounded-full h-3 shadow-inner">
               <div 
                 className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm relative overflow-hidden"
@@ -308,7 +360,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
       </div>
 
       {/* LISTA WIDGET RIDISEGNATA */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
         {allWidgets.map((widget) => {
           const isActive = currentSections.some(s => s.type === widget.type);
           const isPremium = widget.type === 'PHOTO_GALLERY' || widget.type === 'AMENITIES';
