@@ -64,11 +64,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      throw new Error('Supabase non è configurato. Crea il file .env.local con le credenziali.')
+    // Effettua il sign out da Supabase (se configurato), poi pulisci lo storage e reindirizza
+    try {
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+      }
+    } finally {
+      try {
+        // Pulisci eventuali dati locali della sessione
+        localStorage.removeItem('admin_session')
+        localStorage.removeItem('pending_email')
+        localStorage.removeItem('pending_password')
+      } catch {}
+      // Reindirizza sempre alla pagina di login utente
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
     }
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
   }
 
   return (
