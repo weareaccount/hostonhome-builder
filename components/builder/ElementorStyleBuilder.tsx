@@ -245,7 +245,7 @@ const BuilderHeader = ({
 };
 
 // SIDEBAR COMPLETAMENTE RIDISEGNATA - SUPER INTUITIVA E FUNZIONALE
-const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan, compact = false }: { 
+const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan, compact = false, showRemove = true }: { 
   onAddSection: (type: SectionType) => void;
   onSectionsChange: (sections: Section[]) => void;
   availableSections: SectionType[];
@@ -253,6 +253,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
   currentSections: Section[];
   plan?: 'BASE' | 'PLUS' | 'PRO';
   compact?: boolean;
+  showRemove?: boolean;
 }) => {
   const canAddSection = currentSections.length < maxSections;
 
@@ -396,6 +397,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
                       {!compact && <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>}
                       
                       {/* PULSANTE RIMUOVI */}
+                      {showRemove && (
                       <Button
                         onClick={() => handleDeleteSection(widget.type as SectionType)}
                         variant="outline"
@@ -405,6 +407,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
                         <Trash2 className="w-3 h-3 mr-1" />
                         Rimuovi
                       </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -877,13 +880,13 @@ export function ElementorStyleBuilder({
         <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm">
           <button
             type="button"
-            onClick={() => setMobileTab('widgets')}
+            onClick={() => setMobileTab(mobileTab === 'widgets' ? 'preview' : 'widgets')}
             className={cn(
               'px-4 py-1.5 text-sm font-medium',
               mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
             )}
           >
-            Sezioni
+            {mobileTab === 'widgets' ? 'Sezioni' : 'Sezioni'}
           </button>
           <button
             type="button"
@@ -916,19 +919,19 @@ export function ElementorStyleBuilder({
         />
 
         {/* Drawer widgets */}
-        {mobileTab === 'widgets' && (
-          <div className="fixed inset-x-0 bottom-0 z-50">
-            <WidgetLibrary
-              onAddSection={handleAddSection}
-              onSectionsChange={onSectionsChange}
-              availableSections={availableSections}
-              maxSections={maxSections}
-              currentSections={sections}
-              plan={(user as any)?.plan}
-              compact
-            />
-          </div>
-        )}
+        {/* Drawer fisso, con transizione */}
+        <div className={cn("fixed inset-x-0 bottom-0 z-50 transform transition-transform duration-200", mobileTab === 'widgets' ? 'translate-y-0' : 'translate-y-[85%]') }>
+          <WidgetLibrary
+            onAddSection={handleAddSection}
+            onSectionsChange={onSectionsChange}
+            availableSections={availableSections}
+            maxSections={maxSections}
+            currentSections={sections}
+            plan={(user as any)?.plan}
+            compact
+            showRemove={false}
+          />
+        </div>
       </div>
 
       {/* Layout desktop/tablet: 3 colonne */}
