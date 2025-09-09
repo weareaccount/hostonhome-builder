@@ -245,7 +245,7 @@ const BuilderHeader = ({
 };
 
 // SIDEBAR COMPLETAMENTE RIDISEGNATA - SUPER INTUITIVA E FUNZIONALE
-const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan, compact = false, showRemove = true }: { 
+const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan, compact = false, showRemove = true, fullPage = false }: { 
   onAddSection: (type: SectionType) => void;
   onSectionsChange: (sections: Section[]) => void;
   availableSections: SectionType[];
@@ -254,6 +254,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
   plan?: 'BASE' | 'PLUS' | 'PRO';
   compact?: boolean;
   showRemove?: boolean;
+  fullPage?: boolean;
 }) => {
   const canAddSection = currentSections.length < maxSections;
 
@@ -292,7 +293,11 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
   };
 
   return (
-    <div className={cn("w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 h-auto md:h-full flex-shrink-0 flex flex-col sticky top-14 md:static z-10", compact && "border-t rounded-t-2xl") }>
+    <div className={cn(
+      "w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex-shrink-0 flex flex-col md:static z-10",
+      compact && "border-t rounded-t-2xl",
+      fullPage ? "h-full" : "h-auto sticky top-14"
+    ) }>
       {/* HEADER MIGLIORATO CON ANIMAZIONI */}
       {!compact ? (
       <div className="p-4 sm:p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -913,6 +918,7 @@ export function ElementorStyleBuilder({
             plan={(user as any)?.plan}
             compact={false}
             showRemove
+            fullPage
           />
         ) : (
           <CanvasArea
