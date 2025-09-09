@@ -1,0 +1,11 @@
+<svg width="512" height="96" viewBox="0 0 512 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HostOnHome">
+  <title>HostOnHome</title>
+  <rect width="512" height="96" fill="transparent"/>
+  <g fill="#4B5563">
+    <text x="0" y="68" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="2">HOST</text>
+    <rect x="210" y="18" rx="28" ry="28" width="120" height="60" stroke="#4B5563" stroke-width="10" fill="none"/>
+    <circle cx="270" cy="48" r="26" fill="#4B5563"/>
+    <text x="350" y="68" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="2">ON HOME</text>
+  </g>
+</svg>
+

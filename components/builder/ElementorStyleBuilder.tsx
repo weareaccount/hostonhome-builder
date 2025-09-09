@@ -1,0 +1,842 @@
+'use client';
+
+import React, { useState, useCallback, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { SectionType, Section, ThemeConfig, LayoutType, ThemeAccent, ThemeFont } from '@/types';
+import { InteractiveThemePreview } from './InteractiveThemePreview';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { ProjectService } from '@/lib/projects';
+import { 
+  Save, 
+  Eye, 
+  Globe, 
+  Undo, 
+  Redo, 
+  Settings, 
+  Layers, 
+  Palette,
+  Type,
+  Layout,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Plus,
+  Grid3X3,
+  Rows,
+  Columns,
+  Palette as PaletteIcon,
+  Type as TypeIcon,
+  GripVertical,
+  Target,
+  FileText,
+  Image as ImageIcon,
+  Trash2
+} from 'lucide-react';
+
+// Costanti per font e colori
+const AVAILABLE_FONTS: { key: ThemeFont; name: string }[] = [
+  { key: 'INTER', name: 'Inter' },
+  { key: 'POPPINS', name: 'Poppins' },
+  { key: 'MONTSERRAT', name: 'Montserrat' },
+  { key: 'WORKSANS', name: 'Work Sans' }
+];
+
+const AVAILABLE_COLORS: { key: ThemeAccent; name: string; color: string }[] = [
+  {
+     key: 'BLUE', name: 'Blu', color: '#2563eb' },
+  { key: 'GREEN', name: 'Verde', color: '#16a34a' },
+  { key: 'RED', name: 'Rosso', color: '#dc2626' },
+  { key: 'VIOLET', name: 'Viola', color: '#8b5cf6' }
+];
+
+interface ElementorStyleBuilderProps {
+  site: any;
+  sections: Section[];
+  onSectionsChange: (sections: Section[]) => void;
+  onSave: () => void;
+  onPublish: () => void;
+  maxSections: number;
+  className?: string;
+}
+
+// Header semplificato e pulito
+const BuilderHeader = ({ 
+  layoutType, 
+  theme, 
+  onThemeChange,
+  onSave,
+  onPublish,
+  deviceType,
+  onDeviceChange,
+  saving
+}: {
+  layoutType: LayoutType;
+  theme: { accent: ThemeAccent; font: ThemeFont };
+  onThemeChange: (theme: { accent: ThemeAccent; font: ThemeFont }) => void;
+  onSave: () => void;
+  onPublish: () => void;
+  deviceType: 'desktop' | 'tablet' | 'mobile';
+  onDeviceChange: (device: 'desktop' | 'tablet' | 'mobile') => void;
+  saving: boolean;
+}) => {
+  return (
+    <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
+      {/* Left - Theme Info */}
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium text-gray-700">Tema:</span>
+          <div className="bg-gray-100 rounded-md px-3 py-1">
+            <span className="text-sm font-medium text-gray-900">Host On Home</span>
+          </div>
+        </div>
+
+        {/* Responsive Controls */}
+        <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-1">
+          <Button 
+            variant={deviceType === 'desktop' ? 'default' : 'ghost'} 
+            size="sm" 
+            className="h-7 w-7 p-0"
+            onClick={() => onDeviceChange('desktop')}
+            title="Desktop"
+          >
+            <Monitor className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant={deviceType === 'tablet' ? 'default' : 'ghost'} 
+            size="sm" 
+            className="h-7 w-7 p-0"
+            onClick={() => onDeviceChange('tablet')}
+            title="Tablet"
+          >
+            <Tablet className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant={deviceType === 'mobile' ? 'default' : 'ghost'} 
+            size="sm" 
+            className="h-7 w-7 p-0"
+            onClick={() => onDeviceChange('mobile')}
+            title="Mobile"
+          >
+            <Smartphone className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Center - Title */}
+      <div className="flex items-center space-x-2">
+        <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+          <span className="text-white font-bold text-sm">H</span>
+        </div>
+        <span className="text-base font-semibold text-gray-900">HostonHome Builder</span>
+        {saving && (
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span>Salvando...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Right - Theme Controls */}
+      <div className="flex items-center space-x-4">
+        {/* Font Selector */}
+        <div className="flex items-center space-x-2">
+          <Type className="w-4 h-4 text-gray-600" />
+          <select
+            value={theme.font}
+            onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
+            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {AVAILABLE_FONTS.map(font => (
+              <option key={font.key} value={font.key}>
+                {font.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Color Selector */}
+        <div className="flex items-center space-x-2">
+          <Palette className="w-4 h-4 text-gray-600" />
+          <div className="flex space-x-1">
+            {AVAILABLE_COLORS.map(color => (
+              <button
+                key={color.key}
+                onClick={() => onThemeChange({ ...theme, accent: color.key })}
+                className={cn(
+                  "w-6 h-6 rounded-full border-2 transition-all",
+                  theme.accent === color.key 
+                    ? "border-gray-800 scale-110" 
+                    : "border-gray-300 hover:border-gray-500"
+                )}
+                style={{ backgroundColor: color.color }}
+                title={color.name}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* PULSANTE SALVA INTEGRATO */}
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={onSave}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+            size="sm"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Salva Progetto
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// SIDEBAR COMPLETAMENTE RIDISEGNATA - SUPER INTUITIVA E FUNZIONALE
+const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan }: { 
+  onAddSection: (type: SectionType) => void;
+  onSectionsChange: (sections: Section[]) => void;
+  availableSections: SectionType[];
+  maxSections: number;
+  currentSections: Section[];
+  plan?: 'BASE' | 'PLUS' | 'PRO';
+}) => {
+  const canAddSection = currentSections.length < maxSections;
+
+  const allWidgets = [
+    { type: 'HERO', name: 'Hero', icon: '🏠', description: 'Titolo principale e CTA' },
+    { type: 'ABOUT', name: 'Chi Siamo', icon: 'ℹ️', description: 'Presenta la tua struttura' },
+    { type: 'SERVICES', name: 'Servizi', icon: '⚡', description: 'Lista servizi offerti' },
+    { type: 'GALLERY', name: 'Galleria', icon: '🖼️', description: 'Raccolta immagini' },
+    { type: 'TESTIMONIALS', name: 'Recensioni', icon: '💬', description: 'Feedback clienti' },
+    { type: 'CONTACT', name: 'Contatti', icon: '📞', description: 'Dati di contatto' },
+    // Widget premium - sempre visibili, bloccati su BASE
+    { type: 'PHOTO_GALLERY', name: 'Galleria Foto', icon: '📷', description: 'Griglia fotografica' },
+    { type: 'AMENITIES', name: 'Dotazioni', icon: '🧰', description: 'Lista dotazioni/servizi' },
+    { type: 'GET_YOUR_GUIDE', name: 'GetYourGuide', icon: '🧭', description: 'Attività e tour con link GetYourGuide (solo Pro)' },
+  ];
+
+  const handleWidgetClick = (widgetType: SectionType) => {
+    console.log('🎯 Widget cliccato:', widgetType);
+    alert(`✅ Aggiungendo sezione ${widgetType}!`);
+    onAddSection(widgetType);
+  };
+
+  const handleDeleteSection = (widgetType: SectionType) => {
+    console.log('🗑️ Eliminando sezione:', widgetType);
+    const updatedSections = currentSections.filter(s => s.type !== widgetType);
+    onSectionsChange(updatedSections);
+    alert(`🗑️ Sezione ${widgetType} rimossa con successo!`);
+  };
+
+  const handleClearAll = () => {
+    if (confirm('🚨 Vuoi davvero rimuovere TUTTE le sezioni? Questa azione non può essere annullata!')) {
+      console.log('🗑️ Rimuovendo tutte le sezioni');
+      onSectionsChange([]);
+      alert('🧹 Tutte le sezioni sono state rimosse!');
+    }
+  };
+
+  return (
+    <div className="w-80 bg-white border-r border-gray-200 h-full flex flex-col">
+      {/* HEADER MIGLIORATO CON ANIMAZIONI */}
+      <div className="p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="text-center">
+          {/* TITOLO CON ANIMAZIONE */}
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
+              <Plus className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 tracking-wide">Costruisci il tuo Sito</h3>
+          </div>
+          
+          {/* PROGRESS BAR ANIMATA */}
+          <div className="relative mb-4">
+            <div className="bg-gray-200 rounded-full h-3 shadow-inner">
+              <div 
+                className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm relative overflow-hidden"
+                style={{ width: `${Math.max((currentSections.length / maxSections) * 100, 8)}%` }}
+              >
+                {/* Effetto shimmer */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+              </div>
+            </div>
+            <div className="absolute -top-1 -right-1">
+              <div className="w-5 h-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full shadow-lg animate-bounce">
+                <div className="w-full h-full bg-white/30 rounded-full animate-ping"></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* STATISTICHE CON ANIMAZIONI */}
+          <div className="flex items-center justify-center space-x-6">
+            {/* Sezioni Attive */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl px-4 py-2 shadow-md border border-blue-200 transform hover:scale-105 transition-all duration-200">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-gray-700">
+                  <span className="text-lg font-bold text-green-600 animate-pulse">{currentSections.length}</span>
+                  <span className="text-gray-600 ml-1">/ {maxSections}</span>
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Sezioni Attive</p>
+            </div>
+            
+            {/* Disponibili */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl px-4 py-2 shadow-md border border-gray-200 transform hover:scale-105 transition-all duration-200">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium text-gray-700">
+                  <span className="text-lg font-bold text-blue-600">{Math.max(0, maxSections - currentSections.length)}</span>
+                  <span className="text-gray-600 ml-1">rimaste</span>
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Disponibili</p>
+            </div>
+          </div>
+          
+          {/* INDICATORE COMPLETAMENTO */}
+          {currentSections.length === maxSections && (
+            <div className="mt-3">
+              <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium border border-green-300">
+                <span className="text-lg">🎉</span>
+                <span>Sito Completo!</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* LISTA WIDGET RIDISEGNATA */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {allWidgets.map((widget) => {
+          const isActive = currentSections.some(s => s.type === widget.type);
+          const isPremium = widget.type === 'PHOTO_GALLERY' || widget.type === 'AMENITIES';
+          const isLocked = isPremium && plan === 'BASE';
+          
+          return (
+            <div key={widget.type} className="relative">
+              {isActive ? (
+                /* WIDGET ATTIVO - STILE COERENTE */
+                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-start space-x-3">
+                    {/* ICONA WIDGET */}
+                    <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white text-lg font-bold shadow-sm">
+                      {widget.icon}
+                    </div>
+                    
+                    {/* CONTENUTO PRINCIPALE */}
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h4 className="text-gray-900 font-semibold text-base">{widget.name}</h4>
+                        <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                          ✓ Attivo
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>
+                      
+                      {/* PULSANTE RIMUOVI */}
+                      <Button
+                        onClick={() => handleDeleteSection(widget.type as SectionType)}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 text-xs"
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Rimuovi
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* WIDGET NON ATTIVO - STILE COERENTE */
+                <button
+                  onClick={() => {
+                    if (isLocked) {
+                      const go = confirm('🔒 Questo widget è disponibile solo con i piani Avanzato e Pro.\n\nVuoi aprire la sezione Pagamenti per effettuare l\'upgrade?');
+                      if (go) {
+                        window.location.href = '/dashboard?billing=1';
+                      }
+                      return;
+                    }
+                    handleWidgetClick(widget.type as SectionType)
+                  }}
+                  disabled={!canAddSection}
+                  className={cn(
+                    "w-full p-4 rounded-lg border-2 border-dashed transition-all duration-200 group text-left",
+                    !isLocked && canAddSection 
+                      ? "border-blue-300 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 cursor-pointer shadow-sm hover:shadow-md"
+                      : "border-gray-300 bg-gray-50 opacity-60 cursor-pointer"
+                  )}
+                >
+                  <div className="flex items-start space-x-3">
+                    {/* ICONA WIDGET */}
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white text-lg font-bold shadow-sm group-hover:scale-105 transition-transform">
+                      {widget.icon}
+                    </div>
+                    
+                    {/* CONTENUTO */}
+                    <div className="flex-1">
+                      <h4 className="text-gray-900 font-semibold text-base mb-1">{widget.name}</h4>
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>
+                      
+                      {/* CALL TO ACTION */}
+                      <div className="flex items-center space-x-2">
+                        {!isLocked ? (
+                          <span className="inline-flex items-center bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium">
+                            <Plus className="w-3 h-3 mr-1" />
+                            Aggiungi Sezione
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center bg-gray-300 text-gray-700 px-3 py-1.5 rounded-md text-xs font-medium">
+                            🔒 Richiede Upgrade
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+          );
+        })}
+        
+        {/* MESSAGGIO LIMITE RAGGIUNTO */}
+        {!canAddSection && (
+          <div className="text-center py-6 px-4 bg-orange-50 border-2 border-orange-200 rounded-lg">
+            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h3 className="text-gray-900 font-semibold mb-2">
+              Limite Raggiunto
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Hai utilizzato tutte le {maxSections} sezioni disponibili.<br/>
+              Rimuovi una sezione o aggiorna il piano.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER PULITO */}
+      <div className="p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex space-x-2">
+          <Button 
+            onClick={handleClearAll}
+            variant="outline"
+            size="sm"
+            className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
+          >
+            <Trash2 className="w-4 h-4 mr-1" />
+            Pulisci Tutto
+          </Button>
+          <Button 
+            onClick={() => alert('🎯 Funzione di template in arrivo!')}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            Template
+          </Button>
+        </div>
+        
+        {/* INFO AGGIUNTIVE */}
+        <div className="mt-3 text-center">
+          <p className="text-gray-500 text-xs">
+            Trascina le sezioni nel canvas per riordinarle
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Canvas Area semplificata
+const CanvasArea = ({ 
+  sections, 
+  onSectionsChange, 
+  layoutType,
+  theme,
+  onThemeChange,
+  onSectionSelect,
+  selectedSectionId,
+  onSectionUpdate,
+  onSectionDelete,
+  onSectionPublish,
+  onSectionUnpublish,
+  deviceType
+}: {
+  sections: Section[];
+  onSectionsChange: (sections: Section[]) => void;
+  layoutType: LayoutType;
+  theme: { accent: ThemeAccent; font: ThemeFont };
+  onThemeChange: (theme: { accent: ThemeAccent; font: ThemeFont }) => void;
+  onSectionSelect: (sectionId: string | null) => void;
+  selectedSectionId: string | null;
+  onSectionUpdate: (sectionId: string, props: any) => void;
+  onSectionDelete: (sectionId: string) => void;
+  onSectionPublish: (sectionId: string) => void;
+  onSectionUnpublish: (sectionId: string) => void;
+  deviceType: 'desktop' | 'tablet' | 'mobile';
+}) => {
+
+
+  return (
+    <div className="flex-1 bg-gray-50 overflow-auto">
+      <InteractiveThemePreview
+        layoutType={layoutType}
+        theme={theme}
+        sections={sections}
+        onSectionUpdate={onSectionUpdate}
+        onSectionDelete={onSectionDelete}
+        onSectionPublish={onSectionPublish}
+        onSectionUnpublish={onSectionUnpublish}
+        onSectionReorder={onSectionsChange}
+        className="min-h-full"
+        deviceType={deviceType}
+      />
+    </div>
+  );
+};
+
+// Main Builder Component
+export function ElementorStyleBuilder({
+  site,
+  sections,
+  onSectionsChange,
+  onSave,
+  onPublish,
+  maxSections
+}: ElementorStyleBuilderProps) {
+  // Nothing to change here for gating; gating is handled in parent (builder page)
+  const { user } = useAuth();
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const layoutType: LayoutType = 'ELEGANTE';
+  const [theme, setTheme] = useState(site.theme);
+  const [deviceType, setDeviceType] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [saving, setSaving] = useState(false);
+
+  const handleThemeChange = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
+    setTheme(newTheme);
+    // Salvataggio automatico quando cambia il tema
+    if (user && site.id) {
+      saveProject();
+    }
+  };
+
+  // Salvataggio automatico del progetto
+  const saveProject = async () => {
+    if (!user || !site.id) {
+      console.log('❌ Impossibile salvare: user o site.id mancanti', { user: !!user, siteId: site.id });
+      return;
+    }
+    
+    try {
+      setSaving(true);
+      console.log('💾 Salvando progetto automaticamente...', { siteId: site.id, sectionsCount: sections.length });
+      await ProjectService.updateProject(site.id, {
+        sections,
+        theme,
+        layout_type: layoutType
+      });
+      console.log('✅ Progetto salvato automaticamente con successo!');
+    } catch (error) {
+      console.error('❌ Errore nel salvataggio automatico:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Salvataggio automatico quando cambiano le sezioni
+  useEffect(() => {
+    if (user && site.id && sections.length > 0) {
+      const timeoutId = setTimeout(() => {
+        saveProject();
+      }, 2000); // Salva dopo 2 secondi di inattività
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [sections, user, site.id]);
+
+  const handleAddSection = (type: SectionType) => {
+    console.log('🎯 Aggiungendo sezione:', type);
+    // Gating: PHOTO_GALLERY e AMENITIES solo per PLUS/PRO; GET_YOUR_GUIDE solo PRO
+    const plan = (user as any)?.plan
+    if ((type === 'PHOTO_GALLERY' || type === 'AMENITIES') && !(plan === 'PLUS' || plan === 'PRO')) {
+      alert('Questo widget è disponibile solo con i piani Avanzato e Pro.');
+      return;
+    }
+    if (type === 'GET_YOUR_GUIDE' && plan !== 'PRO') {
+      alert('Questo widget è disponibile solo con il piano Pro.');
+      return;
+    }
+    
+    const newSection: Section = {
+      id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type,
+      props: {
+        isActive: true,
+        order: sections.length,
+        isPublished: false, // Nuovo campo per tracciare se la sezione è pubblicata
+        title: `Sezione ${type}`,
+        subtitle: `Descrizione per ${type}`,
+        ...(type === 'HERO' && { 
+          title: 'Benvenuti al San Vito Suites',
+          subtitle: 'Camere accoglienti e moderne nel cuore di Roma',
+          ctaText: 'Scopri',
+          ctaUrl: '#alloggi',
+          backgroundImage: '/images/hero-bg.jpg'
+        }),
+        ...(type === 'ABOUT' && { 
+          title: 'Vivi Roma come un vero local',
+          content: 'Nel cuore di Roma, a pochi passi dalla stazione Termini e a soli 350 metri dalla fermata metro Vittorio Emanuele, il San Vito Suites è il punto di partenza perfetto per vivere la Capitale in totale comodità.',
+          image: '/images/about-image.jpg',
+          imageAlt: 'San Vito Suites'
+        }),
+        ...(type === 'SERVICES' && { 
+          title: 'Alloggi',
+          subtitle: 'Le nostre camere confortevoli',
+          services: [
+            {
+              title: 'Camera Matrimoniale con Letto Supplementare',
+              description: 'Spaziosa e ideale per famiglie, amici o chi desidera più spazio, questa camera dispone di un letto matrimoniale large e un letto singolo.',
+              icon: '🛏️',
+              guests: '3',
+              size: '22m²',
+              price: '120',
+              isAvailable: true
+            },
+            {
+              title: 'Camera Matrimoniale con Balcone',
+              description: 'Ideale per coppie in cerca di comfort e relax, questa camera offre un letto matrimoniale comodo e un balcone arredato.',
+              icon: '🌅',
+              guests: '2',
+              size: '18m²',
+              price: '100',
+              isAvailable: true
+            },
+            {
+              title: 'Camera Matrimoniale',
+              description: 'Accogliente e funzionale, questa camera matrimoniale è la scelta perfetta per chi desidera soggiornare nel cuore di Roma.',
+              icon: '🏠',
+              guests: '2',
+              size: '22m²',
+              price: '95',
+              isAvailable: true
+            }
+          ]
+        }),
+        ...(type === 'GALLERY' && { 
+          title: 'Scopri Roma',
+          subtitle: 'Attività e tour disponibili',
+          activities: [
+            {
+              title: 'Tour in golf cart: il meglio di Roma di notte',
+              description: 'Roma di notte in golf cart – Tour privato tra luci e monumenti illuminati per scoprire la città da una prospettiva unica.',
+              icon: '🌙',
+              price: 'Gratis',
+              duration: '2 ore',
+              isAvailable: true
+            },
+            {
+              title: 'Da Roma: Escursione di un giorno a Pompei, Costiera Amalfitana e Sorrento',
+              description: 'Da Roma a Pompei & Costiera Amalfitana – Tour guidato indimenticabile tra storia e bellezza.',
+              icon: '🌋',
+              price: '€10',
+              duration: '1 giorno',
+              isAvailable: true
+            },
+            {
+              title: 'Roma: biglietti con ingresso prioritario al Pantheon + app interattiva',
+              description: 'Visita il Pantheon, simbolo eterno di Roma. Entra in uno dei monumenti più imponenti della storia.',
+              icon: '🏛️',
+              price: 'Gratis',
+              duration: '1 ora',
+              isAvailable: true
+            }
+          ]
+        }),
+        ...(type === 'TESTIMONIALS' && { 
+          title: 'Recensioni',
+          subtitle: 'Cosa dicono i nostri ospiti',
+          testimonials: [
+            {
+              name: 'Matteo',
+              content: 'Camera davvero confortevole ed elegante, host super disponibile e gentile. Posizione strategica e centrale con vicino la fermata della metro e a pochissimi minuti a piedi dalla stazione di Roma Termini.',
+              avatar: '👨‍💼',
+              rating: 5,
+              date: '2024-01-15'
+            },
+            {
+              name: 'Gabriella',
+              content: 'Posizione ottima per chi vuole andare al Brancaccio, ottima accoglienza e pulizia. Giusta grandezza di camera e bagno.',
+              avatar: '👩‍💼',
+              rating: 5,
+              date: '2024-01-10'
+            },
+            {
+              name: 'Francesca',
+              content: 'Stanza spaziosa e confortevole, con affaccio caratteristico su chiesa e Arco di Gallieno. A due passi da piazza Vittorio e dalla metro.',
+              avatar: '👩‍💼',
+              rating: 5,
+              date: '2024-01-05'
+            }
+          ]
+        }),
+        ...(type === 'CONTACT' && { 
+          title: 'Contattaci',
+          subtitle: 'Come possiamo aiutarti',
+          email: 'info@sanvitosuites.it',
+          phone: '+39 06 123 4567',
+          address: 'Via San Vito, 123 - Roma',
+          showContactForm: true,
+          businessHours: 'Check-in: 14:00 - Check-out: 11:00'
+        }),
+        ...(type === 'PHOTO_GALLERY' && {
+          title: 'Galleria Fotografica',
+          photos: [
+            { url: '/images/photo1.jpg', alt: 'Foto 1' },
+            { url: '/images/photo2.jpg', alt: 'Foto 2' },
+            { url: '/images/photo3.jpg', alt: 'Foto 3' },
+          ]
+        }),
+        ...(type === 'AMENITIES' && {
+          title: 'Dotazioni',
+          items: [
+            { icon: '📶', label: 'Wi‑Fi Gratuito' },
+            { icon: '❄️', label: 'Aria Condizionata' },
+            { icon: '🧹', label: 'Pulizia Giornaliera' },
+          ]
+        }),
+        ...(type === 'GET_YOUR_GUIDE' && {
+          title: 'GetYourGuide – Attività consigliate',
+          activities: [
+            { title: 'Colosseo: tour guidato', description: 'Accesso rapido con guida', imageUrl: '', link: 'https://www.getyourguide.it/' },
+            { title: 'Vaticano: Musei & Cappella Sistina', description: 'Ingresso prioritario', imageUrl: '', link: 'https://www.getyourguide.it/' },
+          ]
+        }),
+      } as any,
+    };
+
+    console.log('✅ Nuova sezione creata:', newSection);
+    onSectionsChange([...sections, newSection]);
+    
+    // Auto-save dopo aver aggiunto una sezione
+    setTimeout(() => {
+      if (user && site.id) {
+        saveProject();
+      }
+    }, 1000);
+  };
+
+  const handleSectionUpdate = (sectionId: string, props: any) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId ? { ...section, props: { ...section.props, ...props } } : section
+    );
+    onSectionsChange(updatedSections);
+  };
+
+  const handleSectionDelete = (sectionId: string) => {
+    const updatedSections = sections.filter(section => section.id !== sectionId);
+    onSectionsChange(updatedSections);
+    if (selectedSectionId === sectionId) {
+      setSelectedSectionId(null);
+    }
+  };
+
+  // Nuova funzione per pubblicare una sezione
+  const handlePublishSection = (sectionId: string) => {
+    console.log('🚀 Pubblicando sezione:', sectionId);
+    const updatedSections = sections.map(section =>
+      section.id === sectionId 
+        ? { ...section, props: { ...section.props, isPublished: true, publishedAt: new Date().toISOString() } }
+        : section
+    );
+    onSectionsChange(updatedSections);
+    
+    // Auto-save dopo la pubblicazione
+    setTimeout(() => {
+      if (user && site.id) {
+        saveProject();
+      }
+    }, 1000);
+  };
+
+  // Nuova funzione per annullare la pubblicazione di una sezione
+  const handleUnpublishSection = (sectionId: string) => {
+    console.log('📝 Annullando pubblicazione sezione:', sectionId);
+    const updatedSections = sections.map(section =>
+      section.id === sectionId 
+        ? { ...section, props: { ...section.props, isPublished: false, publishedAt: undefined } }
+        : section
+    );
+    onSectionsChange(updatedSections);
+    
+    // Auto-save dopo l'annullamento
+    setTimeout(() => {
+      if (user && site.id) {
+        saveProject();
+      }
+    }, 1000);
+  };
+
+  const availableSections: SectionType[] = ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT', 'PHOTO_GALLERY', 'AMENITIES', 'GET_YOUR_GUIDE'];
+
+  return (
+    <div className="h-full w-full flex flex-col relative">
+      {/* Header semplificato */}
+      <BuilderHeader
+        layoutType={layoutType}
+        theme={theme}
+        onThemeChange={handleThemeChange}
+        onSave={onSave}
+        onPublish={onPublish}
+        deviceType={deviceType}
+        onDeviceChange={setDeviceType}
+        saving={saving}
+      />
+
+      {/* Main Builder Area */}
+      <div className="flex-1 flex min-h-0">
+        {/* Left Sidebar - Semplificata */}
+        <WidgetLibrary
+          onAddSection={handleAddSection}
+          onSectionsChange={onSectionsChange}
+          availableSections={availableSections}
+          maxSections={maxSections}
+          currentSections={sections}
+          plan={(user as any)?.plan}
+        />
+
+        {/* Center Canvas Area */}
+        <CanvasArea
+          sections={sections}
+          onSectionsChange={onSectionsChange}
+          layoutType={layoutType}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+          onSectionSelect={setSelectedSectionId}
+          selectedSectionId={selectedSectionId}
+          onSectionUpdate={handleSectionUpdate}
+          onSectionDelete={handleSectionDelete}
+          onSectionPublish={handlePublishSection}
+          onSectionUnpublish={handleUnpublishSection}
+          deviceType={deviceType}
+        />
+      </div>
+
+
+
+      {/* Notifica stato progetto integrata */}
+      {saving && (
+        <div className="fixed top-20 right-4 z-40">
+          <div className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg shadow-md flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+            <span className="text-sm">Salvando...</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

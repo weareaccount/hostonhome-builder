@@ -1,0 +1,234 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum LayoutType {
+  ELEGANTE
+  MEDIO
+  ESSENZIALE
+}
+
+enum ThemeAccent {
+  BLUE
+  GREEN
+  RED
+  AMBER
+  VIOLET
+}
+
+enum ThemeFont {
+  INTER
+  POPPINS
+  MONTSERRAT
+  WORKSANS
+  DMSANS
+  NUNITO
+  ROBOTO
+  LATO
+  LORA
+  PLAYFAIR
+}
+
+enum SectionType {
+  HERO
+  ABOUT
+  SERVICES
+  GALLERY
+  TESTIMONIALS
+  CONTACT
+}
+
+enum PlanType {
+  BASE
+  PLUS
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  UNPAID
+}
+
+enum UserRole {
+  OWNER
+  EDITOR
+}
+
+// Models
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users         UserProfile[]
+  sites         Site[]
+  subscriptions Subscription[]
+  mediaAssets   MediaAsset[]
+  activityLogs  ActivityLog[]
+
+  @@map("tenants")
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique // Supabase Auth user ID
+  displayName String?
+  email       String
+  avatarUrl   String?
+  role        UserRole @default(EDITOR)
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activityLogs ActivityLog[]
+
+  @@map("user_profiles")
+}
+
+model Site {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  domain      String?    // Custom domain (V2 feature)
+  subdomain  String     // {slug}.tuodominio.it
+  layoutType LayoutType
+  themeAccent ThemeAccent
+  themeFont   ThemeFont
+  logoUrl     String?
+  faviconUrl  String?
+  isPublished Boolean    @default(false)
+  publishedAt DateTime?
+  plan        PlanType   @default(BASE)
+  tenantId    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pages    Page[]
+  template Template @relation(fields: [templateId], references: [id])
+  templateId String
+
+  @@map("sites")
+}
+
+model Template {
+  id             String   @id @default(cuid())
+  name           String
+  layoutType     LayoutType
+  sectionsSchema Json     // Array of allowed sections with default props
+  thumbnailUrl   String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  // Relations
+  sites Site[]
+
+  @@map("templates")
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  path      String   // "/", "/about", "/services", etc.
+  seoTitle  String?
+  seoDesc   String?
+  isHome    Boolean  @default(false)
+  siteId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  site     Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  sections Section[]
+
+  @@unique([siteId, path])
+  @@map("pages")
+}
+
+model Section {
+  id        String      @id @default(cuid())
+  type      SectionType
+  order     Int         // 0-12 for ordering
+  isActive  Boolean     @default(true)
+  props     Json        // Section-specific properties (title, content, images, etc.)
+  pageId    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relations
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, order])
+  @@map("sections")
+}
+
+model MediaAsset {
+  id       String   @id @default(cuid())
+  fileName String
+  fileUrl  String
+  alt      String?
+  width    Int?
+  height   Int?
+  size     Int      // File size in bytes
+  mimeType String
+  tenantId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("media_assets")
+}
+
+model Subscription {
+  id                    String             @id @default(cuid())
+  stripeSubscriptionId   String            @unique
+  stripeCustomerId      String
+  plan                  PlanType
+  status                SubscriptionStatus
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean            @default(false)
+  tenantId              String
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String   // "site_created", "section_updated", "site_published", etc.
+  payload   Json?    // Additional data about the action
+  userId    String
+  tenantId  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user   UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}

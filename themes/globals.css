@@ -1,0 +1,246 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;600;700&family=Lato:wght@300;400;500;600;700&family=Lora:wght@300;400;500;600;700&family=Playfair+Display:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Theme accent colors */
+.theme-blue {
+  --accent: 37 99% 235;
+  --accent-foreground: 0 0% 100%;
+}
+
+.theme-green {
+  --accent: 22 163% 74;
+  --accent-foreground: 0 0% 100%;
+}
+
+.theme-red {
+  --accent: 220 38% 38;
+  --accent-foreground: 0 0% 100%;
+}
+
+.theme-amber {
+  --accent: 245 158% 11;
+  --accent-foreground: 0 0% 100%;
+}
+
+.theme-violet {
+  --accent: 139 92% 246;
+  --accent-foreground: 0 0% 100%;
+}
+
+/* Font families */
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-worksans {
+  font-family: 'Work Sans', sans-serif;
+}
+
+.font-dmsans {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.font-nunito {
+  font-family: 'Nunito', sans-serif;
+}
+
+.font-roboto {
+  font-family: 'Roboto', sans-serif;
+}
+
+.font-lato {
+  font-family: 'Lato', sans-serif;
+}
+
+.font-lora {
+  font-family: 'Lora', serif;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Layout-specific styles */
+.layout-elegante {
+  --spacing-base: 2rem;
+  --border-radius: 0.75rem;
+  --shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.layout-medio {
+  --spacing-base: 1.5rem;
+  --border-radius: 0.5rem;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.layout-essenziale {
+  --spacing-base: 1rem;
+  --border-radius: 0.25rem;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground));
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+}
+
+/* Animation utilities */
+.animate-in {
+  animation: animateIn 0.2s ease-out;
+}
+
+.animate-out {
+  animation: animateOut 0.2s ease-in;
+}
+
+@keyframes animateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes animateOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Drag and drop styles */
+.dnd-dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+.dnd-over {
+  border: 2px dashed hsl(var(--accent));
+  background-color: hsl(var(--accent) / 0.1);
+}
+
+/* Builder specific styles */
+.builder-canvas {
+  min-height: 100vh;
+  background: linear-gradient(45deg, hsl(var(--muted) / 0.5) 25%, transparent 25%), 
+              linear-gradient(-45deg, hsl(var(--muted) / 0.5) 25%, transparent 25%), 
+              linear-gradient(45deg, transparent 75%, hsl(var(--muted) / 0.5) 75%), 
+              linear-gradient(-45deg, transparent 75%, hsl(var(--muted) / 0.5) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.section-placeholder {
+  @apply border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center text-muted-foreground;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .layout-elegante {
+    --spacing-base: 1rem;
+  }
+  
+  .layout-medio {
+    --spacing-base: 1rem;
+  }
+  
+  .layout-essenziale {
+    --spacing-base: 0.75rem;
+  }
+}

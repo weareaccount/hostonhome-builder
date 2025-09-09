@@ -1,0 +1,152 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { InteractiveThemePreview } from '@/components/builder/InteractiveThemePreview';
+import { ProjectService, Project } from '@/lib/projects';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { Section, LayoutType, ThemeAccent, ThemeFont } from '@/types';
+
+export default function PreviewPage() {
+  const params = useParams();
+  const { user } = useAuth();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!user || !params.siteId) return;
+      
+      try {
+        // Carica il progetto specifico
+        const userProjects = await ProjectService.getUserProjects(user.id);
+        const foundProject = userProjects.find(p => p.slug === params.siteId);
+        
+        if (foundProject) {
+          setProject(foundProject);
+        }
+      } catch (error) {
+        console.error('Errore nel caricamento del progetto:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProject();
+  }, [user, params.siteId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento anteprima...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Progetto non trovato</h1>
+          <p className="text-gray-600 mb-6">Il progetto richiesto non esiste o non hai i permessi per visualizzarlo.</p>
+          <button
+            onClick={() => window.close()}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Chiudi finestra
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Crea un sito mock dal progetto
+  const mockSite = {
+    id: project.id,
+    name: project.name,
+    slug: project.slug,
+    subdomain: `${project.slug}.tuodominio.it`,
+    layoutType: project.layout_type as LayoutType,
+    theme: {
+      accent: project.theme.accent as ThemeAccent,
+      font: project.theme.font as ThemeFont
+    },
+    isPublished: true,
+    plan: 'PLUS',
+    pages: [
+      {
+        id: 'page-1',
+        path: '/',
+        isHome: true,
+        seoTitle: `${project.name} - Home`,
+        seoDesc: `Sito web professionale per ${project.name}`,
+        sections: project.sections as Section[]
+      }
+    ]
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header pulito per anteprima */}
+      <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-40 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-sm font-bold">👁️</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">Anteprima: {project.name}</h1>
+              <p className="text-gray-500 text-sm">Solo visualizzazione • {project.sections.length} sezioni</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => (window.location.href = '/dashboard')}
+              className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+            >
+              ← Dashboard
+            </button>
+            <button
+              onClick={() => window.close()}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+            >
+              ✕ Chiudi
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenuto del sito */}
+      <div className="max-w-6xl mx-auto">
+        <InteractiveThemePreview
+          layoutType={mockSite.layoutType}
+          theme={mockSite.theme}
+          sections={mockSite.pages[0].sections}
+          onSectionUpdate={() => {}} // Disabilitato in anteprima
+          onSectionDelete={() => {}} // Disabilitato in anteprima
+          onSectionPublish={() => {}} // Disabilitato in anteprima
+          onSectionUnpublish={() => {}} // Disabilitato in anteprima
+          onSectionReorder={() => {}} // Disabilitato in anteprima
+          className="min-h-screen"
+          deviceType="desktop"
+          readOnly={true} // Modalità anteprima - solo visualizzazione
+        />
+      </div>
+
+      {/* Footer pulito per anteprima */}
+      <div className="bg-white border-t border-gray-200 p-6 text-center mt-12">
+        <div className="text-sm text-gray-500">
+          <span className="inline-flex items-center space-x-2">
+            <span>🏗️</span>
+            <span>Realizzato con HostonHome Builder</span>
+            <span>•</span>
+            <span>{project.sections.length} sezioni</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

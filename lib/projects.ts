@@ -1,0 +1,260 @@
+import { supabase, Project } from './supabase'
+
+export interface CreateProjectData {
+  name: string
+  slug: string
+  sections: any[]
+  theme: {
+    accent: string
+    font: string
+  }
+  layout_type: string
+}
+
+export interface UpdateProjectData {
+  name?: string
+  sections?: any[]
+  theme?: {
+    accent: string
+    font: string
+  }
+  layout_type?: string
+}
+
+export class ProjectService {
+  // Controlla se Supabase è configurato
+  private static checkSupabaseConfig() {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.warn('⚠️ Supabase non configurato, usando storage locale');
+      return false;
+    }
+    return true;
+  }
+
+  // Storage locale come fallback
+  private static localStorageKey = 'hostonhome_projects';
+  
+  private static getLocalProjects(): Project[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const data = localStorage.getItem(this.localStorageKey);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+  
+  private static saveLocalProjects(projects: Project[]) {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(this.localStorageKey, JSON.stringify(projects));
+    } catch (error) {
+      console.error('Errore nel salvataggio locale:', error);
+    }
+  }
+
+  // Crea un nuovo progetto
+  static async createProject(userId: string, data: CreateProjectData): Promise<Project> {
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .insert({
+            user_id: userId,
+            ...data,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        return project
+      } catch (error) {
+        console.warn('⚠️ Creazione progetto su Supabase fallita, uso fallback locale:', error)
+        // Fallback locale
+        const newProject: Project = {
+          id: `project-${Date.now()}`,
+          user_id: userId,
+          ...data,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        const projects = this.getLocalProjects();
+        projects.push(newProject);
+        this.saveLocalProjects(projects);
+        return newProject;
+      }
+    } else {
+      // Fallback locale
+      const newProject: Project = {
+        id: `project-${Date.now()}`,
+        user_id: userId,
+        ...data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const projects = this.getLocalProjects();
+      projects.push(newProject);
+      this.saveLocalProjects(projects);
+      
+      console.log('✅ Progetto creato localmente:', newProject);
+      return newProject;
+    }
+  }
+
+  // Ottiene tutti i progetti di un utente
+  static async getUserProjects(userId: string): Promise<Project[]> {
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      try {
+        const { data: remoteProjects, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', userId)
+          .order('updated_at', { ascending: false })
+
+        if (error) throw error
+        const localForUser = this.getLocalProjects().filter(p => p.user_id === userId)
+        // Unisci risultati rimuovendo duplicati per slug (più stabile tra locale e remoto)
+        const mergedMap = new Map<string, Project>()
+        ;(remoteProjects || []).forEach(p => mergedMap.set(p.slug, p))
+        localForUser.forEach(p => mergedMap.set(p.slug, p))
+        const merged = Array.from(mergedMap.values())
+          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+        return merged
+      } catch (error) {
+        console.warn('⚠️ Caricamento progetti da Supabase fallito, uso fallback locale:', error)
+        const projects = this.getLocalProjects();
+        return projects
+          .filter(p => p.user_id === userId)
+          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+      }
+    } else {
+      // Fallback locale
+      const projects = this.getLocalProjects();
+      return projects
+        .filter(p => p.user_id === userId)
+        .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    }
+  }
+
+  // Ottiene un progetto specifico
+  static async getProject(projectId: string): Promise<Project | null> {
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+
+        if (error) {
+          console.warn('⚠️ Errore nel recupero progetto da Supabase:', error);
+          // Fallback locale
+          const projects = this.getLocalProjects();
+          return projects.find(p => p.id === projectId) || null;
+        }
+        
+        return project;
+      } catch (error) {
+        console.warn('⚠️ Fallback a progetti locali per ID:', projectId);
+        const projects = this.getLocalProjects();
+        return projects.find(p => p.id === projectId) || null;
+      }
+    } else {
+      // Fallback locale
+      const projects = this.getLocalProjects();
+      return projects.find(p => p.id === projectId) || null;
+    }
+  }
+
+  // Aggiorna un progetto
+  static async updateProject(projectId: string, data: UpdateProjectData): Promise<Project> {
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      const { data: project, error } = await supabase
+        .from('projects')
+        .update({
+          ...data,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', projectId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return project
+    } else {
+      // Fallback locale
+      const projects = this.getLocalProjects();
+      const projectIndex = projects.findIndex(p => p.id === projectId);
+      
+      if (projectIndex === -1) {
+        throw new Error('Progetto non trovato');
+      }
+      
+      const updatedProject = {
+        ...projects[projectIndex],
+        ...data,
+        updated_at: new Date().toISOString()
+      };
+      
+      projects[projectIndex] = updatedProject;
+      this.saveLocalProjects(projects);
+      
+      console.log('✅ Progetto aggiornato localmente:', updatedProject.id, 'con', data.sections?.length || 0, 'sezioni');
+      return updatedProject;
+    }
+  }
+
+  // Elimina un progetto
+  static async deleteProject(projectId: string): Promise<void> {
+    const hasSupabase = this.checkSupabaseConfig()
+    if (hasSupabase) {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+      if (error) {
+        console.warn('⚠️ Eliminazione su Supabase fallita, provo a rimuovere localmente:', error)
+      }
+    }
+    // In ogni caso, prova a rimuovere anche dallo storage locale
+    const projects = this.getLocalProjects();
+    const idx = projects.findIndex(p => p.id === projectId)
+    if (idx !== -1) {
+      projects.splice(idx, 1)
+      this.saveLocalProjects(projects)
+    }
+  }
+
+  // Ottiene un progetto per slug
+  static async getProjectBySlug(slug: string): Promise<Project | null> {
+    const hasSupabase = this.checkSupabaseConfig()
+    if (hasSupabase) {
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('slug', slug)
+          .single()
+        if (error) throw error
+        return project
+      } catch (error) {
+        console.warn('⚠️ Recupero per slug da Supabase fallito, provo locale:', error)
+        const local = this.getLocalProjects().find(p => p.slug === slug) || null
+        return local
+      }
+    }
+    // Fallback locale
+    return this.getLocalProjects().find(p => p.slug === slug) || null
+  }
+}
