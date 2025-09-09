@@ -92,7 +92,7 @@ export default function PreviewPage() {
     <div className="min-h-screen bg-white">
       {/* Header pulito per anteprima */}
       <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-40 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-bold">👁️</span>
@@ -105,13 +105,13 @@ export default function PreviewPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => (window.location.href = '/dashboard')}
-              className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
             >
               ← Dashboard
             </button>
             <button
               onClick={() => window.close()}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
             >
               ✕ Chiudi
             </button>
@@ -131,7 +131,7 @@ export default function PreviewPage() {
           onSectionUnpublish={() => {}} // Disabilitato in anteprima
           onSectionReorder={() => {}} // Disabilitato in anteprima
           className="min-h-screen"
-          deviceType="desktop"
+          deviceType="mobile"
           readOnly={true} // Modalità anteprima - solo visualizzazione
         />
       </div>
