@@ -969,8 +969,8 @@ export function ElementorStyleBuilder({
 
       {/* Floating Save button su mobile solo in anteprima */}
       {mobileTab === 'preview' && (
-        <div className="md:hidden fixed bottom-4 right-4 z-50">
-          <div className="flex items-center gap-2">
+        <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
+          <div className="flex justify-end items-center gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setMobileTab('widgets')} className="bg-white border-gray-300">
               Sezioni
             </Button>
