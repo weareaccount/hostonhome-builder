@@ -1,11 +1,14 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useAuth } from './AuthProvider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { STRIPE_PRICING } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, Sparkles, ArrowRight } from 'lucide-react'
 
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true)
@@ -18,6 +21,21 @@ export function LoginForm() {
   const router = useRouter()
   
   const { signIn, signUp, user } = useAuth()
+
+  const formatEuro = (cents: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+
+  const yearlySavingsInfo = useMemo(() => {
+    const entries: Array<{ key: 'BASE' | 'PLUS' | 'PRO'; saveEuro: number; savePct: number }> = ['BASE','PLUS','PRO']
+      .map((k) => {
+        const monthly = STRIPE_PRICING[k as 'BASE' | 'PLUS' | 'PRO'].monthly
+        const yearly = STRIPE_PRICING[k as 'BASE' | 'PLUS' | 'PRO'].yearly
+        const save = Math.max(0, monthly * 12 - yearly)
+        const pct = monthly * 12 > 0 ? Math.round((save / (monthly * 12)) * 100) : 0
+        return { key: k as 'BASE' | 'PLUS' | 'PRO', saveEuro: save, savePct: pct }
+      })
+    const max = entries.reduce((a, b) => (b.saveEuro > a.saveEuro ? b : a), entries[0])
+    return { entries, max }
+  }, [])
 
   // Redirect se l'utente è già loggato
   useEffect(() => {
@@ -158,98 +176,128 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isLogin ? 'Accedi al tuo account' : 'Crea un nuovo account'}
-          </h2>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 flex items-center justify-center px-4 py-8">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Colonna sinistra: claim e benefit */}
+        <div className="hidden lg:flex flex-col justify-center">
+          <div className="flex items-center gap-3 mb-6">
+            <Image src="/logo-hostonhome.png" alt="HostOnHome" width={160} height={36} priority />
+            <span className="sr-only">HostOnHome</span>
+          </div>
+          <h1 className="text-3xl xl:text-4xl font-extrabold text-gray-900 leading-tight mb-3">
+            Crea il tuo sito personalizzato,
+            visibile su Google.
+          </h1>
+          <p className="text-gray-600 text-base mb-6">
+            Inizia a ricevere prenotazioni senza commissioni, pagando solo il costo di un semplice dominio.
+          </p>
+          <ul className="space-y-3 text-sm">
+            <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>Tema professionale e sezioni pronte</li>
+            <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>Editor semplice, anteprima in tempo reale</li>
+            <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>Nessuna commissione sulle prenotazioni</li>
+          </ul>
         </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <Input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Indirizzo email"
-              className="mb-3"
-            />
-            <Input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="mb-3"
-            />
-          </div>
 
-          {!isLogin && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-center space-x-4">
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded border ${plan === 'BASE' ? 'border-blue-600 text-blue-700' : 'border-gray-300 text-gray-700'}`}
-                  onClick={() => setPlan('BASE')}
-                >
-                  Base — €{(STRIPE_PRICING.BASE[interval] / 100).toFixed(2)}
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded border ${plan === 'PLUS' ? 'border-blue-600 text-blue-700' : 'border-gray-300 text-gray-700'}`}
-                  onClick={() => setPlan('PLUS')}
-                >
-                  Avanzato — €{(STRIPE_PRICING.PLUS[interval] / 100).toFixed(2)}
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded border ${plan === 'PRO' ? 'border-blue-600 text-blue-700' : 'border-gray-300 text-gray-700'}`}
-                  onClick={() => setPlan('PRO')}
-                >
-                  Pro — €{(STRIPE_PRICING.PRO[interval] / 100).toFixed(2)}
-                </button>
+        {/* Colonna destra: Card form */}
+        <div className="w-full">
+          <div className="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Image src="/logo-hostonhome.png" alt="HostOnHome" width={140} height={32} />
+                <span className="hidden sm:inline text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Senza commissioni</span>
               </div>
-              <div className="flex items-center justify-center space-x-4">
-                <label className={`cursor-pointer ${interval === 'monthly' ? 'font-semibold' : ''}`}>
-                  <input type="radio" name="interval" value="monthly" checked={interval==='monthly'} onChange={() => setInterval('monthly')} className="mr-2"/>
-                  Mensile
-                </label>
-                <label className={`cursor-pointer ${interval === 'yearly' ? 'font-semibold' : ''}`}>
-                  <input type="radio" name="interval" value="yearly" checked={interval==='yearly'} onChange={() => setInterval('yearly')} className="mr-2"/>
-                  Annuale
-                </label>
-              </div>
-              <p className="text-center text-sm text-gray-600">Seleziona un piano per procedere con la registrazione.</p>
+              <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-blue-600 hover:text-blue-700">
+                {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
+              </button>
             </div>
-          )}
 
-          {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
-          )}
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              {isLogin ? 'Accedi al tuo account' : 'Crea un nuovo account'}
+            </h2>
+            {!isLogin && (
+              <p className="text-gray-600 text-sm mb-4 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-yellow-500"/>
+                Crea il tuo sito e inizia a ricevere prenotazioni oggi stesso.
+              </p>
+            )}
 
-          <div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full"
-            >
-              {loading ? 'Caricamento...' : (isLogin ? 'Accedi' : 'Registrati')}
-            </Button>
+            <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <Input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Indirizzo email"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full"
+                />
+              </div>
+
+              <AnimatePresence>
+              {!isLogin && (
+                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }} className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <span>Fatturazione</span>
+                    <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-full p-1">
+                      <button type="button" onClick={() => setInterval('monthly')} className={`px-3 py-1 rounded-full ${interval==='monthly' ? 'bg-white shadow text-gray-900' : 'text-gray-600'}`}>Mensile</button>
+                      <button type="button" onClick={() => setInterval('yearly')} className={`px-3 py-1 rounded-full ${interval==='yearly' ? 'bg-white shadow text-gray-900' : 'text-gray-600'}`}>Annuale</button>
+                    </div>
+                    {interval==='yearly' && (
+                      <span className="ml-1 text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                        Risparmi fino a {yearlySavingsInfo.max.savePct}%
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {(['BASE','PLUS','PRO'] as const).map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setPlan(k)}
+                        className={`text-left rounded-xl border p-4 transition-all ${plan===k ? 'border-blue-600 ring-2 ring-blue-100 bg-blue-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                      >
+                        <div className="text-sm font-semibold text-gray-900 mb-1">{k === 'BASE' ? 'Base' : k === 'PLUS' ? 'Avanzato' : 'Pro'}</div>
+                        <div className="text-gray-700">
+                          {formatEuro(STRIPE_PRICING[k][interval])}
+                          {interval==='yearly' && yearlySavingsInfo.entries.find(e => e.key===k)?.saveEuro ? (
+                            <span className="ml-2 text-xs text-green-700">- {formatEuro(yearlySavingsInfo.entries.find(e => e.key===k)!.saveEuro)}</span>
+                          ) : null}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-center text-xs text-gray-600">Seleziona un piano per procedere con la registrazione.</p>
+                </motion.div>
+              )}
+              </AnimatePresence>
+
+              {error && (
+                <div className="text-red-600 text-sm text-center">{error}</div>
+              )}
+
+              <Button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2">
+                {loading ? 'Caricamento...' : (isLogin ? 'Accedi' : 'Crea account')}
+                {!loading && <ArrowRight className="w-4 h-4"/>}
+              </Button>
+
+              <div className="text-center text-xs text-gray-500">
+                Registrandoti accetti i Termini e l'Informativa Privacy.
+              </div>
+            </form>
           </div>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-600 hover:text-blue-500"
-            >
-              {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+      </motion.div>
     </div>
   )
 }
