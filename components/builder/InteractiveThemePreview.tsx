@@ -2497,7 +2497,8 @@ export function InteractiveThemePreview({
 
 
       {/* Sections */}
-      <div className={cn(layoutStyle.spacing, getResponsiveContainer())}>
+      <div className={cn(layoutStyle.spacing, getResponsiveContainer(), 'break-words')}
+           style={{ wordBreak: 'break-word' }}>
         {sections.map((section, index) => (
           <SectionComponent
             key={section.id}

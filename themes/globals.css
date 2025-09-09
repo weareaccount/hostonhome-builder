@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Responsive utilities fixes */
+@layer utilities {
+  .safe-container {
+    @apply max-w-6xl mx-auto px-3 sm:px-4;
+  }
+  .no-overflow-x {
+    overflow-x: hidden;
+  }
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;600;700&family=Lato:wght@300;400;500;600;700&family=Lora:wght@300;400;500;600;700&family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 
 @layer base {

@@ -238,7 +238,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
   };
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 h-full flex flex-col">
+    <div className="w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 h-auto md:h-full flex-shrink-0 flex flex-col sticky top-14 md:static z-10">
       {/* HEADER MIGLIORATO CON ANIMAZIONI */}
       <div className="p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="text-center">
@@ -798,7 +798,7 @@ export function ElementorStyleBuilder({
       />
 
       {/* Main Builder Area */}
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row min-h-0">
         {/* Left Sidebar - Semplificata */}
         <WidgetLibrary
           onAddSection={handleAddSection}
