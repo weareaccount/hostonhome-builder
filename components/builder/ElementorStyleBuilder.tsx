@@ -901,26 +901,9 @@ export function ElementorStyleBuilder({
         </div>
       </div>
 
-      {/* Area mobile: anteprima full, lista widget come pannello scorrevole */}
-      <div className="md:hidden flex-1 min-h-0 relative">
-        <CanvasArea
-          sections={sections}
-          onSectionsChange={onSectionsChange}
-          layoutType={layoutType}
-          theme={theme}
-          onThemeChange={handleThemeChange}
-          onSectionSelect={setSelectedSectionId}
-          selectedSectionId={selectedSectionId}
-          onSectionUpdate={handleSectionUpdate}
-          onSectionDelete={handleSectionDelete}
-          onSectionPublish={handlePublishSection}
-          onSectionUnpublish={handleUnpublishSection}
-          deviceType={deviceType}
-        />
-
-        {/* Drawer widgets */}
-        {/* Drawer fisso, con transizione */}
-        <div className={cn("fixed inset-x-0 bottom-0 z-50 transform transition-transform duration-200", mobileTab === 'widgets' ? 'translate-y-0' : 'translate-y-[85%]') }>
+      {/* Area mobile: una vista alla volta per evitare sovrapposizioni */}
+      <div className="md:hidden flex-1 min-h-0">
+        {mobileTab === 'widgets' ? (
           <WidgetLibrary
             onAddSection={handleAddSection}
             onSectionsChange={onSectionsChange}
@@ -928,10 +911,25 @@ export function ElementorStyleBuilder({
             maxSections={maxSections}
             currentSections={sections}
             plan={(user as any)?.plan}
-            compact
-            showRemove={false}
+            compact={false}
+            showRemove
           />
-        </div>
+        ) : (
+          <CanvasArea
+            sections={sections}
+            onSectionsChange={onSectionsChange}
+            layoutType={layoutType}
+            theme={theme}
+            onThemeChange={handleThemeChange}
+            onSectionSelect={setSelectedSectionId}
+            selectedSectionId={selectedSectionId}
+            onSectionUpdate={handleSectionUpdate}
+            onSectionDelete={handleSectionDelete}
+            onSectionPublish={handlePublishSection}
+            onSectionUnpublish={handleUnpublishSection}
+            deviceType={deviceType}
+          />
+        )}
       </div>
 
       {/* Layout desktop/tablet: 3 colonne */}
@@ -963,18 +961,20 @@ export function ElementorStyleBuilder({
         />
       </div>
 
-      {/* Floating Save button su mobile */}
-      <div className="md:hidden fixed bottom-4 right-4 z-50">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setMobileTab(mobileTab === 'widgets' ? 'preview' : 'widgets')} className="bg-white border-gray-300">
-            {mobileTab === 'widgets' ? 'Anteprima' : 'Sezioni'}
-          </Button>
-          <Button onClick={onSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
-            <Save className="w-4 h-4 mr-2" />
-            Salva
-          </Button>
+      {/* Floating Save button su mobile solo in anteprima */}
+      {mobileTab === 'preview' && (
+        <div className="md:hidden fixed bottom-4 right-4 z-50">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setMobileTab('widgets')} className="bg-white border-gray-300">
+              Sezioni
+            </Button>
+            <Button onClick={onSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
+              <Save className="w-4 h-4 mr-2" />
+              Salva
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
 
 
