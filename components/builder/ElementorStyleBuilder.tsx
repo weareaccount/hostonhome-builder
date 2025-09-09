@@ -245,13 +245,14 @@ const BuilderHeader = ({
 };
 
 // SIDEBAR COMPLETAMENTE RIDISEGNATA - SUPER INTUITIVA E FUNZIONALE
-const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan }: { 
+const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxSections, currentSections, plan, compact = false }: { 
   onAddSection: (type: SectionType) => void;
   onSectionsChange: (sections: Section[]) => void;
   availableSections: SectionType[];
   maxSections: number;
   currentSections: Section[];
   plan?: 'BASE' | 'PLUS' | 'PRO';
+  compact?: boolean;
 }) => {
   const canAddSection = currentSections.length < maxSections;
 
@@ -290,8 +291,9 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
   };
 
   return (
-    <div className="w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 h-auto md:h-full flex-shrink-0 flex flex-col sticky top-14 md:static z-10">
+    <div className={cn("w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 h-auto md:h-full flex-shrink-0 flex flex-col sticky top-14 md:static z-10", compact && "border-t rounded-t-2xl") }>
       {/* HEADER MIGLIORATO CON ANIMAZIONI */}
+      {!compact ? (
       <div className="p-4 sm:p-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="text-center">
           {/* TITOLO CON ANIMAZIONE */}
@@ -358,9 +360,15 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
           )}
         </div>
       </div>
+      ) : (
+        <div className="px-4 py-2 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
+          <div className="h-1 w-10 bg-gray-300 rounded mx-auto mb-2"></div>
+          <div className="text-center text-sm font-semibold text-gray-700">Aggiungi sezione</div>
+        </div>
+      )}
 
       {/* LISTA WIDGET RIDISEGNATA */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
+      <div className={cn("flex-1 overflow-y-auto", compact ? "p-2 space-y-2" : "p-3 sm:p-4 space-y-3") }>
         {allWidgets.map((widget) => {
           const isActive = currentSections.some(s => s.type === widget.type);
           const isPremium = widget.type === 'PHOTO_GALLERY' || widget.type === 'AMENITIES';
@@ -370,29 +378,29 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
             <div key={widget.type} className="relative">
               {isActive ? (
                 /* WIDGET ATTIVO - STILE COERENTE */
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow-sm">
+                <div className={cn("bg-green-50 border-2 border-green-200 rounded-lg shadow-sm", compact ? "p-2" : "p-4") }>
                   <div className="flex items-start space-x-3">
                     {/* ICONA WIDGET */}
-                    <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white text-lg font-bold shadow-sm">
+                    <div className={cn("rounded-lg flex items-center justify-center text-white font-bold shadow-sm bg-green-600", compact ? "w-8 h-8 text-base" : "w-10 h-10 text-lg") }>
                       {widget.icon}
                     </div>
                     
                     {/* CONTENUTO PRINCIPALE */}
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <h4 className="text-gray-900 font-semibold text-base">{widget.name}</h4>
+                        <h4 className={cn("text-gray-900 font-semibold", compact ? "text-sm" : "text-base")}>{widget.name}</h4>
                         <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                           ✓ Attivo
                         </span>
                       </div>
-                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>
+                      {!compact && <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>}
                       
                       {/* PULSANTE RIMUOVI */}
                       <Button
                         onClick={() => handleDeleteSection(widget.type as SectionType)}
                         variant="outline"
                         size="sm"
-                        className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 text-xs"
+                        className={cn("border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 text-xs", compact && "h-7 px-2 py-1")}
                       >
                         <Trash2 className="w-3 h-3 mr-1" />
                         Rimuovi
@@ -415,7 +423,8 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
                   }}
                   disabled={!canAddSection}
                   className={cn(
-                    "w-full p-4 rounded-lg border-2 border-dashed transition-all duration-200 group text-left",
+                    "w-full rounded-lg border-2 border-dashed transition-all duration-200 group text-left",
+                    compact ? "p-2" : "p-4",
                     !isLocked && canAddSection 
                       ? "border-blue-300 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 cursor-pointer shadow-sm hover:shadow-md"
                       : "border-gray-300 bg-gray-50 opacity-60 cursor-pointer"
@@ -423,24 +432,24 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
                 >
                   <div className="flex items-start space-x-3">
                     {/* ICONA WIDGET */}
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white text-lg font-bold shadow-sm group-hover:scale-105 transition-transform">
+                    <div className={cn("bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform", compact ? "w-8 h-8 text-base" : "w-10 h-10 text-lg") }>
                       {widget.icon}
                     </div>
                     
                     {/* CONTENUTO */}
                     <div className="flex-1">
-                      <h4 className="text-gray-900 font-semibold text-base mb-1">{widget.name}</h4>
-                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>
+                      <h4 className={cn("text-gray-900 font-semibold mb-1", compact ? "text-sm" : "text-base")}>{widget.name}</h4>
+                      {!compact && <p className="text-gray-600 text-sm mb-3 leading-relaxed">{widget.description}</p>}
                       
                       {/* CALL TO ACTION */}
-                      <div className="flex items-center space-x-2">
+                      <div className={cn("flex items-center space-x-2", compact && "mt-1") }>
                         {!isLocked ? (
-                          <span className="inline-flex items-center bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs font-medium">
+                          <span className={cn("inline-flex items-center bg-blue-600 text-white rounded-md text-xs font-medium", compact ? "px-2 py-1" : "px-3 py-1.5") }>
                             <Plus className="w-3 h-3 mr-1" />
                             Aggiungi Sezione
                           </span>
                         ) : (
-                          <span className="inline-flex items-center bg-gray-300 text-gray-700 px-3 py-1.5 rounded-md text-xs font-medium">
+                          <span className={cn("inline-flex items-center bg-gray-300 text-gray-700 rounded-md text-xs font-medium", compact ? "px-2 py-1" : "px-3 py-1.5") }>
                             🔒 Richiede Upgrade
                           </span>
                         )}
@@ -889,33 +898,36 @@ export function ElementorStyleBuilder({
         </div>
       </div>
 
-      {/* Area mobile: mostra una vista alla volta */}
-      <div className="md:hidden flex-1 min-h-0">
+      {/* Area mobile: anteprima full, lista widget come pannello scorrevole */}
+      <div className="md:hidden flex-1 min-h-0 relative">
+        <CanvasArea
+          sections={sections}
+          onSectionsChange={onSectionsChange}
+          layoutType={layoutType}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+          onSectionSelect={setSelectedSectionId}
+          selectedSectionId={selectedSectionId}
+          onSectionUpdate={handleSectionUpdate}
+          onSectionDelete={handleSectionDelete}
+          onSectionPublish={handlePublishSection}
+          onSectionUnpublish={handleUnpublishSection}
+          deviceType={deviceType}
+        />
+
+        {/* Drawer widgets */}
         {mobileTab === 'widgets' && (
-          <WidgetLibrary
-            onAddSection={handleAddSection}
-            onSectionsChange={onSectionsChange}
-            availableSections={availableSections}
-            maxSections={maxSections}
-            currentSections={sections}
-            plan={(user as any)?.plan}
-          />
-        )}
-        {mobileTab === 'preview' && (
-          <CanvasArea
-            sections={sections}
-            onSectionsChange={onSectionsChange}
-            layoutType={layoutType}
-            theme={theme}
-            onThemeChange={handleThemeChange}
-            onSectionSelect={setSelectedSectionId}
-            selectedSectionId={selectedSectionId}
-            onSectionUpdate={handleSectionUpdate}
-            onSectionDelete={handleSectionDelete}
-            onSectionPublish={handlePublishSection}
-            onSectionUnpublish={handleUnpublishSection}
-            deviceType={deviceType}
-          />
+          <div className="fixed inset-x-0 bottom-0 z-50">
+            <WidgetLibrary
+              onAddSection={handleAddSection}
+              onSectionsChange={onSectionsChange}
+              availableSections={availableSections}
+              maxSections={maxSections}
+              currentSections={sections}
+              plan={(user as any)?.plan}
+              compact
+            />
+          </div>
         )}
       </div>
 
