@@ -70,7 +70,9 @@ const BuilderHeader = ({
   onPublish,
   deviceType,
   onDeviceChange,
-  saving
+  saving,
+  showThemePanel,
+  setShowThemePanel
 }: {
   layoutType: LayoutType;
   theme: { accent: ThemeAccent; font: ThemeFont };
@@ -80,31 +82,19 @@ const BuilderHeader = ({
   deviceType: 'desktop' | 'tablet' | 'mobile';
   onDeviceChange: (device: 'desktop' | 'tablet' | 'mobile') => void;
   saving: boolean;
+  showThemePanel: boolean;
+  setShowThemePanel: (show: boolean) => void;
 }) => {
-  const [showThemePanel, setShowThemePanel] = React.useState(false);
   return (
     <div className="h-auto bg-white border-b border-gray-200 px-3 sm:px-6 shadow-sm">
       {/* Mobile Layout */}
-      <div className="sm:hidden flex items-center justify-between py-2">
+      <div className="sm:hidden flex items-center justify-center py-2">
         {/* Mobile: Logo centrato */}
-        <div className="flex-1 flex justify-center">
-          <img 
-            src="/logo-hostonhome.png" 
-            alt="HostonHome" 
-            className="h-8 w-auto"
-          />
-        </div>
-        
-        {/* Mobile: Pulsante Tema */}
-        <div className="absolute right-3">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowThemePanel(true)}
-          >
-            <Palette className="w-4 h-4 mr-2" /> Tema
-          </Button>
-        </div>
+        <img 
+          src="/logo-hostonhome.png" 
+          alt="HostonHome" 
+          className="h-8 w-auto"
+        />
       </div>
 
       {/* Desktop Layout */}
@@ -579,6 +569,7 @@ export function ElementorStyleBuilder({
   const [theme, setTheme] = useState(site.theme);
   const [deviceType, setDeviceType] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [saving, setSaving] = useState(false);
+  const [showThemePanel, setShowThemePanel] = useState(false);
   // Navigazione mobile: Libreria / Anteprima / (Modifica tramite inline editor della preview)
   const [mobileTab, setMobileTab] = useState<'widgets' | 'preview'>('widgets');
 
@@ -1010,17 +1001,20 @@ export function ElementorStyleBuilder({
         deviceType={deviceType}
         onDeviceChange={setDeviceType}
         saving={saving}
+        showThemePanel={showThemePanel}
+        setShowThemePanel={setShowThemePanel}
       />
 
       {/* Navigazione mobile (segment control) */}
       <div className="md:hidden sticky top-14 z-40 bg-white border-b border-gray-200 px-3 py-2">
-        <div className="flex justify-center">
+        <div className="flex justify-between items-center">
+          {/* Tab Navigation */}
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm">
             <button
               type="button"
               onClick={() => setMobileTab('widgets')}
               className={cn(
-                'px-6 py-2 text-sm font-medium flex items-center gap-2',
+                'px-4 py-2 text-sm font-medium flex items-center gap-2',
                 mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
@@ -1031,7 +1025,7 @@ export function ElementorStyleBuilder({
               type="button"
               onClick={() => setMobileTab('preview')}
               className={cn(
-                'px-6 py-2 text-sm font-medium border-l border-gray-200 flex items-center gap-2',
+                'px-4 py-2 text-sm font-medium border-l border-gray-200 flex items-center gap-2',
                 mobileTab === 'preview' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
@@ -1039,6 +1033,16 @@ export function ElementorStyleBuilder({
               Anteprima
             </button>
           </div>
+          
+          {/* Pulsante Tema */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowThemePanel(true)}
+            className="ml-2"
+          >
+            <Palette className="w-4 h-4 mr-1" /> Tema
+          </Button>
         </div>
       </div>
 
