@@ -174,10 +174,15 @@ export default function BuilderPage() {
         let project = await ProjectService.getProject(params.siteId as string);
         
         if (project) {
-          console.log('Progetto caricato:', project);
-          console.log('Dettagli progetto - sections:', project.sections);
-          console.log('Tipo sections:', typeof project.sections);
-          console.log('Array sections?', Array.isArray(project.sections));
+          console.log('✅ Progetto caricato con successo:', {
+            id: project.id,
+            name: project.name,
+            sections: project.sections,
+            sectionsType: typeof project.sections,
+            isArray: Array.isArray(project.sections),
+            theme: project.theme,
+            layoutType: project.layout_type
+          });
           
           setRealProject(project);
           
@@ -199,14 +204,19 @@ export default function BuilderPage() {
           // Gestione delle sezioni con fallback
           let sectionsToLoad = [];
           if (project.sections && Array.isArray(project.sections)) {
+            console.log('📋 Sezioni caricate come array:', project.sections.length);
             sectionsToLoad = project.sections;
           } else if (project.sections && typeof project.sections === 'string') {
             try {
+              console.log('📋 Parsing sezioni da stringa...');
               sectionsToLoad = JSON.parse(project.sections);
+              console.log('✅ Sezioni parseate:', sectionsToLoad.length);
             } catch (e) {
-              console.warn('Errore nel parsing delle sezioni:', e);
+              console.warn('❌ Errore nel parsing delle sezioni:', e);
               sectionsToLoad = [];
             }
+          } else {
+            console.log('⚠️ Nessuna sezione trovata nel progetto');
           }
           
           // Se non ci sono sezioni, aggiungi delle sezioni di base per aiutare l'utente
@@ -237,9 +247,9 @@ export default function BuilderPage() {
             ];
           }
           
+          console.log('📋 Impostando sezioni finali:', sectionsToLoad.length, sectionsToLoad);
           setSections(sectionsToLoad);
-          console.log('Sezioni caricate nel builder:', sectionsToLoad.length);
-          console.log('Prima sezione (se esiste):', sectionsToLoad[0]);
+          console.log('✅ Builder inizializzato con', sectionsToLoad.length, 'sezioni');
         } else {
           // Se non trovato per ID, prova per slug (molti link storici usano lo slug)
           const bySlug = await ProjectService.getProjectBySlug(params.siteId as string);
@@ -326,42 +336,66 @@ export default function BuilderPage() {
   }, [params.siteId]);
 
   const handleSectionsChange = async (newSections: Section[]) => {
+    console.log('🔄 Cambio sezioni:', { 
+      oldCount: sections.length, 
+      newCount: newSections.length,
+      newSections: newSections 
+    });
     setSections(newSections);
     
     // Salvataggio automatico sempre permesso (anche in dev / piani base)
     if (realProject) {
       try {
-        console.log('Salvando sezioni automaticamente...', newSections.length);
-        await ProjectService.updateProject(realProject.id, {
+        console.log('💾 Salvando sezioni automaticamente...', { 
+          projectId: realProject.id,
+          sectionsCount: newSections.length,
+          sections: newSections,
+          theme: site.theme
+        });
+        
+        const result = await ProjectService.updateProject(realProject.id, {
           sections: newSections,
           theme: site.theme,
           layout_type: 'ELEGANTE'
         });
-        console.log('✅ Sezioni salvate automaticamente!');
+        
+        console.log('✅ Sezioni salvate automaticamente!', result);
       } catch (error) {
-        console.error('❌ Errore nel salvataggio automatico:', error);
+        console.error('❌ Errore nel salvataggio automatico delle sezioni:', error);
+        alert('❌ Errore nel salvataggio automatico: ' + (error instanceof Error ? error.message : String(error)));
       }
+    } else {
+      console.log('⚠️ Nessun progetto reale per il salvataggio automatico');
     }
   };
 
   const handleSave = async () => {
     if (!realProject) {
-      console.log('Nessun progetto reale trovato per il salvataggio');
+      console.log('❌ Nessun progetto reale trovato per il salvataggio');
+      alert('❌ Impossibile salvare: progetto non trovato');
       return;
     }
     
     try {
-      console.log('Salvando manualmente...', sections.length, 'sezioni');
-      await ProjectService.updateProject(realProject.id, {
+      console.log('💾 Salvando manualmente...', { 
+        projectId: realProject.id,
+        sectionsCount: sections.length, 
+        sections: sections,
+        theme: site.theme,
+        layoutType: 'ELEGANTE'
+      });
+      
+      const result = await ProjectService.updateProject(realProject.id, {
         sections: sections,
         theme: site.theme,
         layout_type: 'ELEGANTE'
       });
-      console.log('✅ Progetto salvato con successo!');
+      
+      console.log('✅ Progetto salvato manualmente con successo!', result);
       alert('✅ Progetto salvato con successo!');
     } catch (error) {
-      console.error('❌ Errore nel salvataggio:', error);
-      alert('❌ Errore nel salvataggio del progetto');
+      console.error('❌ Errore nel salvataggio manuale:', error);
+      alert('❌ Errore nel salvataggio del progetto: ' + (error instanceof Error ? error.message : String(error)));
     }
   };
 

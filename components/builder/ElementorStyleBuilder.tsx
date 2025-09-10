@@ -636,15 +636,24 @@ export function ElementorStyleBuilder({
     
     try {
       setSaving(true);
-      console.log('💾 Salvando progetto automaticamente...', { siteId: site.id, sectionsCount: sections.length });
-      await ProjectService.updateProject(site.id, {
+      console.log('💾 Salvando progetto automaticamente...', { 
+        siteId: site.id, 
+        sectionsCount: sections.length,
+        theme: theme,
+        layoutType: layoutType,
+        sections: sections
+      });
+      
+      const result = await ProjectService.updateProject(site.id, {
         sections,
         theme,
         layout_type: layoutType
       });
-      console.log('✅ Progetto salvato automaticamente con successo!');
+      
+      console.log('✅ Progetto salvato automaticamente con successo!', result);
     } catch (error) {
       console.error('❌ Errore nel salvataggio automatico:', error);
+      alert('❌ Errore nel salvataggio: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setSaving(false);
     }
