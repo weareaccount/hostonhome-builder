@@ -84,9 +84,33 @@ const BuilderHeader = ({
   const [showThemePanel, setShowThemePanel] = React.useState(false);
   return (
     <div className="h-auto bg-white border-b border-gray-200 px-3 sm:px-6 shadow-sm">
-      <div className="flex items-center justify-between py-2">
-        {/* Left - Controls (solo desktop) */}
-        <div className="hidden sm:flex items-center space-x-4">
+      {/* Mobile Layout */}
+      <div className="sm:hidden flex items-center justify-between py-2">
+        {/* Mobile: Logo centrato */}
+        <div className="flex-1 flex justify-center">
+          <img 
+            src="/logo-hostonhome.png" 
+            alt="HostonHome" 
+            className="h-8 w-auto"
+          />
+        </div>
+        
+        {/* Mobile: Pulsante Tema */}
+        <div className="absolute right-3">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowThemePanel(true)}
+          >
+            <Palette className="w-4 h-4 mr-2" /> Tema
+          </Button>
+        </div>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden sm:flex items-center justify-between py-2">
+        {/* Left - Controls */}
+        <div className="flex items-center space-x-4">
           {/* Dashboard Button */}
           <button
             onClick={() => (window.location.href = '/dashboard')}
@@ -134,37 +158,25 @@ const BuilderHeader = ({
           </div>
         </div>
 
-        {/* Center - Logo (centrato su mobile) */}
-        <div className="flex-1 flex justify-center sm:flex-none sm:justify-start">
-          <div className="flex items-center space-x-3">
-            <img 
-              src="/logo-hostonhome.png" 
-              alt="HostonHome" 
-              className="h-8 w-auto"
-            />
-            {saving && (
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                <span>Salvando...</span>
-              </div>
-            )}
-          </div>
+        {/* Center - Logo */}
+        <div className="flex items-center space-x-3">
+          <img 
+            src="/logo-hostonhome.png" 
+            alt="HostonHome" 
+            className="h-8 w-auto"
+          />
+          {saving && (
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span>Salvando...</span>
+            </div>
+          )}
         </div>
 
         {/* Right - Theme Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Mobile: pulsante Tema */}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="sm:hidden"
-            onClick={() => setShowThemePanel(true)}
-          >
-            <Palette className="w-4 h-4 mr-2" /> Tema
-          </Button>
-
+        <div className="flex items-center space-x-4">
           {/* Desktop: selettori visibili */}
-          <div className="hidden sm:flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <Type className="w-4 h-4 text-gray-600" />
             <select
               value={theme.font}
@@ -182,7 +194,7 @@ const BuilderHeader = ({
           {/* PULSANTE SALVA */}
           <Button
             onClick={onSave}
-            className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+            className="inline-flex bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
             size="sm"
             data-save-button
           >
