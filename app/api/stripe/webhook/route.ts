@@ -65,6 +65,18 @@ async function handleSubscriptionCreated(subscription: any) {
 async function handleSubscriptionUpdated(subscription: any) {
   console.log('📧 Abbonamento aggiornato:', subscription.id)
   
+  // ✅ Se l'abbonamento è stato disdetto
+  if (subscription.cancel_at_period_end) {
+    console.log('📋 Abbonamento disdetto:', subscription.id)
+    
+    // Sincronizza lo stato dell'abbonamento
+    const user = await getUserByCustomerId(subscription.customer)
+    if (user) {
+      await syncUserSubscription(user.id, subscription.customer)
+      console.log('✅ Stato abbonamento disdetto sincronizzato per:', user.email)
+    }
+  }
+  
   // Se l'abbonamento è diventato attivo (fine trial)
   if (subscription.status === 'active' && subscription.trial_end) {
     const customer = await stripe.customers.retrieve(subscription.customer)
