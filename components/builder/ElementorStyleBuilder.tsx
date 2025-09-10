@@ -134,12 +134,13 @@ const BuilderHeader = ({
           </div>
         </div>
 
-        {/* Center - Title */}
-        <div className="flex items-center space-x-2">
-          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-sm">H</span>
-          </div>
-          <span className="text-base sm:text-base font-semibold text-gray-900">HostonHome Builder</span>
+        {/* Center - Logo */}
+        <div className="flex items-center space-x-3">
+          <img 
+            src="/logo-hostonhome.png" 
+            alt="HostonHome" 
+            className="h-8 w-auto"
+          />
           {saving && (
             <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -476,24 +477,15 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
 
       {/* FOOTER PULITO */}
       <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex space-x-2">
+        <div className="flex justify-center">
           <Button 
             onClick={handleClearAll}
             variant="outline"
             size="sm"
-            className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
+            className="border-red-300 text-red-700 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4 mr-1" />
             Pulisci Tutto
-          </Button>
-          <Button 
-            onClick={() => alert('🎯 Funzione di template in arrivo!')}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          >
-            <FileText className="w-4 h-4 mr-1" />
-            Template
           </Button>
         </div>
         
