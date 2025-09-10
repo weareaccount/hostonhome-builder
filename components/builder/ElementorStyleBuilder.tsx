@@ -155,11 +155,17 @@ const BuilderHeader = ({
           {/* Desktop: selettori visibili */}
           <div className="hidden sm:flex items-center space-x-2">
             <Type className="w-4 h-4 text-gray-600" />
-            <span className="text-sm text-gray-500">Font nelle sezioni</span>
-          </div>
-          <div className="hidden sm:flex items-center space-x-2">
-            <Palette className="w-4 h-4 text-gray-600" />
-            <span className="text-sm text-gray-500">Colori nelle sezioni</span>
+            <select
+              value={theme.font}
+              onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
+              className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {AVAILABLE_FONTS.map(font => (
+                <option key={font.key} value={font.key}>
+                  {font.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* PULSANTE SALVA */}
@@ -190,9 +196,19 @@ const BuilderHeader = ({
             </div>
             <div className="space-y-6">
               <div>
-                <div className="text-center text-sm text-gray-500">
-                  I font vengono gestiti direttamente nelle singole sezioni
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Font</label>
+                <select
+                  value={theme.font}
+                  onChange={(e) => {
+                    console.log('📝 Cambio font:', e.target.value);
+                    onThemeChange({ ...theme, font: e.target.value as ThemeFont });
+                  }}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {AVAILABLE_FONTS.map(font => (
+                    <option key={font.key} value={font.key}>{font.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <div className="text-center text-sm text-gray-500">

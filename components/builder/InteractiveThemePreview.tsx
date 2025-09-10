@@ -1501,15 +1501,25 @@ const SectionComponent = ({
                   deviceType === 'mobile' ? 'flex-col space-y-4' : 'flex-row space-x-6'
                 )}>
                   <button className={cn(
-                    "px-8 py-4 bg-white text-blue-700 font-bold rounded-full shadow-lg z-30 relative cursor-pointer",
-                    deviceType === 'mobile' ? 'w-full text-lg' : 'text-lg'
+                    "px-8 py-4 font-bold rounded-full shadow-lg z-30 relative cursor-pointer",
+                    deviceType === 'mobile' ? 'w-full text-lg' : 'text-lg',
+                    sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 text-white hover:bg-blue-700' :
+                    sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 text-white hover:bg-green-700' :
+                    sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 text-white hover:bg-red-700' :
+                    sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 text-white hover:bg-violet-700' :
+                    'bg-white text-blue-700 hover:bg-blue-50'
                   )}>
                     {sectionProps.ctaText || 'Scopri le Camere'}
                   </button>
                   <button 
                     className={cn(
-                      "border-2 border-white text-white font-semibold rounded-full px-8 py-4 z-30 relative cursor-pointer bg-transparent",
-                      deviceType === 'mobile' ? 'w-full text-lg' : 'text-lg'
+                      "border-2 font-semibold rounded-full px-8 py-4 z-30 relative cursor-pointer bg-transparent",
+                      deviceType === 'mobile' ? 'w-full text-lg' : 'text-lg',
+                      sectionProps.secondaryButtonColor === 'BLUE' ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white' :
+                      sectionProps.secondaryButtonColor === 'GREEN' ? 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white' :
+                      sectionProps.secondaryButtonColor === 'RED' ? 'border-red-600 text-red-600 hover:bg-red-600 hover:text-white' :
+                      sectionProps.secondaryButtonColor === 'VIOLET' ? 'border-violet-600 text-violet-600 hover:bg-violet-600 hover:text-white' :
+                      'border-white text-white hover:bg-white hover:text-blue-700'
                     )}
                   >
                     📞 Prenota Ora
@@ -1730,7 +1740,14 @@ const SectionComponent = ({
                           </div>
                         </div>
                         
-                        <Button className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+                        <Button className={cn(
+                          "px-6 py-3 text-white font-semibold rounded-full transition-all duration-300 shadow-lg transform hover:scale-105",
+                          sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
+                          sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
+                          sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
+                          sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 hover:bg-violet-700' :
+                          'bg-blue-600 hover:bg-blue-700'
+                        )}>
                           Prenota
                         </Button>
                       </div>
