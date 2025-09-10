@@ -485,6 +485,19 @@ export default function BuilderPage() {
     }
   };
 
+  const handleThemeChange = (newTheme: { accent: string; font: string }) => {
+    console.log('🎨 handleThemeChange nel componente padre:', newTheme);
+    console.log('🎨 Tema precedente nel sito:', site.theme);
+    
+    // Aggiorna il tema nel sito
+    setSite(prevSite => ({
+      ...prevSite,
+      theme: newTheme
+    }));
+    
+    console.log('🎨 Tema aggiornato nel sito:', newTheme);
+  };
+
   const handlePublish = async () => {
     try {
       if (!isSubscriptionActive(user)) {
@@ -540,6 +553,7 @@ export default function BuilderPage() {
         site={site}
         sections={sections}
         onSectionsChange={handleSectionsChange}
+        onThemeChange={handleThemeChange}
         onSave={handleSave}
         onPublish={handlePublish}
         maxSections={getPlanLimits().maxSections}

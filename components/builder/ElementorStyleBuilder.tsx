@@ -54,6 +54,7 @@ interface ElementorStyleBuilderProps {
   site: any;
   sections: Section[];
   onSectionsChange: (sections: Section[]) => void;
+  onThemeChange: (theme: { accent: ThemeAccent; font: ThemeFont }) => void;
   onSave: () => void;
   onPublish: () => void;
   maxSections: number;
@@ -593,6 +594,7 @@ export function ElementorStyleBuilder({
   site,
   sections,
   onSectionsChange,
+  onThemeChange,
   onSave,
   onPublish,
   maxSections
@@ -619,12 +621,17 @@ export function ElementorStyleBuilder({
     }
   }, []);
 
-  const handleThemeChange = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
-    console.log('🎨 handleThemeChange chiamato:', newTheme);
+  const handleThemeChangeInternal = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
+    console.log('🎨 handleThemeChangeInternal chiamato:', newTheme);
     console.log('🎨 Tema precedente:', theme);
     console.log('🎨 User e site.id:', { user: !!user, siteId: site.id });
     
+    // Aggiorna lo stato locale
     setTheme(newTheme);
+    
+    // Comunica il cambio al componente padre
+    console.log('🎨 Chiamando onThemeChange del componente padre...');
+    onThemeChange(newTheme);
     
     // Salvataggio automatico quando cambia il tema
     if (user && site.id) {
@@ -1024,7 +1031,7 @@ export function ElementorStyleBuilder({
       <BuilderHeader
         layoutType={layoutType}
         theme={theme}
-        onThemeChange={handleThemeChange}
+        onThemeChange={handleThemeChangeInternal}
         onSave={onSave}
         onPublish={onPublish}
         deviceType={deviceType}
@@ -1086,7 +1093,7 @@ export function ElementorStyleBuilder({
               onSectionsChange={onSectionsChange}
               layoutType={layoutType}
               theme={theme}
-              onThemeChange={handleThemeChange}
+              onThemeChange={handleThemeChangeInternal}
               onSectionSelect={setSelectedSectionId}
               selectedSectionId={selectedSectionId}
               onSectionUpdate={handleSectionUpdate}
@@ -1117,7 +1124,7 @@ export function ElementorStyleBuilder({
           onSectionsChange={onSectionsChange}
           layoutType={layoutType}
           theme={theme}
-          onThemeChange={handleThemeChange}
+          onThemeChange={handleThemeChangeInternal}
           onSectionSelect={setSelectedSectionId}
           selectedSectionId={selectedSectionId}
           onSectionUpdate={handleSectionUpdate}
