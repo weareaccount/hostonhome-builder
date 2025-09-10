@@ -87,6 +87,14 @@ const BuilderHeader = ({
       <div className="flex items-center justify-between py-2">
         {/* Left - Controls */}
         <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Dashboard Button - Solo desktop */}
+          <button
+            onClick={() => (window.location.href = '/dashboard')}
+            className="hidden sm:flex px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm text-sm font-medium"
+            title="Torna alla Dashboard"
+          >
+            ← Dashboard
+          </button>
           {/* Responsive Controls - Solo desktop */}
           <div className="hidden sm:flex items-center space-x-1 bg-gray-100 rounded-md p-1">
           <Button 
