@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button'
 import { Plus, Edit, Trash, Eye, User, Phone, Building, MapPin, ExternalLink, Settings, Star, Calendar, Check, X, Pencil, Save, ChevronDown, ChevronRight, Menu } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PLAN_LIMITS, STRIPE_PRICING } from '@/lib/constants'
 import { isSubscriptionActive, getSubscriptionBlockReason } from '@/lib/subscription'
 
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth()
+  const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsLoading, setProjectsLoading] = useState(true)
   const [showHostProfile, setShowHostProfile] = useState(false)
@@ -220,6 +222,28 @@ export default function Dashboard() {
     }
   }, [user])
 
+  // Aggiorna i progetti quando la pagina viene caricata (per tornare dalla creazione)
+  useEffect(() => {
+    if (user && projects.length === 0) {
+      loadProjects(true) // Force refresh per assicurarsi di avere i progetti più recenti
+    }
+  }, [user])
+
+  // Aggiorna i progetti quando la pagina viene caricata (per tornare dal builder)
+  useEffect(() => {
+    if (user) {
+      // Controlla se ci sono progetti locali più recenti
+      const localProjects = ProjectService.getLocalProjects()
+        .filter(p => p.user_id === user.id)
+        .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      
+      if (localProjects.length > 0) {
+        // Se ci sono progetti locali, aggiorna la lista
+        setProjects(localProjects)
+      }
+    }
+  }, [user])
+
   const loadProjects = async (forceRefresh = false) => {
     try {
       setProjectsLoading(true)
@@ -297,8 +321,11 @@ export default function Dashboard() {
         layout_type: 'ELEGANTE'
       })
       
+      // Aggiorna la lista dei progetti nella dashboard
+      setProjects(prevProjects => [newProject, ...prevProjects])
+      
       // Reindirizza al builder del nuovo progetto con il layout selezionato
-      window.location.href = `/dashboard/sites/${newProject.id}/builder`
+      router.push(`/dashboard/sites/${newProject.id}/builder`)
     } catch (error: any) {
       console.error('Errore nella creazione del progetto:', error)
       alert(`Errore nella creazione del progetto: ${error?.message || 'operazione non riuscita'}`)
