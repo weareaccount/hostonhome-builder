@@ -25,6 +25,17 @@ export function isSubscriptionActive(user: User | null): boolean {
   // ✅ Stati che permettono l'accesso
   if (status === 'ACTIVE' || status === 'TRIALING') return true
   
+  // ✅ CANCELED: Permetti accesso se ancora nel periodo di fatturazione
+  if (status === 'CANCELED') {
+    const currentPeriodEnd = (user as any).currentPeriodEnd
+    if (currentPeriodEnd) {
+      const endDate = new Date(currentPeriodEnd).getTime()
+      const now = Date.now()
+      // Se siamo ancora nel periodo di fatturazione, permetti l'accesso
+      if (now < endDate) return true
+    }
+  }
+  
   // ✅ PAST_DUE: Permetti accesso per 2 tentativi di pagamento
   if (status === 'PAST_DUE') {
     const paymentAttempts = (user as any).paymentAttempts || 0
@@ -43,13 +54,21 @@ export function getSubscriptionBlockReason(user: User | null): string {
   switch (status) {
     case 'TRIALING':
       return 'Prova gratuita attiva. Completa il pagamento per continuare dopo il trial.'
+    case 'CANCELED':
+      const currentPeriodEnd = (user as any).currentPeriodEnd
+      if (currentPeriodEnd) {
+        const endDate = new Date(currentPeriodEnd)
+        const now = new Date()
+        if (now < endDate) {
+          return `Abbonamento disdetto. I servizi continueranno fino al ${endDate.toLocaleDateString('it-IT')}.`
+        }
+      }
+      return 'Abbonamento disdetto. Riattiva per continuare.'
     case 'PAST_DUE':
       if (paymentAttempts <= 2) {
         return `Pagamento non riuscito (tentativo ${paymentAttempts}/2). Aggiorna il metodo di pagamento per continuare.`
       }
       return 'Pagamento fallito dopo 2 tentativi. Aggiorna il metodo di pagamento per riattivare i servizi.'
-    case 'CANCELED':
-      return 'Abbonamento disdetto. Riattiva per continuare.'
     case 'INCOMPLETE':
     case 'INCOMPLETE_EXPIRED':
     case 'UNPAID':

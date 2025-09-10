@@ -1104,8 +1104,24 @@ export default function Dashboard() {
                             </div>
                           )}
                           
+                          {/* ✅ Abbonamento Disdetto Banner */}
+                          {(user as any)?.subscriptionStatus === 'CANCELED' && (
+                            <div className="p-4 rounded-xl bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 flex items-start gap-3">
+                              <div className="text-2xl">📋</div>
+                              <div className="flex-1">
+                                <div className="text-xs uppercase tracking-wide text-orange-600 font-semibold">Abbonamento Disdetto</div>
+                                <div className="text-sm text-orange-900 font-medium mb-2">
+                                  Il tuo abbonamento è stato disdetto con successo.
+                                </div>
+                                <div className="text-xs text-orange-700">
+                                  I servizi continueranno fino alla fine del periodo di fatturazione corrente.
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
                           {/* ✅ Payment Issue Banner */}
-                          {!isSubscriptionActive(user) && !trialInfo.isTrial && (
+                          {!isSubscriptionActive(user) && !trialInfo.isTrial && (user as any)?.subscriptionStatus !== 'CANCELED' && (
                             <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 flex items-start gap-3">
                               <div className="text-2xl">⚠️</div>
                               <div className="flex-1">
