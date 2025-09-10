@@ -1007,14 +1007,13 @@ export function ElementorStyleBuilder({
 
       {/* Navigazione mobile (segment control) */}
       <div className="md:hidden sticky top-14 z-40 bg-white border-b border-gray-200 px-3 py-2">
-        <div className="flex justify-between items-center">
-          {/* Tab Navigation */}
+        <div className="flex justify-center">
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm">
             <button
               type="button"
               onClick={() => setMobileTab('widgets')}
               className={cn(
-                'px-4 py-2 text-sm font-medium flex items-center gap-2',
+                'px-3 py-2 text-sm font-medium flex items-center gap-1',
                 mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
@@ -1025,24 +1024,25 @@ export function ElementorStyleBuilder({
               type="button"
               onClick={() => setMobileTab('preview')}
               className={cn(
-                'px-4 py-2 text-sm font-medium border-l border-gray-200 flex items-center gap-2',
+                'px-3 py-2 text-sm font-medium border-l border-gray-200 flex items-center gap-1',
                 mobileTab === 'preview' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
               <Eye className="w-4 h-4" />
               Anteprima
             </button>
+            <button
+              type="button"
+              onClick={() => setShowThemePanel(true)}
+              className={cn(
+                'px-3 py-2 text-sm font-medium border-l border-gray-200 flex items-center gap-1',
+                'bg-white text-gray-700 hover:bg-gray-50'
+              )}
+            >
+              <Palette className="w-4 h-4" />
+              Tema
+            </button>
           </div>
-          
-          {/* Pulsante Tema */}
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowThemePanel(true)}
-            className="ml-2"
-          >
-            <Palette className="w-4 h-4 mr-1" /> Tema
-          </Button>
         </div>
       </div>
 
