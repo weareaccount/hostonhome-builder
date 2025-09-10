@@ -2481,6 +2481,14 @@ export function InteractiveThemePreview({
     }
   };
 
+  // Debug logging per le sezioni
+  console.log('🎨 InteractiveThemePreview rendering:', {
+    sectionsCount: sections.length,
+    sections: sections,
+    deviceType: deviceType,
+    readOnly: readOnly
+  });
+
   return (
     <div 
       className={cn("min-h-screen", fontClass, className)}
@@ -2495,26 +2503,36 @@ export function InteractiveThemePreview({
         </div>
       )}
 
+      {/* Debug info per mobile */}
+      {!readOnly && deviceType === 'mobile' && (
+        <div className="fixed top-32 right-4 z-50 bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg px-3 py-2 text-xs font-medium text-yellow-800">
+          Sezioni: {sections.length}
+        </div>
+      )}
 
       {/* Sections */}
-      <div className={cn(layoutStyle.spacing, getResponsiveContainer(), 'break-words')}
+      <div className={cn(getResponsiveContainer(), 'break-words')}
            style={{ wordBreak: 'break-word' }}>
-        {sections.map((section, index) => (
-          <SectionComponent
-            key={section.id}
-            section={section}
-            layoutStyle={layoutStyle}
-            accentColor={accentColor}
-            onEdit={() => handleEditSection(section)}
-            onDelete={() => handleSectionDelete(section.id)}
-            onPublish={() => onSectionPublish(section.id)}
-            onUnpublish={() => onSectionUnpublish(section.id)}
-            deviceType={deviceType}
-            layoutType={layoutType}
-            onSectionUpdate={handleSectionUpdate}
-            readOnly={readOnly}
-          />
-        ))}
+        {sections.map((section, index) => {
+          console.log(`📋 Rendering sezione ${index + 1}/${sections.length}:`, section.type, section.id);
+          return (
+            <div key={section.id} className={index > 0 ? 'mt-8' : ''}>
+              <SectionComponent
+                section={section}
+                layoutStyle={layoutStyle}
+                accentColor={accentColor}
+                onEdit={() => handleEditSection(section)}
+                onDelete={() => handleSectionDelete(section.id)}
+                onPublish={() => onSectionPublish(section.id)}
+                onUnpublish={() => onSectionUnpublish(section.id)}
+                deviceType={deviceType}
+                layoutType={layoutType}
+                onSectionUpdate={handleSectionUpdate}
+                readOnly={readOnly}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Inline Editor Modal - Solo se non readOnly */}

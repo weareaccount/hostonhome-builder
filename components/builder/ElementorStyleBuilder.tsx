@@ -566,6 +566,13 @@ const CanvasArea = ({
   deviceType: 'desktop' | 'tablet' | 'mobile';
 }) => {
 
+  // Debug logging per CanvasArea
+  console.log('🖼️ CanvasArea rendering:', {
+    sectionsCount: sections.length,
+    sections: sections,
+    deviceType: deviceType,
+    layoutType: layoutType
+  });
 
   return (
     <div className="flex-1 bg-gray-50 overflow-auto">
