@@ -1127,16 +1127,13 @@ export default function Dashboard() {
                         <div className="mt-4 grid grid-cols-1 gap-4">
                           {/* ✅ Trial Status Banner */}
                           {trialInfo.isTrial && (
-                            <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 border-2 border-blue-200 shadow-lg">
-                              <div className="flex items-center gap-4">
-                                <div className="text-3xl">🎉</div>
+                            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                              <div className="flex items-center gap-2">
+                                <div className="text-lg">🎉</div>
                                 <div className="flex-1">
-                                  <div className="text-sm uppercase tracking-wider text-blue-700 font-bold mb-1">Prova Gratuita Attiva</div>
-                                  <div className="text-lg text-blue-900 font-bold mb-2">
+                                  <div className="text-xs text-blue-600 font-medium">Prova Gratuita</div>
+                                  <div className="text-sm text-blue-800">
                                     {trialInfo.daysRemaining} giorni rimanenti
-                                  </div>
-                                  <div className="text-sm text-blue-600 bg-blue-100 px-3 py-1 rounded-full inline-block">
-                                    Attivazione automatica al termine
                                   </div>
                                 </div>
                               </div>
@@ -1145,39 +1142,26 @@ export default function Dashboard() {
                           
                           {/* ✅ Barra di Progresso Fatturazione */}
                           {billingInfo && (billingInfo.status === 'ACTIVE' || billingInfo.status === 'TRIALING') && (
-                            <div className="p-5 rounded-2xl bg-gradient-to-br from-green-50 via-blue-50 to-emerald-50 border-2 border-green-200 shadow-lg">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="text-sm uppercase tracking-wider text-green-700 font-bold">
-                                  {billingInfo.status === 'TRIALING' ? '📅 Prova Gratuita' : '💳 Ciclo di Fatturazione'}
+                            <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-xs text-gray-600 font-medium">
+                                  {billingInfo.status === 'TRIALING' ? 'Prova Gratuita' : 'Ciclo di Fatturazione'}
                                 </div>
-                                <div className="text-sm text-green-800 font-semibold bg-green-100 px-3 py-1 rounded-full">
+                                <div className="text-xs text-gray-700">
                                   {billingInfo.daysRemaining} giorni rimanenti
                                 </div>
                               </div>
                               
-                              {/* Barra di Progresso Migliorata */}
-                              <div className="w-full bg-green-100 rounded-full h-3 mb-3 shadow-inner">
+                              {/* Barra di Progresso Semplice */}
+                              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                                 <div 
-                                  className="bg-gradient-to-r from-green-400 via-blue-500 to-emerald-500 h-3 rounded-full transition-all duration-500 shadow-sm"
+                                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                                   style={{ width: `${billingInfo.progressPercentage}%` }}
                                 ></div>
                               </div>
                               
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div className="text-green-700">
-                                  <div className="font-semibold">Iniziato</div>
-                                  <div className="text-green-600">{billingInfo.startDate.toLocaleDateString('it-IT')}</div>
-                                </div>
-                                <div className="text-green-700">
-                                  <div className="font-semibold">Rinnovo</div>
-                                  <div className="text-green-600">{billingInfo.endDate.toLocaleDateString('it-IT')}</div>
-                                </div>
-                              </div>
-                              
-                              <div className="text-center mt-3">
-                                <div className="text-sm text-green-600 bg-green-100 px-4 py-2 rounded-full inline-block font-medium">
-                                  {billingInfo.daysPassed} di {billingInfo.totalDays} giorni {billingInfo.status === 'TRIALING' ? 'di prova' : 'completati'}
-                                </div>
+                              <div className="text-xs text-gray-500">
+                                {billingInfo.daysPassed} di {billingInfo.totalDays} giorni {billingInfo.status === 'TRIALING' ? 'di prova' : 'completati'}
                               </div>
                             </div>
                           )}
