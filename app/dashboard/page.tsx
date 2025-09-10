@@ -1157,10 +1157,12 @@ export default function Dashboard() {
                           )}
                           
                           {/* ✅ Barra di Progresso Fatturazione */}
-                          {billingInfo && !trialInfo.isTrial && billingInfo.status === 'ACTIVE' && (
+                          {billingInfo && (billingInfo.status === 'ACTIVE' || billingInfo.status === 'TRIALING') && (
                             <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200">
                               <div className="flex items-center justify-between mb-2">
-                                <div className="text-xs uppercase tracking-wide text-blue-600 font-semibold">Ciclo di Fatturazione</div>
+                                <div className="text-xs uppercase tracking-wide text-blue-600 font-semibold">
+                                  {billingInfo.status === 'TRIALING' ? 'Prova Gratuita' : 'Ciclo di Fatturazione'}
+                                </div>
                                 <div className="text-xs text-blue-700">
                                   {billingInfo.daysRemaining} giorni rimanenti
                                 </div>
@@ -1184,7 +1186,7 @@ export default function Dashboard() {
                               </div>
                               
                               <div className="text-xs text-blue-600 mt-1">
-                                {billingInfo.daysPassed} di {billingInfo.totalDays} giorni completati
+                                {billingInfo.daysPassed} di {billingInfo.totalDays} giorni {billingInfo.status === 'TRIALING' ? 'di prova' : 'completati'}
                               </div>
                             </div>
                           )}
