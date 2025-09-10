@@ -665,11 +665,39 @@ export function ElementorStyleBuilder({
         throw new Error('Sezioni non valide: ' + JSON.stringify(sections));
       }
       
-      const result = await ProjectService.updateProject(site.id, {
-        sections,
-        theme,
-        layout_type: layoutType
-      });
+      // Prima prova a verificare se il progetto esiste
+      let existingProject = null;
+      try {
+        existingProject = await ProjectService.getProject(site.id);
+        console.log('🔍 Progetto esistente trovato:', existingProject?.id);
+      } catch (error) {
+        console.log('🔍 Progetto non trovato, creo nuovo progetto...');
+      }
+      
+      let result;
+      if (existingProject) {
+        // Aggiorna progetto esistente
+        result = await ProjectService.updateProject(site.id, {
+          sections,
+          theme,
+          layout_type: layoutType
+        });
+        console.log('✅ Progetto aggiornato con successo!', result);
+      } else {
+        // Crea nuovo progetto
+        console.log('🆕 Creando nuovo progetto nel database...');
+        result = await ProjectService.createProject(user.id, {
+          name: site.name || 'Nuovo Progetto',
+          slug: site.slug || site.id,
+          sections,
+          theme,
+          layout_type: layoutType
+        });
+        console.log('✅ Nuovo progetto creato con successo!', result);
+        
+        // Aggiorna l'ID del sito con quello del progetto creato
+        site.id = result.id;
+      }
       
       console.log('✅ Progetto salvato automaticamente con successo!', result);
     } catch (error) {

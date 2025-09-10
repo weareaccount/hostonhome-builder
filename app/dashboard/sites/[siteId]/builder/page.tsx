@@ -270,23 +270,53 @@ export default function BuilderPage() {
             const sectionsToLoad = Array.isArray(bySlug.sections) ? bySlug.sections : [];
             setSections(sectionsToLoad);
           } else {
-            console.log('Progetto non trovato; inizializzo progetto temporaneo');
-            // Genera un UUID valido per il progetto temporaneo
-            const tempId = crypto.randomUUID();
-            const tempSite: Site = {
-              id: tempId,
-              name: 'Nuovo Progetto',
-              slug: params.siteId as string,
-              subdomain: `${params.siteId}.hostonhome.it`,
-              layoutType: 'ELEGANTE',
-              theme: { accent: 'BLUE', font: 'INTER' },
-              isPublished: false,
-              plan: 'PLUS',
-              pages: []
-            };
-            console.log('🆕 Progetto temporaneo creato con ID:', tempId);
-            setSite(tempSite);
-            setSections([]);
+            console.log('Progetto non trovato; creo nuovo progetto nel database');
+            // Crea un nuovo progetto nel database
+            try {
+              const newProject = await ProjectService.createProject(user?.id || 'anonymous', {
+                name: 'Nuovo Progetto',
+                slug: params.siteId as string,
+                sections: [],
+                theme: { accent: 'BLUE', font: 'INTER' },
+                layout_type: 'ELEGANTE'
+              });
+              
+              console.log('✅ Nuovo progetto creato nel database:', newProject.id);
+              
+              const tempSite: Site = {
+                id: newProject.id,
+                name: newProject.name,
+                slug: newProject.slug,
+                subdomain: `${newProject.slug}.hostonhome.it`,
+                layoutType: 'ELEGANTE',
+                theme: newProject.theme as any,
+                isPublished: false,
+                plan: 'PLUS',
+                pages: []
+              };
+              
+              setRealProject(newProject);
+              setSite(tempSite);
+              setSections([]);
+            } catch (error) {
+              console.error('❌ Errore nella creazione del progetto:', error);
+              // Fallback a progetto temporaneo locale
+              const tempId = crypto.randomUUID();
+              const tempSite: Site = {
+                id: tempId,
+                name: 'Nuovo Progetto',
+                slug: params.siteId as string,
+                subdomain: `${params.siteId}.hostonhome.it`,
+                layoutType: 'ELEGANTE',
+                theme: { accent: 'BLUE', font: 'INTER' },
+                isPublished: false,
+                plan: 'PLUS',
+                pages: []
+              };
+              console.log('🆕 Progetto temporaneo locale creato con ID:', tempId);
+              setSite(tempSite);
+              setSections([]);
+            }
           }
         }
         
@@ -311,10 +341,41 @@ export default function BuilderPage() {
             const sectionsToLoad = Array.isArray(bySlug.sections) ? bySlug.sections : [];
             setSections(sectionsToLoad);
           } else {
-            setSite(mockSite);
-            setSections([]);
+            // Prova a creare un nuovo progetto nel database
+            try {
+              const newProject = await ProjectService.createProject(user?.id || 'anonymous', {
+                name: 'Nuovo Progetto',
+                slug: params.siteId as string,
+                sections: [],
+                theme: { accent: 'BLUE', font: 'INTER' },
+                layout_type: 'ELEGANTE'
+              });
+              
+              console.log('✅ Nuovo progetto creato nel database (catch):', newProject.id);
+              
+              const tempSite: Site = {
+                id: newProject.id,
+                name: newProject.name,
+                slug: newProject.slug,
+                subdomain: `${newProject.slug}.hostonhome.it`,
+                layoutType: 'ELEGANTE',
+                theme: newProject.theme as any,
+                isPublished: false,
+                plan: 'PLUS',
+                pages: []
+              };
+              
+              setRealProject(newProject);
+              setSite(tempSite);
+              setSections([]);
+            } catch (createError) {
+              console.error('❌ Errore nella creazione del progetto (catch):', createError);
+              setSite(mockSite);
+              setSections([]);
+            }
           }
         } catch {
+          // Ultimo fallback
           setSite(mockSite);
           setSections([]);
         }
