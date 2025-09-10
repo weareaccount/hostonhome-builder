@@ -85,18 +85,18 @@ const BuilderHeader = ({
   return (
     <div className="h-auto bg-white border-b border-gray-200 px-3 sm:px-6 shadow-sm">
       <div className="flex items-center justify-between py-2">
-        {/* Left - Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Dashboard Button - Solo desktop */}
+        {/* Left - Controls (solo desktop) */}
+        <div className="hidden sm:flex items-center space-x-4">
+          {/* Dashboard Button */}
           <button
             onClick={() => (window.location.href = '/dashboard')}
-            className="hidden sm:flex px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm text-sm font-medium"
+            className="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm text-sm font-medium"
             title="Torna alla Dashboard"
           >
             ← Dashboard
           </button>
-          {/* Responsive Controls - Solo desktop */}
-          <div className="hidden sm:flex items-center space-x-1 bg-gray-100 rounded-md p-1">
+          {/* Responsive Controls */}
+          <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-1">
           <Button 
             variant={deviceType === 'desktop' ? 'default' : 'ghost'} 
             size="sm" 
@@ -125,8 +125,8 @@ const BuilderHeader = ({
             <Smartphone className="w-4 h-4" />
           </Button>
           </div>
-          {/* Tema: visibile su desktop, su mobile c'è il pulsante */}
-          <div className="hidden sm:flex items-center space-x-2">
+          {/* Tema */}
+          <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-700">Tema:</span>
             <div className="bg-gray-100 rounded-md px-3 py-1">
               <span className="text-sm font-medium text-gray-900">Host On Home</span>
@@ -134,19 +134,21 @@ const BuilderHeader = ({
           </div>
         </div>
 
-        {/* Center - Logo */}
-        <div className="flex items-center space-x-3">
-          <img 
-            src="/logo-hostonhome.png" 
-            alt="HostonHome" 
-            className="h-8 w-auto"
-          />
-          {saving && (
-            <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-              <span>Salvando...</span>
-            </div>
-          )}
+        {/* Center - Logo (centrato su mobile) */}
+        <div className="flex-1 flex justify-center sm:flex-none sm:justify-start">
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/logo-hostonhome.png" 
+              alt="HostonHome" 
+              className="h-8 w-auto"
+            />
+            {saving && (
+              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span>Salvando...</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right - Theme Controls */}
