@@ -191,10 +191,25 @@ export function LoginForm() {
           <p className="text-gray-600 text-base mb-6">
             Inizia a ricevere prenotazioni senza commissioni, pagando solo il costo di un semplice dominio.
           </p>
+          
+          {/* ✅ Banner Trial Period Promozionale */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">🎉</div>
+              <div>
+                <div className="text-lg font-bold text-green-900">7 GIORNI GRATIS</div>
+                <div className="text-sm text-green-700">
+                  Prova tutti i piani senza impegno. Nessun pagamento richiesto durante il trial.
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>Tema professionale e sezioni pronte</li>
             <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>Editor semplice, anteprima in tempo reale</li>
             <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>Nessuna commissione sulle prenotazioni</li>
+            <li className="flex items-start gap-2 text-gray-700"><Check className="w-4 h-4 text-green-600 mt-0.5"/>7 giorni di prova gratuita per tutti i piani</li>
           </ul>
         </div>
 
@@ -255,6 +270,19 @@ export function LoginForm() {
                     )}
                   </div>
 
+                  {/* ✅ Banner Trial Period */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">🎉</div>
+                      <div>
+                        <div className="text-sm font-bold text-blue-900">7 GIORNI GRATIS</div>
+                        <div className="text-xs text-blue-700">
+                          Prova tutti i piani senza impegno. Nessun pagamento richiesto durante il trial.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {(['BASE','PLUS','PRO'] as const).map((k) => (
                       <button
@@ -264,16 +292,21 @@ export function LoginForm() {
                         className={`text-left rounded-xl border p-4 transition-all ${plan===k ? 'border-blue-600 ring-2 ring-blue-100 bg-blue-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
                       >
                         <div className="text-sm font-semibold text-gray-900 mb-1">{k === 'BASE' ? 'Base' : k === 'PLUS' ? 'Avanzato' : 'Pro'}</div>
-                        <div className="text-gray-700">
+                        <div className="text-gray-700 mb-1">
                           {formatEuro(STRIPE_PRICING[k][interval])}
                           {interval==='yearly' && yearlySavingsInfo.entries.find(e => e.key===k)?.saveEuro ? (
                             <span className="ml-2 text-xs text-green-700">- {formatEuro(yearlySavingsInfo.entries.find(e => e.key===k)!.saveEuro)}</span>
                           ) : null}
                         </div>
+                        <div className="text-xs text-green-600 font-medium">
+                          ✅ 7 giorni gratis
+                        </div>
                       </button>
                     ))}
                   </div>
-                  <p className="text-center text-xs text-gray-600">Seleziona un piano per procedere con la registrazione.</p>
+                  <p className="text-center text-xs text-gray-600">
+                    Seleziona un piano per iniziare la tua prova gratuita di 7 giorni.
+                  </p>
                 </motion.div>
               )}
               </AnimatePresence>
@@ -283,7 +316,7 @@ export function LoginForm() {
               )}
 
               <Button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2">
-                {loading ? 'Caricamento...' : (isLogin ? 'Accedi' : 'Crea account')}
+                {loading ? 'Caricamento...' : (isLogin ? 'Accedi' : 'Inizia prova gratuita')}
                 {!loading && <ArrowRight className="w-4 h-4"/>}
               </Button>
 
@@ -299,6 +332,11 @@ export function LoginForm() {
 
               <div className="text-center text-xs text-gray-500">
                 Registrandoti accetti i Termini e l'Informativa Privacy.
+                {!isLogin && (
+                  <div className="mt-2 text-xs text-blue-600">
+                    Al termine dei 7 giorni gratuiti, l'abbonamento si attiverà automaticamente.
+                  </div>
+                )}
               </div>
             </form>
           </div>
