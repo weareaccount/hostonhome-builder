@@ -19,6 +19,7 @@ export function LoginForm() {
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const router = useRouter()
   
   const { signIn, signUp, user } = useAuth()
@@ -54,6 +55,17 @@ export function LoginForm() {
     const selectedInterval = (params.get('interval') as 'monthly' | 'yearly' | null) || 'monthly'
     const storedEmail = params.get('email') || window.sessionStorage.getItem('pending_email') || ''
     const storedPassword = window.sessionStorage.getItem('pending_password') || ''
+    const registered = params.get('registered')
+    
+    // ✅ Mostra messaggio di successo se l'utente è stato registrato
+    if (registered === 'true') {
+      setError('') // Pulisci eventuali errori precedenti
+      setSuccessMessage('✅ Account creato con successo! Ora puoi accedere con le tue credenziali.')
+      // Nascondi il messaggio dopo 5 secondi
+      setTimeout(() => {
+        setSuccessMessage('')
+      }, 5000)
+    }
 
     if (checkoutStatus === 'success' && sessionId) {
       ;(async () => {
@@ -88,7 +100,14 @@ export function LoginForm() {
               
               window.sessionStorage.removeItem('pending_email')
               window.sessionStorage.removeItem('pending_password')
-              router.replace('/dashboard')
+              
+              // ✅ Se l'utente è già autenticato, vai alla dashboard
+              if (user) {
+                router.replace('/dashboard')
+              } else {
+                // ✅ Altrimenti reindirizza al login per completare l'autenticazione
+                router.replace('/login?registered=true')
+              }
             }
           } else {
             setError('Verifica pagamento fallita. Riprova.')
@@ -325,6 +344,12 @@ export function LoginForm() {
 
               {error && (
                 <div className="text-red-600 text-sm text-center">{error}</div>
+              )}
+              
+              {successMessage && (
+                <div className="text-green-600 text-sm text-center bg-green-50 p-3 rounded-lg border border-green-200">
+                  {successMessage}
+                </div>
               )}
 
               <Button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2">

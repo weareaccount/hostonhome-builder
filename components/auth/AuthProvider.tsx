@@ -59,8 +59,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       throw new Error('Supabase non è configurato. Crea il file .env.local con le credenziali.')
     }
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: metadata || {} } })
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password, 
+      options: { 
+        data: metadata || {},
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      } 
+    })
     if (error) throw error
+    
+    // ✅ Se la registrazione è completata, autentica automaticamente l'utente
+    if (data.user && data.session) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email!,
+        created_at: data.user.created_at,
+        plan: (data.user.user_metadata as any)?.plan,
+      })
+    }
   }
 
   const signOut = async () => {
