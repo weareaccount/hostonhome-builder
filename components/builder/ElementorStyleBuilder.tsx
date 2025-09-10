@@ -229,17 +229,8 @@ const BuilderHeader = ({
                 </div>
               </div>
               
-              {/* Pulsanti di azione */}
-              <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowThemePanel(false)}
-                  className="flex items-center gap-2"
-                >
-                  <Layers className="w-4 h-4" />
-                  Sezioni
-                </Button>
+              {/* Pulsante Salva */}
+              <div className="flex justify-center pt-4 border-t border-gray-200">
                 <Button 
                   onClick={onSave}
                   className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
