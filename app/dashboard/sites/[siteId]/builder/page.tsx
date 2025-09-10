@@ -14,7 +14,7 @@ const pageTitle = 'Builder Case Vacanze - HostonHome';
 const pageDescription = 'Crea il tuo sito per hotel, B&B o case vacanze con il nostro builder professionale';
 
 const mockSite: Site = {
-  id: 'site-1',
+  id: crypto.randomUUID(), // Genera UUID valido
   name: 'San Vito Suites',
   slug: 'san-vito-suites',
   subdomain: 'san-vito-suites.tuodominio.it',
@@ -271,8 +271,10 @@ export default function BuilderPage() {
             setSections(sectionsToLoad);
           } else {
             console.log('Progetto non trovato; inizializzo progetto temporaneo');
+            // Genera un UUID valido per il progetto temporaneo
+            const tempId = crypto.randomUUID();
             const tempSite: Site = {
-              id: params.siteId as string,
+              id: tempId,
               name: 'Nuovo Progetto',
               slug: params.siteId as string,
               subdomain: `${params.siteId}.hostonhome.it`,
@@ -282,6 +284,7 @@ export default function BuilderPage() {
               plan: 'PLUS',
               pages: []
             };
+            console.log('🆕 Progetto temporaneo creato con ID:', tempId);
             setSite(tempSite);
             setSections([]);
           }

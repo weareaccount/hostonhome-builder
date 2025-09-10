@@ -180,18 +180,54 @@ export class ProjectService {
     const hasSupabase = this.checkSupabaseConfig();
     
     if (hasSupabase) {
-      const { data: project, error } = await supabase
-        .from('projects')
-        .update({
+      try {
+        // Aggiungi timeout per evitare statement timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout: operazione troppo lenta')), 10000)
+        );
+        
+        const updatePromise = supabase
+          .from('projects')
+          .update({
+            ...data,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', projectId)
+          .select()
+          .single();
+
+        const { data: project, error } = await Promise.race([updatePromise, timeoutPromise]) as any;
+
+        if (error) {
+          console.error('❌ Errore Supabase updateProject:', error);
+          throw error;
+        }
+        
+        console.log('✅ Progetto aggiornato in Supabase:', project.id);
+        return project;
+      } catch (error) {
+        console.error('❌ Errore durante updateProject:', error);
+        // Fallback locale in caso di errore
+        console.log('🔄 Fallback a storage locale...');
+        const projects = this.getLocalProjects();
+        const projectIndex = projects.findIndex(p => p.id === projectId);
+        
+        if (projectIndex === -1) {
+          throw new Error('Progetto non trovato');
+        }
+        
+        const updatedProject = {
+          ...projects[projectIndex],
           ...data,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', projectId)
-        .select()
-        .single()
-
-      if (error) throw error
-      return project
+        };
+        
+        projects[projectIndex] = updatedProject;
+        this.saveLocalProjects(projects);
+        
+        console.log('✅ Progetto aggiornato localmente (fallback):', updatedProject.id);
+        return updatedProject;
+      }
     } else {
       // Fallback locale
       const projects = this.getLocalProjects();

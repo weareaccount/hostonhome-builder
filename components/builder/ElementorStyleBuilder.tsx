@@ -235,7 +235,9 @@ const BuilderHeader = ({
                     <button
                       key={color.key}
                       onClick={() => {
-                        console.log('🎨 Cambio colore:', color.key);
+                        console.log('🎨 Cambio colore mobile:', color.key);
+                        console.log('🎨 Tema attuale:', theme);
+                        console.log('🎨 Nuovo tema:', { ...theme, accent: color.key });
                         onThemeChange({ ...theme, accent: color.key });
                       }}
                       className={cn(
@@ -618,12 +620,17 @@ export function ElementorStyleBuilder({
   }, []);
 
   const handleThemeChange = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
-    console.log('🎨 Cambio tema:', newTheme);
+    console.log('🎨 handleThemeChange chiamato:', newTheme);
+    console.log('🎨 Tema precedente:', theme);
+    console.log('🎨 User e site.id:', { user: !!user, siteId: site.id });
+    
     setTheme(newTheme);
+    
     // Salvataggio automatico quando cambia il tema
     if (user && site.id) {
       console.log('💾 Avviando salvataggio automatico per cambio tema...');
       setTimeout(() => {
+        console.log('💾 Eseguendo saveProject dopo timeout...');
         saveProject();
       }, 500); // Piccolo delay per assicurarsi che lo state sia aggiornato
     } else {
