@@ -242,7 +242,15 @@ export class ProjectService {
           throw error;
         }
         
-        console.log('✅ Progetto aggiornato in Supabase:', project.id);
+        // Salva anche localmente come backup
+        const projects = this.getLocalProjects();
+        const projectIndex = projects.findIndex(p => p.id === projectId);
+        if (projectIndex !== -1) {
+          projects[projectIndex] = project;
+          this.saveLocalProjects(projects);
+        }
+        
+        console.log('✅ Progetto aggiornato in Supabase e salvato localmente:', project.id);
         return project;
       } catch (error) {
         console.error('❌ Errore durante updateProject:', error);

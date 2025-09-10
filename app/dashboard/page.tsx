@@ -1073,7 +1073,15 @@ export default function Dashboard() {
                               alert('Nessuna sottoscrizione attiva')
                               return
                             }
-                            if (!confirm('Vuoi disdire l\'abbonamento?')) return
+                            if (!confirm(`⚠️ ATTENZIONE: Disdetta Abbonamento
+
+Se disdici l'abbonamento:
+• I tuoi siti web CESSERANNO di funzionare alla fine del periodo di fatturazione
+• Non potrai più modificare o pubblicare i tuoi siti
+• I dati saranno conservati per 30 giorni dopo la disdetta
+• Dopo 30 giorni, tutti i dati verranno eliminati definitivamente
+
+Sei sicuro di voler procedere con la disdetta?`)) return
                             const resp = await fetch('/api/stripe/cancel-subscription', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
@@ -1083,7 +1091,17 @@ export default function Dashboard() {
                             if (!resp.ok) {
                               alert(data.error || 'Errore durante la disdetta')
                             } else {
-                              alert('Abbonamento impostato alla disdetta a fine periodo')
+                              alert(`✅ Abbonamento disdetto con successo!
+
+📅 Il tuo abbonamento terminerà alla fine del periodo di fatturazione corrente.
+
+⚠️ IMPORTANTE:
+• I tuoi siti continueranno a funzionare fino alla fine del periodo
+• Potrai ancora modificare i tuoi siti fino alla scadenza
+• Dopo la scadenza, i siti non saranno più accessibili
+• I dati saranno conservati per 30 giorni dopo la scadenza
+
+💡 Per riattivare l'abbonamento, contatta il supporto.`)
                             }
                           }}
                         >
