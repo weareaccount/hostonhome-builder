@@ -57,11 +57,45 @@ export default function Dashboard() {
   const [showUpgradeSelector, setShowUpgradeSelector] = useState(false)
   const [upgradePlan, setUpgradePlan] = useState<'PLUS' | 'PRO' | ''>('')
   const [upgradeInterval, setUpgradeInterval] = useState<'monthly' | 'yearly'>('monthly')
+  const [syncingSubscription, setSyncingSubscription] = useState(false)
 
   const formatEuro = (cents: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
   
   // ✅ Informazioni sul trial
   const trialInfo = useMemo(() => getTrialInfo(user), [user])
+  
+  // ✅ Funzione per sincronizzare l'abbonamento
+  const syncSubscription = async () => {
+    if (!user || !(user as any).stripeCustomerId) {
+      alert('Customer ID Stripe non trovato. Contatta il supporto.')
+      return
+    }
+    
+    setSyncingSubscription(true)
+    try {
+      const response = await fetch('/api/sync-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          customerId: (user as any).stripeCustomerId
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('✅ Abbonamento sincronizzato con successo! Ricarica la pagina per vedere le modifiche.')
+        window.location.reload()
+      } else {
+        alert(`❌ Errore sincronizzazione: ${data.error}`)
+      }
+    } catch (error: any) {
+      alert(`❌ Errore: ${error.message}`)
+    } finally {
+      setSyncingSubscription(false)
+    }
+  }
   
   // Dati dell'host (potrebbero venire da un database)
   const [hostProfile, setHostProfile] = useState({
@@ -1141,6 +1175,14 @@ Sei sicuro di voler procedere con la disdetta?`)) return
                           }}
                         >
                           Disdici
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={syncSubscription}
+                          disabled={syncingSubscription}
+                          className="bg-blue-500 text-white hover:bg-blue-600"
+                        >
+                          {syncingSubscription ? '🔄 Sincronizzando...' : '🔄 Sincronizza'}
                         </Button>
                       </div>
 

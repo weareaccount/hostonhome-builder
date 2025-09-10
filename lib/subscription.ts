@@ -11,21 +11,32 @@ export function isSubscriptionActive(user: User | null): boolean {
   
   const status = normalizeStatus((user as any).subscriptionStatus)
   
-  // ✅ SOLO questi stati permettono l'accesso - BLOCCATO IMMEDIATAMENTE per tutti gli altri
+  // ✅ Stati che permettono l'accesso
   if (status === 'ACTIVE' || status === 'TRIALING') return true
   
-  // ❌ TUTTI gli altri stati bloccano immediatamente (PAST_DUE, CANCELED, INCOMPLETE, UNPAID, etc.)
+  // ✅ PAST_DUE: Permetti accesso per 2 tentativi di pagamento
+  if (status === 'PAST_DUE') {
+    const paymentAttempts = (user as any).paymentAttempts || 0
+    if (paymentAttempts <= 2) return true
+  }
+  
+  // ❌ Tutti gli altri stati bloccano l'accesso
   return false
 }
 
 export function getSubscriptionBlockReason(user: User | null): string {
   if (!user) return 'Autenticati per continuare.'
   const status = normalizeStatus((user as any).subscriptionStatus)
+  const paymentAttempts = (user as any).paymentAttempts || 0
+  
   switch (status) {
     case 'TRIALING':
       return 'Prova gratuita attiva. Completa il pagamento per continuare dopo il trial.'
     case 'PAST_DUE':
-      return 'Pagamento non riuscito. Aggiorna il metodo di pagamento immediatamente.'
+      if (paymentAttempts <= 2) {
+        return `Pagamento non riuscito (tentativo ${paymentAttempts}/2). Aggiorna il metodo di pagamento per continuare.`
+      }
+      return 'Pagamento fallito dopo 2 tentativi. Aggiorna il metodo di pagamento per riattivare i servizi.'
     case 'CANCELED':
       return 'Abbonamento disdetto. Riattiva per continuare.'
     case 'INCOMPLETE':

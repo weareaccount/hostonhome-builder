@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { sendTrialEndingEmail, sendPaymentFailedEmail } from '@/lib/email'
 import { createClient } from '@supabase/supabase-js'
+import { syncUserSubscription, handlePaymentRetry } from '@/lib/subscription-sync'
 
 // Webhook per gestire eventi Stripe
 export async function POST(request: Request) {
@@ -83,13 +84,40 @@ async function handlePaymentFailed(invoice: any) {
   const customer = await stripe.customers.retrieve(invoice.customer)
   const email = customer.email
   
-  if (email) {
+  if (email && invoice.subscription) {
     // Ottieni i dettagli dell'abbonamento
     const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
     const planName = subscription.items.data[0]?.price?.nickname || 'Unknown'
     
-    console.log('📧 Invio email pagamento fallito a:', email)
+    // Conta i tentativi di pagamento falliti
+    const attempts = await getPaymentAttempts(invoice.subscription)
+    
+    // Gestisci i tentativi di pagamento
+    await handlePaymentRetry(invoice.subscription, attempts)
+    
+    // Sincronizza lo stato dell'abbonamento
+    const user = await getUserByCustomerId(invoice.customer)
+    if (user) {
+      await syncUserSubscription(user.id, invoice.customer)
+    }
+    
+    console.log(`📧 Invio email pagamento fallito (tentativo ${attempts}) a:`, email)
     await sendPaymentFailedEmail(email, planName)
+  }
+}
+
+// Conta i tentativi di pagamento falliti
+async function getPaymentAttempts(subscriptionId: string): Promise<number> {
+  try {
+    const invoices = await stripe.invoices.list({
+      subscription: subscriptionId,
+      status: 'open'
+    })
+    
+    return invoices.data.length
+  } catch (error: any) {
+    console.error('❌ Errore recupero tentativi pagamento:', error)
+    return 0
   }
 }
 
