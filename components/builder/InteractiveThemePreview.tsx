@@ -49,8 +49,8 @@ const LAYOUT_STYLES = {
     nav: 'bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm',
     // Layout ottimizzato per case vacanze
     twoColumn: 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center',
-    imageColumn: 'lg:order-1',
-    textColumn: 'lg:order-2',
+    imageColumn: 'order-1 lg:order-1',
+    textColumn: 'order-2 lg:order-2',
     roomCard: 'bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1',
     roomImage: 'w-full h-64 sm:h-72 bg-gradient-to-br from-gray-200 to-gray-300 object-cover',
     roomDetails: 'p-6 lg:p-8',
@@ -1567,56 +1567,102 @@ const SectionComponent = ({
               {/* Layout a due colonne per layout Elegante */}
               {layoutType === 'ELEGANTE' ? (
                 <div className={cn(layoutStyle.twoColumn)}>
-                  {/* Colonna immagine */}
-                  <div className={cn(layoutStyle.imageColumn)}>
-                    {sectionProps.image ? (
-                      <img 
-                        src={sectionProps.image} 
-                        alt={sectionProps.imageAlt || 'About'} 
-                        className={cn(
-                          "w-full object-cover rounded-lg",
-                          deviceType === 'mobile' ? 'h-48' : 'h-96'
-                        )} 
-                      />
-                    ) : (
-                      <div className={cn(
-                        "w-full bg-gray-200 rounded-lg flex items-center justify-center",
-                        deviceType === 'mobile' ? 'h-48' : 'h-96'
-                      )}>
-                        <div className="text-center text-gray-500">
-                          <Image className={cn("mx-auto mb-4", deviceType === 'mobile' ? 'w-12 h-12' : 'w-16 h-16')} />
-                          <p className={cn(deviceType === 'mobile' ? 'text-xs' : 'text-sm')}>Immagine della sezione</p>
-                        </div>
+                  {/* Su mobile: immagine prima, testo dopo */}
+                  {deviceType === 'mobile' ? (
+                    <>
+                      {/* Colonna immagine */}
+                      <div className={cn(layoutStyle.imageColumn)}>
+                        {sectionProps.image ? (
+                          <img 
+                            src={sectionProps.image} 
+                            alt={sectionProps.imageAlt || 'About'} 
+                            className={cn(
+                              "w-full object-cover rounded-lg",
+                              deviceType === 'mobile' ? 'h-48' : 'h-96'
+                            )} 
+                          />
+                        ) : (
+                          <div className={cn(
+                            "w-full bg-gray-200 rounded-lg flex items-center justify-center",
+                            deviceType === 'mobile' ? 'h-48' : 'h-96'
+                          )}>
+                            <div className="text-center text-gray-500">
+                              <Image className={cn("mx-auto mb-4", deviceType === 'mobile' ? 'w-12 h-12' : 'w-16 h-16')} />
+                              <p className={cn(deviceType === 'mobile' ? 'text-xs' : 'text-sm')}>Immagine della sezione</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  
-                  {/* Colonna testo */}
-                  <div className={cn(layoutStyle.textColumn)}>
-                    <h2 className={cn(
-                      "font-serif font-light text-gray-800 mb-6",
-                      deviceType === 'mobile' ? 'text-2xl' : 'text-3xl'
-                    )}>
-                      {sectionProps.title || 'We have 17+ years of Experience'}
-                    </h2>
-                    <p className={cn(
-                      "text-gray-600 leading-relaxed mb-8",
-                      deviceType === 'mobile' ? 'text-base' : 'text-lg'
-                    )}>
-                      {sectionProps.content || 'Consectetur adipisicing elit. Nihil, illum voluptate eveniet ex fugit ea delectus, sed voluptatem. Laborum accusantium libero commodi id officiis itaque esse adipisci, necessitatibus asperiores, illo odio.'}
-                    </p>
-                    <Button className={cn(
-                      "text-white font-medium rounded-lg transition-colors",
-                      deviceType === 'mobile' ? 'px-4 py-2 text-sm' : 'px-6 py-3',
-                      sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
-                      sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
-                      sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
-                      sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 hover:bg-violet-700' :
-                      'bg-gray-800 hover:bg-gray-700'
-                    )}>
-                      {sectionProps.ctaText || 'MORE ABOUT US'}
-                    </Button>
-                  </div>
+                      
+                      {/* Colonna testo */}
+                      <div className={cn(layoutStyle.textColumn)}>
+                        <h2 className={cn(
+                          "font-serif font-light text-gray-800 mb-6",
+                          deviceType === 'mobile' ? 'text-2xl' : 'text-3xl'
+                        )}>
+                          {sectionProps.title || 'We have 17+ years of Experience'}
+                        </h2>
+                        <p className={cn(
+                          "text-gray-600 leading-relaxed mb-8",
+                          deviceType === 'mobile' ? 'text-base' : 'text-lg'
+                        )}>
+                          {sectionProps.content || 'Consectetur adipisicing elit. Nihil, illum voluptate eveniet ex fugit ea delectus, sed voluptatem. Laborum accusantium libero commodi id officiis itaque esse adipisci, necessitatibus asperiores, illo odio.'}
+                        </p>
+                        <Button className={cn(
+                          "text-white font-medium rounded-lg transition-colors",
+                          deviceType === 'mobile' ? 'px-4 py-2 text-sm' : 'px-6 py-3',
+                          sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
+                          sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
+                          sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
+                          sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 hover:bg-violet-700' :
+                          'bg-gray-800 hover:bg-gray-700'
+                        )}>
+                          {sectionProps.ctaText || 'MORE ABOUT US'}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Desktop: immagine prima, testo dopo */}
+                      {/* Colonna immagine */}
+                      <div className={cn(layoutStyle.imageColumn)}>
+                        {sectionProps.image ? (
+                          <img 
+                            src={sectionProps.image} 
+                            alt={sectionProps.imageAlt || 'About'} 
+                            className="w-full h-96 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <div className="text-center text-gray-500">
+                              <Image className="w-16 h-16 mx-auto mb-4" />
+                              <p className="text-sm">Immagine della sezione</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Colonna testo */}
+                      <div className={cn(layoutStyle.textColumn)}>
+                        <h2 className="text-3xl font-serif font-light text-gray-800 mb-6">
+                          {sectionProps.title || 'We have 17+ years of Experience'}
+                        </h2>
+                        <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                          {sectionProps.content || 'Consectetur adipisicing elit. Nihil, illum voluptate eveniet ex fugit ea delectus, sed voluptatem. Laborum accusantium libero commodi id officiis itaque esse adipisci, necessitatibus asperiores, illo odio.'}
+                        </p>
+                        <Button className={cn(
+                          "px-6 py-3 text-white font-medium rounded-lg transition-colors",
+                          sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
+                          sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
+                          sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
+                          sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 hover:bg-violet-700' :
+                          'bg-gray-800 hover:bg-gray-700'
+                        )}>
+                          {sectionProps.ctaText || 'MORE ABOUT US'}
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 /* Layout standard per altri layout */
