@@ -25,15 +25,10 @@ export function isSubscriptionActive(user: User | null): boolean {
   // ✅ Stati che permettono l'accesso
   if (status === 'ACTIVE' || status === 'TRIALING') return true
   
-  // ✅ CANCELED: Permetti accesso se ancora nel periodo di fatturazione
+  // ❌ CANCELED: BLOCCA IMMEDIATAMENTE - abbonamento disdetto
   if (status === 'CANCELED') {
-    const currentPeriodEnd = (user as any).currentPeriodEnd
-    if (currentPeriodEnd) {
-      const endDate = new Date(currentPeriodEnd).getTime()
-      const now = Date.now()
-      // Se siamo ancora nel periodo di fatturazione, permetti l'accesso
-      if (now < endDate) return true
-    }
+    console.log('❌ Accesso NEGATO: abbonamento disdetto')
+    return false
   }
   
   // ✅ PAST_DUE: Permetti accesso per 2 tentativi di pagamento
@@ -55,15 +50,7 @@ export function getSubscriptionBlockReason(user: User | null): string {
     case 'TRIALING':
       return 'Prova gratuita attiva. Completa il pagamento per continuare dopo il trial.'
     case 'CANCELED':
-      const currentPeriodEnd = (user as any).currentPeriodEnd
-      if (currentPeriodEnd) {
-        const endDate = new Date(currentPeriodEnd)
-        const now = new Date()
-        if (now < endDate) {
-          return `Abbonamento disdetto. I servizi continueranno fino al ${endDate.toLocaleDateString('it-IT')}.`
-        }
-      }
-      return 'Abbonamento disdetto. Riattiva per continuare.'
+      return '🚫 Abbonamento DISDETTO. Non hai più accesso ai servizi. Contatta il supporto per riattivare.'
     case 'PAST_DUE':
       if (paymentAttempts <= 2) {
         return `Pagamento non riuscito (tentativo ${paymentAttempts}/2). Aggiorna il metodo di pagamento per continuare.`

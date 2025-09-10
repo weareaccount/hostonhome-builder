@@ -1105,20 +1105,26 @@ export default function Dashboard() {
                           )}
                           
                           {/* ✅ Abbonamento Disdetto Banner */}
-                          {(user as any)?.subscriptionStatus === 'CANCELED' && (
-                            <div className="p-4 rounded-xl bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 flex items-start gap-3">
-                              <div className="text-2xl">📋</div>
-                              <div className="flex-1">
-                                <div className="text-xs uppercase tracking-wide text-orange-600 font-semibold">Abbonamento Disdetto</div>
-                                <div className="text-sm text-orange-900 font-medium mb-2">
-                                  Il tuo abbonamento è stato disdetto con successo.
-                                </div>
-                                <div className="text-xs text-orange-700">
-                                  I servizi continueranno fino alla fine del periodo di fatturazione corrente.
-                                </div>
-                              </div>
-                            </div>
-                          )}
+        {(user as any)?.subscriptionStatus === 'CANCELED' && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 flex items-start gap-3">
+            <div className="text-2xl">🚫</div>
+            <div className="flex-1">
+              <div className="text-xs uppercase tracking-wide text-red-600 font-semibold">Abbonamento Disdetto</div>
+              <div className="text-sm text-red-900 font-medium mb-2">
+                Il tuo abbonamento è stato DISDETTO IMMEDIATAMENTE.
+              </div>
+              <div className="text-xs text-red-700 mb-2">
+                🚫 Non hai più accesso ai tuoi siti web
+              </div>
+              <div className="text-xs text-red-700 mb-2">
+                🚫 Non puoi più modificare o pubblicare contenuti
+              </div>
+              <div className="text-xs text-red-700">
+                💡 Contatta il supporto per riattivare l'abbonamento
+              </div>
+            </div>
+          </div>
+        )}
                           
                           {/* ✅ Payment Issue Banner */}
                           {!isSubscriptionActive(user) && !trialInfo.isTrial && (user as any)?.subscriptionStatus !== 'CANCELED' && (
@@ -1184,23 +1190,23 @@ export default function Dashboard() {
                               console.log('🔍 Test abbonamento:', data)
                               
                               if (data.success) {
-                                alert(`✅ Test completato!
+                                alert(`✅ Test Completato!
 
 📊 STATO UTENTE:
 • Email: ${data.user.email}
-• Status: ${data.user.subscriptionStatus}
-• Customer ID: ${data.user.stripeCustomerId}
-• Subscription ID: ${data.user.stripeSubscriptionId}
-• Period End: ${data.user.currentPeriodEnd}
-• Cancel At Period End: ${data.user.cancelAtPeriodEnd}
+• Stato: ${data.user.subscriptionStatus}
+• ID Cliente: ${data.user.stripeCustomerId}
+• ID Abbonamento: ${data.user.stripeSubscriptionId}
+• Fine Periodo: ${data.user.currentPeriodEnd}
+• Disdetto alla Fine: ${data.user.cancelAtPeriodEnd}
 
 💳 STRIPE:
-• Customer: ${data.stripe?.customer?.id}
+• Cliente: ${data.stripe?.customer?.id}
 • Abbonamenti: ${data.stripe?.subscriptions?.length || 0}
 
 Controlla la console per dettagli completi.`)
                               } else {
-                                alert(`❌ Errore test: ${data.error}`)
+                                alert(`❌ Errore Test: ${data.error}`)
                               }
                             } catch (error: any) {
                               alert(`❌ Errore: ${error.message}`)
@@ -1239,15 +1245,15 @@ Sei sicuro di voler procedere con la disdetta?`)) return
                             if (!resp.ok || !data.success) {
                               alert(data.error || 'Errore durante la disdetta')
                             } else {
-                              alert(`✅ Abbonamento disdetto con successo!
+                              alert(`✅ Abbonamento DISDETTO IMMEDIATAMENTE!
 
-📅 Il tuo abbonamento terminerà alla fine del periodo di fatturazione corrente.
+🚫 Il tuo abbonamento è stato cancellato istantaneamente.
 
 ⚠️ IMPORTANTE:
-• I tuoi siti continueranno a funzionare fino alla fine del periodo
-• Potrai ancora modificare i tuoi siti fino alla scadenza
-• Dopo la scadenza, i siti non saranno più accessibili
-• I dati saranno conservati per 30 giorni dopo la scadenza
+• I tuoi siti NON sono più accessibili
+• Non puoi più modificare o pubblicare i tuoi siti
+• I dati saranno conservati per 30 giorni
+• Dopo 30 giorni, tutti i dati verranno eliminati
 
 💡 Per riattivare l'abbonamento, contatta il supporto.`)
                               // ✅ Ricarica i dati dell'utente per aggiornare lo stato

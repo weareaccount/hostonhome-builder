@@ -22,15 +22,13 @@ export async function POST(request: Request) {
 
     console.log('🔄 Disdetta abbonamento:', subscriptionId)
 
-    // ✅ Disdici l'abbonamento in Stripe
-    const sub = await stripe.subscriptions.update(subscriptionId, {
-      cancel_at_period_end: true,
-    })
+    // ✅ Disdici IMMEDIATAMENTE l'abbonamento in Stripe
+    const sub = await stripe.subscriptions.cancel(subscriptionId)
 
-    console.log('✅ Abbonamento disdetto in Stripe:', {
+    console.log('✅ Abbonamento DISDETTO IMMEDIATAMENTE in Stripe:', {
       id: sub.id,
       status: sub.status,
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      canceledAt: sub.canceled_at,
       currentPeriodEnd: sub.current_period_end
     })
 
@@ -56,9 +54,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      status: sub.status, 
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
-      currentPeriodEnd: sub.current_period_end
+      status: sub.status,
+      canceledAt: sub.canceled_at,
+      currentPeriodEnd: sub.current_period_end,
+      immediatelyCanceled: true
     })
   } catch (error: any) {
     console.error('❌ Errore disdetta abbonamento:', error)

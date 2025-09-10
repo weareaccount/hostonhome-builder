@@ -65,9 +65,9 @@ async function handleSubscriptionCreated(subscription: any) {
 async function handleSubscriptionUpdated(subscription: any) {
   console.log('📧 Abbonamento aggiornato:', subscription.id)
   
-  // ✅ Se l'abbonamento è stato disdetto
-  if (subscription.cancel_at_period_end) {
-    console.log('📋 Abbonamento disdetto:', subscription.id)
+  // ✅ Se l'abbonamento è stato disdetto (sia cancel_at_period_end che canceled)
+  if (subscription.cancel_at_period_end || subscription.status === 'canceled') {
+    console.log('📋 Abbonamento disdetto:', subscription.id, 'Status:', subscription.status)
     
     // Sincronizza lo stato dell'abbonamento
     const user = await getUserByCustomerId(subscription.customer)
