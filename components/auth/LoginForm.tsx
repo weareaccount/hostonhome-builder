@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Sparkles, ArrowRight } from 'lucide-react'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true)
@@ -70,10 +71,21 @@ export function LoginForm() {
                 plan: selectedPlan || plan || 'BASE',
                 stripeCustomerId: data.customerId || null,
                 stripeSubscriptionId: data.subscriptionId || null,
-                subscriptionStatus: data.status || 'active',
+                subscriptionStatus: data.status || 'trialing',
                 currentPeriodStart: data.periodStart || null,
                 currentPeriodEnd: data.periodEnd || null,
               })
+              
+              // ✅ Invia email di benvenuto
+              try {
+                const planName = selectedPlan || plan || 'BASE'
+                await sendWelcomeEmail(storedEmail, planName, 7)
+                console.log('✅ Email di benvenuto inviata a:', storedEmail)
+              } catch (emailError) {
+                console.error('❌ Errore invio email di benvenuto:', emailError)
+                // Non bloccare il flusso se l'email fallisce
+              }
+              
               window.sessionStorage.removeItem('pending_email')
               window.sessionStorage.removeItem('pending_password')
               router.replace('/dashboard')

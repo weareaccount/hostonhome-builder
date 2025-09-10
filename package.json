@@ -47,6 +47,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
     "react-hot-toast": "^2.4.1",
+    "resend": "^6.0.3",
     "sharp": "^0.33.2",
     "stripe": "^14.12.0",
     "tailwind-merge": "^2.2.0",
