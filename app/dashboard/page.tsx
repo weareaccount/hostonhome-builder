@@ -220,9 +220,34 @@ export default function Dashboard() {
     }
   }, [user])
 
-  const loadProjects = async () => {
+  const loadProjects = async (forceRefresh = false) => {
     try {
       setProjectsLoading(true)
+      
+      // Se abbiamo già progetti e non è un refresh forzato, carica prima quelli locali
+      if (!forceRefresh && projects.length > 0) {
+        const localProjects = ProjectService.getLocalProjects()
+          .filter(p => p.user_id === user!.id)
+          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+        
+        if (localProjects.length > 0) {
+          setProjects(localProjects)
+          setProjectsLoading(false)
+          
+          // Poi sincronizza in background
+          setTimeout(async () => {
+            try {
+              const userProjects = await ProjectService.getUserProjects(user!.id)
+              setProjects(userProjects)
+            } catch (error) {
+              console.warn('⚠️ Sincronizzazione background fallita:', error)
+            }
+          }, 100)
+          return
+        }
+      }
+      
+      // Altrimenti carica normalmente
       const userProjects = await ProjectService.getUserProjects(user!.id)
       setProjects(userProjects)
     } catch (error) {
@@ -283,13 +308,17 @@ export default function Dashboard() {
   const handleDeleteProject = async (projectId: string) => {
     if (confirm('Sei sicuro di voler eliminare questo progetto?')) {
       try {
+        // Aggiorna l'UI immediatamente rimuovendo il progetto dalla lista
+        setProjects(prevProjects => prevProjects.filter(p => p.id !== projectId))
+        
+        // Poi elimina il progetto in background
         await ProjectService.deleteProject(projectId)
-        // Ricarica i progetti per aggiornare la lista
-        await loadProjects()
         console.log('✅ Progetto eliminato con successo')
       } catch (error) {
         console.error('❌ Errore nell\'eliminazione del progetto:', error)
         alert('Errore nell\'eliminazione del progetto. Riprova.')
+        // In caso di errore, ricarica i progetti per ripristinare lo stato
+        await loadProjects()
       }
     }
   }

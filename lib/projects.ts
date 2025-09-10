@@ -34,7 +34,7 @@ export class ProjectService {
   // Storage locale come fallback
   private static localStorageKey = 'hostonhome_projects';
   
-  private static getLocalProjects(): Project[] {
+  static getLocalProjects(): Project[] {
     if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(this.localStorageKey);
@@ -134,7 +134,7 @@ export class ProjectService {
     // Poi prova a sincronizzare con Supabase (con timeout ridotto)
     try {
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout Supabase')), 3000) // 3 secondi invece di 10
+        setTimeout(() => reject(new Error('Timeout Supabase')), 2000) // 2 secondi per essere più veloce
       );
       
       const supabasePromise = supabase
