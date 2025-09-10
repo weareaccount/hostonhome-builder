@@ -2491,7 +2491,7 @@ export function InteractiveThemePreview({
 
   return (
     <div 
-      className={cn("min-h-screen", fontClass, className)}
+      className={cn("min-h-screen w-full", fontClass, className)}
       style={{ fontFamily: FONT_FAMILIES[theme.font] }}
     >
       {/* Responsive Preview Indicator - Solo in modalità builder */}
@@ -2507,6 +2507,13 @@ export function InteractiveThemePreview({
       {!readOnly && deviceType === 'mobile' && (
         <div className="fixed top-32 right-4 z-50 bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg px-3 py-2 text-xs font-medium text-yellow-800">
           Sezioni: {sections.length}
+        </div>
+      )}
+
+      {/* Scroll indicator per mobile */}
+      {!readOnly && deviceType === 'mobile' && sections.length > 1 && (
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium animate-bounce">
+          👆 Scorri per vedere tutte le sezioni
         </div>
       )}
 

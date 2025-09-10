@@ -575,7 +575,7 @@ const CanvasArea = ({
   });
 
   return (
-    <div className="flex-1 bg-gray-50 overflow-auto">
+    <div className="flex-1 bg-gray-50 overflow-auto min-h-full">
       <InteractiveThemePreview
         layoutType={layoutType}
         theme={theme}
@@ -958,7 +958,7 @@ export function ElementorStyleBuilder({
 
       {/* Area mobile: una vista alla volta per evitare sovrapposizioni */}
       <div className={cn(
-        "md:hidden flex-1 min-h-0",
+        "md:hidden flex-1 min-h-0 overflow-hidden",
         mobileTab === 'preview' ? "pb-20" : ""
       )}>
         {mobileTab === 'widgets' ? (
@@ -974,20 +974,22 @@ export function ElementorStyleBuilder({
             fullPage
           />
         ) : (
-          <CanvasArea
-            sections={sections}
-            onSectionsChange={onSectionsChange}
-            layoutType={layoutType}
-            theme={theme}
-            onThemeChange={handleThemeChange}
-            onSectionSelect={setSelectedSectionId}
-            selectedSectionId={selectedSectionId}
-            onSectionUpdate={handleSectionUpdate}
-            onSectionDelete={handleSectionDelete}
-            onSectionPublish={handlePublishSection}
-            onSectionUnpublish={handleUnpublishSection}
-            deviceType={deviceType}
-          />
+          <div className="h-full overflow-y-auto">
+            <CanvasArea
+              sections={sections}
+              onSectionsChange={onSectionsChange}
+              layoutType={layoutType}
+              theme={theme}
+              onThemeChange={handleThemeChange}
+              onSectionSelect={setSelectedSectionId}
+              selectedSectionId={selectedSectionId}
+              onSectionUpdate={handleSectionUpdate}
+              onSectionDelete={handleSectionDelete}
+              onSectionPublish={handlePublishSection}
+              onSectionUnpublish={handleUnpublishSection}
+              deviceType={deviceType}
+            />
+          </div>
         )}
       </div>
 
