@@ -342,6 +342,58 @@ const InlineEditor = ({
                 {renderEditableField('ctaText', 'Scopri di più', sectionProps.ctaText)}
                 <p className="text-sm text-purple-600 mt-2">Testo del pulsante principale per guidare i visitatori</p>
               </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-orange-800 mb-3">🎨 Colore del Bottone Principale</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'BLUE', label: 'Blu', color: 'bg-blue-600' },
+                    { key: 'GREEN', label: 'Verde', color: 'bg-green-600' },
+                    { key: 'RED', label: 'Rosso', color: 'bg-red-600' },
+                    { key: 'VIOLET', label: 'Viola', color: 'bg-violet-600' }
+                  ].map((color) => (
+                    <button
+                      key={color.key}
+                      onClick={() => onUpdate({ primaryButtonColor: color.key })}
+                      className={cn(
+                        "px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all",
+                        sectionProps.primaryButtonColor === color.key
+                          ? "border-gray-800 text-gray-800"
+                          : "border-gray-300 text-gray-600 hover:border-gray-400"
+                      )}
+                    >
+                      <div className={cn("w-4 h-4 rounded-full mx-auto mb-1", color.color)}></div>
+                      {color.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-pink-800 mb-3">🎨 Colore del Bottone Secondario</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'BLUE', label: 'Blu', color: 'bg-blue-600' },
+                    { key: 'GREEN', label: 'Verde', color: 'bg-green-600' },
+                    { key: 'RED', label: 'Rosso', color: 'bg-red-600' },
+                    { key: 'VIOLET', label: 'Viola', color: 'bg-violet-600' }
+                  ].map((color) => (
+                    <button
+                      key={color.key}
+                      onClick={() => onUpdate({ secondaryButtonColor: color.key })}
+                      className={cn(
+                        "px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all",
+                        sectionProps.secondaryButtonColor === color.key
+                          ? "border-gray-800 text-gray-800"
+                          : "border-gray-300 text-gray-600 hover:border-gray-400"
+                      )}
+                    >
+                      <div className={cn("w-4 h-4 rounded-full mx-auto mb-1", color.color)}></div>
+                      {color.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-orange-800 mb-3">🖼️ Immagine di Sfondo</h3>
