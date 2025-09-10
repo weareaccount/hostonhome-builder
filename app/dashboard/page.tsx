@@ -63,6 +63,37 @@ export default function Dashboard() {
   // ✅ Informazioni sul trial
   const trialInfo = useMemo(() => getTrialInfo(user), [user])
   
+  // ✅ Informazioni sul periodo di fatturazione
+  const billingInfo = useMemo(() => {
+    if (!user) return null
+    
+    const periodStart = (user as any).currentPeriodStart
+    const periodEnd = (user as any).currentPeriodEnd
+    const status = (user as any).subscriptionStatus
+    
+    if (!periodStart || !periodEnd) return null
+    
+    const startDate = new Date(periodStart)
+    const endDate = new Date(periodEnd)
+    const now = new Date()
+    
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    const daysPassed = Math.ceil((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    const daysRemaining = Math.max(0, totalDays - daysPassed)
+    
+    const progressPercentage = Math.min(100, Math.max(0, (daysPassed / totalDays) * 100))
+    
+    return {
+      startDate,
+      endDate,
+      totalDays,
+      daysPassed,
+      daysRemaining,
+      progressPercentage,
+      status
+    }
+  }, [user])
+  
   
   // ✅ Sincronizzazione automatica SEMPRE all'avvio della dashboard
   useEffect(() => {
@@ -1121,6 +1152,39 @@ export default function Dashboard() {
                                 <div className="text-xs text-blue-700">
                                   Al termine del trial, l'abbonamento si attiverà automaticamente.
                                 </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* ✅ Barra di Progresso Fatturazione */}
+                          {billingInfo && !trialInfo.isTrial && billingInfo.status === 'ACTIVE' && (
+                            <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-xs uppercase tracking-wide text-blue-600 font-semibold">Ciclo di Fatturazione</div>
+                                <div className="text-xs text-blue-700">
+                                  {billingInfo.daysRemaining} giorni rimanenti
+                                </div>
+                              </div>
+                              
+                              {/* Barra di Progresso */}
+                              <div className="w-full bg-blue-100 rounded-full h-2 mb-2">
+                                <div 
+                                  className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${billingInfo.progressPercentage}%` }}
+                                ></div>
+                              </div>
+                              
+                              <div className="flex items-center justify-between text-xs text-blue-700">
+                                <div>
+                                  Iniziato: {billingInfo.startDate.toLocaleDateString('it-IT')}
+                                </div>
+                                <div>
+                                  Rinnovo: {billingInfo.endDate.toLocaleDateString('it-IT')}
+                                </div>
+                              </div>
+                              
+                              <div className="text-xs text-blue-600 mt-1">
+                                {billingInfo.daysPassed} di {billingInfo.totalDays} giorni completati
                               </div>
                             </div>
                           )}
