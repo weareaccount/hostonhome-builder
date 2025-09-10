@@ -38,8 +38,11 @@ export class ProjectService {
     if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(this.localStorageKey);
-      return data ? JSON.parse(data) : [];
-    } catch {
+      const projects = data ? JSON.parse(data) : [];
+      console.log('📁 Progetti locali caricati:', projects.length, 'progetti');
+      return projects;
+    } catch (error) {
+      console.error('Errore nel caricamento locale:', error);
       return [];
     }
   }
@@ -48,6 +51,7 @@ export class ProjectService {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(this.localStorageKey, JSON.stringify(projects));
+      console.log('💾 Progetti salvati localmente:', projects.length, 'progetti');
     } catch (error) {
       console.error('Errore nel salvataggio locale:', error);
     }
@@ -80,7 +84,11 @@ export class ProjectService {
           throw error;
         }
         
-        console.log('✅ Progetto creato su Supabase:', project);
+        // Salva anche localmente come backup
+        const projects = this.getLocalProjects();
+        projects.push(project);
+        this.saveLocalProjects(projects);
+        console.log('✅ Progetto creato su Supabase e salvato localmente:', project);
         return project;
       } catch (error) {
         console.warn('⚠️ Creazione progetto su Supabase fallita, uso fallback locale:', error)

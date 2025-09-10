@@ -218,6 +218,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
+      // Carica prima i progetti locali per feedback immediato
+      const localProjects = ProjectService.getLocalProjects()
+        .filter(p => p.user_id === user.id)
+        .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      
+      console.log('📁 Dashboard: progetti locali per utente', user.id, ':', localProjects.length)
+      
+      if (localProjects.length > 0) {
+        setProjects(localProjects)
+        setProjectsLoading(false)
+        console.log('✅ Dashboard: progetti locali caricati:', localProjects.length)
+      }
+      
+      // Poi carica i progetti da Supabase
       loadProjects()
     }
   }, [user])
