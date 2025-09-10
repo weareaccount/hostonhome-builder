@@ -191,6 +191,7 @@ const BuilderHeader = ({
             onClick={onSave}
             className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
             size="sm"
+            data-save-button
           >
             <Save className="w-4 h-4 mr-2" />
             Salva Progetto
@@ -566,13 +567,6 @@ const CanvasArea = ({
   deviceType: 'desktop' | 'tablet' | 'mobile';
 }) => {
 
-  // Debug logging per CanvasArea
-  console.log('🖼️ CanvasArea rendering:', {
-    sectionsCount: sections.length,
-    sections: sections,
-    deviceType: deviceType,
-    layoutType: layoutType
-  });
 
   return (
     <div className="flex-1 bg-gray-50 overflow-auto min-h-full">
@@ -1036,6 +1030,7 @@ export function ElementorStyleBuilder({
             <Button 
               onClick={onSave} 
               className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-6 py-2"
+              data-save-button
             >
               <Save className="w-4 h-4 mr-2" />
               Salva

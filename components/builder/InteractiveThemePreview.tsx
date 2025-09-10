@@ -2438,6 +2438,14 @@ export function InteractiveThemePreview({
   const accentColor = ACCENT_COLORS[theme.accent];
   const fontClass = FONT_CLASSES[theme.font];
   
+  // Debug logging per tema
+  console.log('🎨 Tema applicato:', {
+    theme: theme,
+    accentColor: accentColor,
+    fontClass: fontClass,
+    layoutStyle: layoutStyle
+  });
+  
   // Check if font is loaded
   useEffect(() => {
     if (theme.font === 'WORKSANS') {
@@ -2481,13 +2489,6 @@ export function InteractiveThemePreview({
     }
   };
 
-  // Debug logging per le sezioni
-  console.log('🎨 InteractiveThemePreview rendering:', {
-    sectionsCount: sections.length,
-    sections: sections,
-    deviceType: deviceType,
-    readOnly: readOnly
-  });
 
   return (
     <div 
@@ -2503,26 +2504,11 @@ export function InteractiveThemePreview({
         </div>
       )}
 
-      {/* Debug info per mobile */}
-      {!readOnly && deviceType === 'mobile' && (
-        <div className="fixed top-32 right-4 z-50 bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg px-3 py-2 text-xs font-medium text-yellow-800">
-          Sezioni: {sections.length}
-        </div>
-      )}
-
-      {/* Scroll indicator per mobile */}
-      {!readOnly && deviceType === 'mobile' && sections.length > 1 && (
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium animate-bounce">
-          👆 Scorri per vedere tutte le sezioni
-        </div>
-      )}
 
       {/* Sections */}
       <div className={cn(getResponsiveContainer(), 'break-words')}
            style={{ wordBreak: 'break-word' }}>
-        {sections.map((section, index) => {
-          console.log(`📋 Rendering sezione ${index + 1}/${sections.length}:`, section.type, section.id);
-          return (
+        {sections.map((section, index) => (
             <div key={section.id} className={index > 0 ? 'mt-8' : ''}>
               <SectionComponent
                 section={section}
@@ -2538,8 +2524,7 @@ export function InteractiveThemePreview({
                 readOnly={readOnly}
               />
             </div>
-          );
-        })}
+        ))}
       </div>
 
       {/* Inline Editor Modal - Solo se non readOnly */}

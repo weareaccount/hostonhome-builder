@@ -392,7 +392,23 @@ export default function BuilderPage() {
       });
       
       console.log('✅ Progetto salvato manualmente con successo!', result);
-      alert('✅ Progetto salvato con successo!');
+      
+      // Feedback visivo migliorato
+      const saveButton = document.querySelector('[data-save-button]') as HTMLElement;
+      if (saveButton) {
+        const originalText = saveButton.textContent;
+        saveButton.textContent = '✅ Salvato!';
+        saveButton.style.backgroundColor = '#10b981';
+        saveButton.style.color = 'white';
+        
+        setTimeout(() => {
+          saveButton.textContent = originalText;
+          saveButton.style.backgroundColor = '';
+          saveButton.style.color = '';
+        }, 2000);
+      } else {
+        alert('✅ Progetto salvato con successo!');
+      }
     } catch (error) {
       console.error('❌ Errore nel salvataggio manuale:', error);
       alert('❌ Errore nel salvataggio del progetto: ' + (error instanceof Error ? error.message : String(error)));
