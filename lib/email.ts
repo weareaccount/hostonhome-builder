@@ -4,11 +4,11 @@
 import { Resend } from 'resend'
 
 // Inizializza Resend (richiede API key in .env.local)
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 // Template email per conferma registrazione
 export async function sendWelcomeEmail(email: string, plan: string, trialDays: number = 7) {
-  if (!process.env.RESEND_API_KEY) {
+  if (!resend || !process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY non configurato. Email non inviata.')
     return { success: false, error: 'Email service non configurato' }
   }
@@ -91,7 +91,7 @@ export async function sendWelcomeEmail(email: string, plan: string, trialDays: n
 
 // Template email per fine trial (da implementare con webhook)
 export async function sendTrialEndingEmail(email: string, plan: string, daysRemaining: number) {
-  if (!process.env.RESEND_API_KEY) {
+  if (!resend || !process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY non configurato. Email non inviata.')
     return { success: false, error: 'Email service non configurato' }
   }
@@ -163,7 +163,7 @@ export async function sendTrialEndingEmail(email: string, plan: string, daysRema
 
 // Template email per pagamento fallito
 export async function sendPaymentFailedEmail(email: string, plan: string) {
-  if (!process.env.RESEND_API_KEY) {
+  if (!resend || !process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY non configurato. Email non inviata.')
     return { success: false, error: 'Email service non configurato' }
   }
