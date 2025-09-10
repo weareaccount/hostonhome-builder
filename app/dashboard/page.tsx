@@ -1166,6 +1166,51 @@ export default function Dashboard() {
                           {user?.plan === 'PRO' ? 'Piano massimo' : 'Fai Upgrade'}
                         </Button>
                         <Button
+                          variant="outline"
+                          onClick={async () => {
+                            if (!user?.id) {
+                              alert('ID utente non trovato')
+                              return
+                            }
+                            
+                            try {
+                              const resp = await fetch('/api/test-subscription', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userId: user.id }),
+                              })
+                              
+                              const data = await resp.json()
+                              console.log('🔍 Test abbonamento:', data)
+                              
+                              if (data.success) {
+                                alert(`✅ Test completato!
+
+📊 STATO UTENTE:
+• Email: ${data.user.email}
+• Status: ${data.user.subscriptionStatus}
+• Customer ID: ${data.user.stripeCustomerId}
+• Subscription ID: ${data.user.stripeSubscriptionId}
+• Period End: ${data.user.currentPeriodEnd}
+• Cancel At Period End: ${data.user.cancelAtPeriodEnd}
+
+💳 STRIPE:
+• Customer: ${data.stripe?.customer?.id}
+• Abbonamenti: ${data.stripe?.subscriptions?.length || 0}
+
+Controlla la console per dettagli completi.`)
+                              } else {
+                                alert(`❌ Errore test: ${data.error}`)
+                              }
+                            } catch (error: any) {
+                              alert(`❌ Errore: ${error.message}`)
+                            }
+                          }}
+                          className="bg-purple-500 text-white hover:bg-purple-600"
+                        >
+                          🔍 Test
+                        </Button>
+                        <Button
                           variant="destructive"
                           onClick={async () => {
                             const subscriptionId = user?.stripeSubscriptionId
