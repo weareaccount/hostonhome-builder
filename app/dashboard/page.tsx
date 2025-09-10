@@ -57,55 +57,28 @@ export default function Dashboard() {
   const [showUpgradeSelector, setShowUpgradeSelector] = useState(false)
   const [upgradePlan, setUpgradePlan] = useState<'PLUS' | 'PRO' | ''>('')
   const [upgradeInterval, setUpgradeInterval] = useState<'monthly' | 'yearly'>('monthly')
-  const [syncingSubscription, setSyncingSubscription] = useState(false)
 
   const formatEuro = (cents: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
   
   // ✅ Informazioni sul trial
   const trialInfo = useMemo(() => getTrialInfo(user), [user])
   
-  // ✅ Funzione per sincronizzare l'abbonamento
-  const syncSubscription = async () => {
-    if (!user) {
-      alert('Utente non trovato.')
-      return
-    }
-    
-    setSyncingSubscription(true)
-    try {
-      const response = await fetch('/api/sync-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          customerId: (user as any).stripeCustomerId,
-          userEmail: user.email
-        })
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        alert('✅ Abbonamento sincronizzato con successo! Ricarica la pagina per vedere le modifiche.')
-        window.location.reload()
-      } else {
-        alert(`❌ Errore sincronizzazione: ${data.error}`)
-      }
-    } catch (error: any) {
-      alert(`❌ Errore: ${error.message}`)
-    } finally {
-      setSyncingSubscription(false)
-    }
-  }
   
-  // ✅ Sincronizzazione automatica all'avvio della dashboard
+  // ✅ Sincronizzazione automatica SEMPRE all'avvio della dashboard
   useEffect(() => {
     const autoSyncSubscription = async () => {
       if (!user) return
       
-      // Controlla se l'abbonamento è attivo
-      const isActive = isSubscriptionActive(user)
-      if (isActive) return // Se è già attivo, non serve sincronizzare
+      // ✅ Controlla se abbiamo già sincronizzato in questa sessione
+      const syncKey = `sync_${user.id}_${Date.now()}`
+      const lastSync = sessionStorage.getItem('lastSync')
+      const now = Date.now()
+      
+      // Se abbiamo sincronizzato negli ultimi 30 secondi, non sincronizzare di nuovo
+      if (lastSync && (now - parseInt(lastSync)) < 30000) {
+        console.log('⏭️ Sincronizzazione saltata (già fatta di recente)')
+        return
+      }
       
       console.log('🔄 Sincronizzazione automatica abbonamento...')
       try {
@@ -122,6 +95,8 @@ export default function Dashboard() {
         const data = await response.json()
         if (data.success) {
           console.log('✅ Abbonamento sincronizzato automaticamente')
+          // ✅ Salva il timestamp della sincronizzazione
+          sessionStorage.setItem('lastSync', now.toString())
           // Ricarica la pagina per aggiornare lo stato
           window.location.reload()
         } else {
@@ -132,8 +107,8 @@ export default function Dashboard() {
       }
     }
     
-    // Sincronizza dopo 2 secondi dall'avvio
-    const timeout = setTimeout(autoSyncSubscription, 2000)
+    // ✅ Sincronizza SEMPRE dopo 1 secondo dall'avvio
+    const timeout = setTimeout(autoSyncSubscription, 1000)
     return () => clearTimeout(timeout)
   }, [user])
   
@@ -1211,18 +1186,12 @@ Sei sicuro di voler procedere con la disdetta?`)) return
 • I dati saranno conservati per 30 giorni dopo la scadenza
 
 💡 Per riattivare l'abbonamento, contatta il supporto.`)
+                              // ✅ Ricarica la pagina per aggiornare lo stato
+                              window.location.reload()
                             }
                           }}
                         >
                           Disdici
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={syncSubscription}
-                          disabled={syncingSubscription}
-                          className="bg-blue-500 text-white hover:bg-blue-600"
-                        >
-                          {syncingSubscription ? '🔄 Sincronizzando...' : '🔄 Sincronizza'}
                         </Button>
                       </div>
 
