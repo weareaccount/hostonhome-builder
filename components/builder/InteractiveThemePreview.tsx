@@ -1570,12 +1570,22 @@ const SectionComponent = ({
                   {/* Colonna immagine */}
                   <div className={cn(layoutStyle.imageColumn)}>
                     {sectionProps.image ? (
-                      <img src={sectionProps.image} alt={sectionProps.imageAlt || 'About'} className="w-full h-96 object-cover rounded-lg" />
+                      <img 
+                        src={sectionProps.image} 
+                        alt={sectionProps.imageAlt || 'About'} 
+                        className={cn(
+                          "w-full object-cover rounded-lg",
+                          deviceType === 'mobile' ? 'h-48' : 'h-96'
+                        )} 
+                      />
                     ) : (
-                      <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <div className={cn(
+                        "w-full bg-gray-200 rounded-lg flex items-center justify-center",
+                        deviceType === 'mobile' ? 'h-48' : 'h-96'
+                      )}>
                         <div className="text-center text-gray-500">
-                          <Image className="w-16 h-16 mx-auto mb-4" />
-                          <p className="text-sm">Immagine della sezione</p>
+                          <Image className={cn("mx-auto mb-4", deviceType === 'mobile' ? 'w-12 h-12' : 'w-16 h-16')} />
+                          <p className={cn(deviceType === 'mobile' ? 'text-xs' : 'text-sm')}>Immagine della sezione</p>
                         </div>
                       </div>
                     )}
@@ -1583,14 +1593,21 @@ const SectionComponent = ({
                   
                   {/* Colonna testo */}
                   <div className={cn(layoutStyle.textColumn)}>
-                    <h2 className={cn("text-3xl font-serif font-light text-gray-800 mb-6")}>
+                    <h2 className={cn(
+                      "font-serif font-light text-gray-800 mb-6",
+                      deviceType === 'mobile' ? 'text-2xl' : 'text-3xl'
+                    )}>
                       {sectionProps.title || 'We have 17+ years of Experience'}
                     </h2>
-                    <p className={cn("text-gray-600 leading-relaxed mb-8 text-lg")}>
+                    <p className={cn(
+                      "text-gray-600 leading-relaxed mb-8",
+                      deviceType === 'mobile' ? 'text-base' : 'text-lg'
+                    )}>
                       {sectionProps.content || 'Consectetur adipisicing elit. Nihil, illum voluptate eveniet ex fugit ea delectus, sed voluptatem. Laborum accusantium libero commodi id officiis itaque esse adipisci, necessitatibus asperiores, illo odio.'}
                     </p>
                     <Button className={cn(
-                      "px-6 py-3 text-white font-medium rounded-lg transition-colors",
+                      "text-white font-medium rounded-lg transition-colors",
+                      deviceType === 'mobile' ? 'px-4 py-2 text-sm' : 'px-6 py-3',
                       sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
                       sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
                       sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
@@ -1607,7 +1624,7 @@ const SectionComponent = ({
                   <h2 className={cn(layoutStyle.sectionTitle, "text-left", deviceType === 'mobile' ? 'text-2xl' : '')}>
                     {sectionProps.title || 'Vivi Roma come un vero local'}
                   </h2>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                  <div className={cn("grid grid-cols-1 lg:grid-cols-2 items-start", deviceType === 'mobile' ? 'gap-4' : 'gap-8')}>
                     <div>
                       <p className={cn("text-gray-600 leading-relaxed", deviceType === 'mobile' ? 'text-base' : 'text-lg')}>
                         {sectionProps.content || 'Nel cuore di Roma, a pochi passi dalla stazione Termini e a soli 350 metri dalla fermata metro Vittorio Emanuele, il San Vito Suites è il punto di partenza perfetto per vivere la Capitale in totale comodità.'}
@@ -1615,12 +1632,22 @@ const SectionComponent = ({
                     </div>
                     <div>
                       {sectionProps.image ? (
-                        <img src={sectionProps.image} alt={sectionProps.imageAlt || 'About'} className="w-full h-80 object-cover rounded-lg" />
+                        <img 
+                          src={sectionProps.image} 
+                          alt={sectionProps.imageAlt || 'About'} 
+                          className={cn(
+                            "w-full object-cover rounded-lg",
+                            deviceType === 'mobile' ? 'h-48' : 'h-80'
+                          )} 
+                        />
                       ) : (
-                        <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <div className={cn(
+                          "w-full bg-gray-200 rounded-lg flex items-center justify-center",
+                          deviceType === 'mobile' ? 'h-48' : 'h-80'
+                        )}>
                           <div className="text-center text-gray-500">
-                            <Image className="w-12 h-12 mx-auto mb-2" />
-                            <p className="text-xs">Immagine della sezione</p>
+                            <Image className={cn("mx-auto mb-2", deviceType === 'mobile' ? 'w-10 h-10' : 'w-12 h-12')} />
+                            <p className={cn(deviceType === 'mobile' ? 'text-xs' : 'text-xs')}>Immagine della sezione</p>
                           </div>
                         </div>
                       )}
