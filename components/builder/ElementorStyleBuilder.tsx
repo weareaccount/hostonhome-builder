@@ -672,7 +672,10 @@ export function ElementorStyleBuilder({
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined
       });
-      alert('❌ Errore nel salvataggio: ' + (error instanceof Error ? error.message : String(error)));
+      const errorMessage = error instanceof Error ? error.message : 
+                          typeof error === 'object' ? JSON.stringify(error) : 
+                          String(error);
+      alert('❌ Errore nel salvataggio: ' + errorMessage);
     } finally {
       setSaving(false);
     }
@@ -702,6 +705,13 @@ export function ElementorStyleBuilder({
 
   const handleAddSection = (type: SectionType) => {
     console.log('🎯 Aggiungendo sezione:', type);
+    console.log('🎯 Stato attuale:', { 
+      sectionsCount: sections.length, 
+      user: !!user, 
+      siteId: site.id,
+      sections: sections 
+    });
+    
     // Gating: PHOTO_GALLERY e AMENITIES solo per PLUS/PRO; GET_YOUR_GUIDE solo PRO
     const plan = (user as any)?.plan
     if ((type === 'PHOTO_GALLERY' || type === 'AMENITIES') && !(plan === 'PLUS' || plan === 'PRO')) {
@@ -712,6 +722,8 @@ export function ElementorStyleBuilder({
       alert('Questo widget è disponibile solo con il piano Pro.');
       return;
     }
+    
+    try {
     
     const newSection: Section = {
       id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -860,15 +872,32 @@ export function ElementorStyleBuilder({
       } as any,
     };
 
-    console.log('✅ Nuova sezione creata:', newSection);
-    onSectionsChange([...sections, newSection]);
-    
-    // Auto-save dopo aver aggiunto una sezione
-    setTimeout(() => {
-      if (user && site.id) {
-        saveProject();
-      }
-    }, 1000);
+      console.log('✅ Nuova sezione creata:', newSection);
+      const updatedSections = [...sections, newSection];
+      console.log('📋 Aggiornando sezioni:', { 
+        oldCount: sections.length, 
+        newCount: updatedSections.length,
+        updatedSections: updatedSections 
+      });
+      
+      onSectionsChange(updatedSections);
+      
+      // Auto-save dopo aver aggiunto una sezione
+      setTimeout(() => {
+        if (user && site.id) {
+          console.log('💾 Avviando salvataggio automatico dopo aggiunta sezione...');
+          saveProject();
+        } else {
+          console.log('❌ Impossibile salvare: user o site.id mancanti', { user: !!user, siteId: site.id });
+        }
+      }, 1000);
+    } catch (error) {
+      console.error('❌ Errore durante la creazione della sezione:', error);
+      const errorMessage = error instanceof Error ? error.message : 
+                          typeof error === 'object' ? JSON.stringify(error) : 
+                          String(error);
+      alert('❌ Errore durante la creazione della sezione: ' + errorMessage);
+    }
   };
 
   const handleSectionUpdate = (sectionId: string, props: any) => {

@@ -362,7 +362,10 @@ export default function BuilderPage() {
         console.log('✅ Sezioni salvate automaticamente!', result);
       } catch (error) {
         console.error('❌ Errore nel salvataggio automatico delle sezioni:', error);
-        alert('❌ Errore nel salvataggio automatico: ' + (error instanceof Error ? error.message : String(error)));
+        const errorMessage = error instanceof Error ? error.message : 
+                            typeof error === 'object' ? JSON.stringify(error) : 
+                            String(error);
+        alert('❌ Errore nel salvataggio automatico: ' + errorMessage);
       }
     } else {
       console.log('⚠️ Nessun progetto reale per il salvataggio automatico');
@@ -411,7 +414,10 @@ export default function BuilderPage() {
       }
     } catch (error) {
       console.error('❌ Errore nel salvataggio manuale:', error);
-      alert('❌ Errore nel salvataggio del progetto: ' + (error instanceof Error ? error.message : String(error)));
+      const errorMessage = error instanceof Error ? error.message : 
+                          typeof error === 'object' ? JSON.stringify(error) : 
+                          String(error);
+      alert('❌ Errore nel salvataggio del progetto: ' + errorMessage);
     }
   };
 
