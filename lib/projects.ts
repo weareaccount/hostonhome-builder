@@ -121,36 +121,45 @@ export class ProjectService {
   static async getUserProjects(userId: string): Promise<Project[]> {
     const hasSupabase = this.checkSupabaseConfig();
     
-    if (hasSupabase) {
-      try {
-        const { data: remoteProjects, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('user_id', userId)
-          .order('updated_at', { ascending: false })
+    // Prima carica i progetti locali per feedback immediato
+    const localProjects = this.getLocalProjects()
+      .filter(p => p.user_id === userId)
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    
+    if (!hasSupabase) {
+      console.log('ℹ️ Supabase non configurato, uso solo progetti locali')
+      return localProjects;
+    }
+    
+    // Poi prova a sincronizzare con Supabase (con timeout ridotto)
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout Supabase')), 3000) // 3 secondi invece di 10
+      );
+      
+      const supabasePromise = supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false });
 
-        if (error) throw error
-        const localForUser = this.getLocalProjects().filter(p => p.user_id === userId)
-        // Unisci risultati rimuovendo duplicati per slug (più stabile tra locale e remoto)
-        const mergedMap = new Map<string, Project>()
-        ;(remoteProjects || []).forEach(p => mergedMap.set(p.slug, p))
-        localForUser.forEach(p => mergedMap.set(p.slug, p))
-        const merged = Array.from(mergedMap.values())
-          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-        return merged
-      } catch (error) {
-        console.warn('⚠️ Caricamento progetti da Supabase fallito, uso fallback locale:', error)
-        const projects = this.getLocalProjects();
-        return projects
-          .filter(p => p.user_id === userId)
-          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-      }
-    } else {
-      // Fallback locale
-      const projects = this.getLocalProjects();
-      return projects
-        .filter(p => p.user_id === userId)
+      const { data: remoteProjects, error } = await Promise.race([supabasePromise, timeoutPromise]) as any;
+
+      if (error) throw error;
+      
+      // Unisci risultati rimuovendo duplicati per slug
+      const mergedMap = new Map<string, Project>();
+      (remoteProjects || []).forEach((p: Project) => mergedMap.set(p.slug, p));
+      localProjects.forEach(p => mergedMap.set(p.slug, p));
+      
+      const merged = Array.from(mergedMap.values())
         .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+      
+      console.log('✅ Progetti caricati da Supabase:', merged.length);
+      return merged;
+    } catch (error) {
+      console.warn('⚠️ Caricamento progetti da Supabase fallito, uso solo progetti locali:', error);
+      return localProjects;
     }
   }
 
@@ -276,21 +285,35 @@ export class ProjectService {
   // Elimina un progetto
   static async deleteProject(projectId: string): Promise<void> {
     const hasSupabase = this.checkSupabaseConfig()
-    if (hasSupabase) {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId)
-      if (error) {
-        console.warn('⚠️ Eliminazione su Supabase fallita, provo a rimuovere localmente:', error)
-      }
-    }
-    // In ogni caso, prova a rimuovere anche dallo storage locale
+    
+    // Prima rimuovi dallo storage locale per feedback immediato
     const projects = this.getLocalProjects();
     const idx = projects.findIndex(p => p.id === projectId)
     if (idx !== -1) {
       projects.splice(idx, 1)
       this.saveLocalProjects(projects)
+      console.log('✅ Progetto rimosso dallo storage locale')
+    }
+    
+    // Poi prova a rimuovere da Supabase se configurato
+    if (hasSupabase) {
+      try {
+        const { error } = await supabase
+          .from('projects')
+          .delete()
+          .eq('id', projectId)
+        if (error) {
+          console.warn('⚠️ Eliminazione su Supabase fallita:', error)
+          throw new Error(`Errore Supabase: ${error.message}`)
+        } else {
+          console.log('✅ Progetto eliminato da Supabase')
+        }
+      } catch (error) {
+        console.warn('⚠️ Eliminazione su Supabase fallita, progetto rimane solo in locale:', error)
+        // Non rilanciare l'errore perché abbiamo già rimosso localmente
+      }
+    } else {
+      console.log('ℹ️ Supabase non configurato, progetto rimosso solo localmente')
     }
   }
 

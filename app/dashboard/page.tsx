@@ -284,9 +284,12 @@ export default function Dashboard() {
     if (confirm('Sei sicuro di voler eliminare questo progetto?')) {
       try {
         await ProjectService.deleteProject(projectId)
+        // Ricarica i progetti per aggiornare la lista
         await loadProjects()
+        console.log('✅ Progetto eliminato con successo')
       } catch (error) {
-        console.error('Errore nell\'eliminazione del progetto:', error)
+        console.error('❌ Errore nell\'eliminazione del progetto:', error)
+        alert('Errore nell\'eliminazione del progetto. Riprova.')
       }
     }
   }

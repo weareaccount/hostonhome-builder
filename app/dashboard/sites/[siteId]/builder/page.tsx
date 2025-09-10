@@ -388,7 +388,7 @@ export default function BuilderPage() {
     const timeout = setTimeout(() => {
       console.warn('Timeout nel caricamento, procedendo con fallback');
       setIsLoading(false);
-    }, 10000); // 10 secondi
+    }, 3000); // 3 secondi invece di 10
 
     fetchSite().finally(() => {
       clearTimeout(timeout);
