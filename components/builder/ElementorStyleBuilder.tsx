@@ -86,8 +86,8 @@ const BuilderHeader = ({
       <div className="flex items-center justify-between py-2">
         {/* Left - Controls */}
         <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Responsive Controls */}
-          <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-1">
+          {/* Responsive Controls - Solo desktop */}
+          <div className="hidden sm:flex items-center space-x-1 bg-gray-100 rounded-md p-1">
           <Button 
             variant={deviceType === 'desktop' ? 'default' : 'ghost'} 
             size="sm" 
@@ -200,19 +200,27 @@ const BuilderHeader = ({
 
       {/* Theme panel (mobile) */}
       {showThemePanel && (
-        <div className="sm:hidden fixed inset-0 z-50 bg-black/40">
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-900">Tema</span>
-              <button onClick={() => setShowThemePanel(false)} className="text-gray-600 text-sm">Chiudi</button>
+        <div className="sm:hidden fixed inset-0 z-50 bg-black/40" onClick={() => setShowThemePanel(false)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-lg font-semibold text-gray-900">Personalizza Tema</span>
+              <button 
+                onClick={() => setShowThemePanel(false)} 
+                className="text-gray-600 text-sm hover:text-gray-800"
+              >
+                ✕ Chiudi
+              </button>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">Font</span>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Font</label>
                 <select
                   value={theme.font}
-                  onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
-                  className="text-sm border border-gray-300 rounded px-2 py-1 bg-white"
+                  onChange={(e) => {
+                    console.log('📝 Cambio font:', e.target.value);
+                    onThemeChange({ ...theme, font: e.target.value as ThemeFont });
+                  }}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {AVAILABLE_FONTS.map(font => (
                     <option key={font.key} value={font.key}>{font.name}</option>
@@ -220,20 +228,28 @@ const BuilderHeader = ({
                 </select>
               </div>
               <div>
-                <div className="text-sm text-gray-700 mb-2">Colore Accento</div>
-                <div className="flex items-center gap-2">
+                <label className="block text-sm font-medium text-gray-700 mb-3">Colore Accento</label>
+                <div className="flex items-center justify-center gap-4">
                   {AVAILABLE_COLORS.map(color => (
                     <button
                       key={color.key}
-                      onClick={() => onThemeChange({ ...theme, accent: color.key })}
+                      onClick={() => {
+                        console.log('🎨 Cambio colore:', color.key);
+                        onThemeChange({ ...theme, accent: color.key });
+                      }}
                       className={cn(
-                        "w-8 h-8 rounded-full border-2",
-                        theme.accent === color.key ? 'border-gray-900' : 'border-gray-300'
+                        "w-12 h-12 rounded-full border-3 transition-all duration-200 hover:scale-110",
+                        theme.accent === color.key 
+                          ? 'border-gray-900 shadow-lg scale-110' 
+                          : 'border-gray-300 hover:border-gray-500'
                       )}
                       style={{ backgroundColor: color.color }}
                       title={color.name}
                     />
                   ))}
+                </div>
+                <div className="text-center mt-2 text-xs text-gray-500">
+                  Tocca un colore per applicarlo
                 </div>
               </div>
             </div>
@@ -601,10 +617,13 @@ export function ElementorStyleBuilder({
   }, []);
 
   const handleThemeChange = (newTheme: { accent: ThemeAccent; font: ThemeFont }) => {
+    console.log('🎨 Cambio tema:', newTheme);
     setTheme(newTheme);
     // Salvataggio automatico quando cambia il tema
     if (user && site.id) {
-      saveProject();
+      setTimeout(() => {
+        saveProject();
+      }, 500); // Piccolo delay per assicurarsi che lo state sia aggiornato
     }
   };
 
@@ -641,6 +660,17 @@ export function ElementorStyleBuilder({
       return () => clearTimeout(timeoutId);
     }
   }, [sections, user, site.id]);
+
+  // Salvataggio automatico quando cambia il tema
+  useEffect(() => {
+    if (user && site.id && theme) {
+      const timeoutId = setTimeout(() => {
+        saveProject();
+      }, 1000); // Salva dopo 1 secondo quando cambia il tema
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [theme, user, site.id]);
 
   const handleAddSection = (type: SectionType) => {
     console.log('🎯 Aggiungendo sezione:', type);
@@ -882,32 +912,39 @@ export function ElementorStyleBuilder({
 
       {/* Navigazione mobile (segment control) */}
       <div className="md:hidden sticky top-14 z-40 bg-white border-b border-gray-200 px-3 py-2">
-        <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <button
-            type="button"
-            onClick={() => setMobileTab(mobileTab === 'widgets' ? 'preview' : 'widgets')}
-            className={cn(
-              'px-4 py-1.5 text-sm font-medium',
-              mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
-            )}
-          >
-            {mobileTab === 'widgets' ? 'Sezioni' : 'Sezioni'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileTab('preview')}
-            className={cn(
-              'px-4 py-1.5 text-sm font-medium border-l border-gray-200',
-              mobileTab === 'preview' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700'
-            )}
-          >
-            Anteprima
-          </button>
+        <div className="flex justify-center">
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+            <button
+              type="button"
+              onClick={() => setMobileTab('widgets')}
+              className={cn(
+                'px-6 py-2 text-sm font-medium flex items-center gap-2',
+                mobileTab === 'widgets' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+              )}
+            >
+              <Layers className="w-4 h-4" />
+              Sezioni
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab('preview')}
+              className={cn(
+                'px-6 py-2 text-sm font-medium border-l border-gray-200 flex items-center gap-2',
+                mobileTab === 'preview' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+              )}
+            >
+              <Eye className="w-4 h-4" />
+              Anteprima
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Area mobile: una vista alla volta per evitare sovrapposizioni */}
-      <div className="md:hidden flex-1 min-h-0">
+      <div className={cn(
+        "md:hidden flex-1 min-h-0",
+        mobileTab === 'preview' ? "pb-20" : ""
+      )}>
         {mobileTab === 'widgets' ? (
           <WidgetLibrary
             onAddSection={handleAddSection}
@@ -970,11 +1007,18 @@ export function ElementorStyleBuilder({
       {/* Floating Save button su mobile solo in anteprima */}
       {mobileTab === 'preview' && (
         <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-          <div className="flex justify-end items-center gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setMobileTab('widgets')} className="bg-white border-gray-300">
-              Sezioni
+          <div className="flex justify-end items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setMobileTab('widgets')} 
+              className="bg-white border-gray-300 px-4 py-2"
+            >
+              <Layers className="w-4 h-4" />
             </Button>
-            <Button onClick={onSave} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
+            <Button 
+              onClick={onSave} 
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-6 py-2"
+            >
               <Save className="w-4 h-4 mr-2" />
               Salva
             </Button>
