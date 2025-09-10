@@ -668,24 +668,50 @@ export function ElementorStyleBuilder({
       // Prima prova a verificare se il progetto esiste
       let existingProject = null;
       try {
+        console.log('🔍 Cercando progetto con ID:', site.id);
         existingProject = await ProjectService.getProject(site.id);
         console.log('🔍 Progetto esistente trovato:', existingProject?.id);
       } catch (error) {
-        console.log('🔍 Progetto non trovato, creo nuovo progetto...');
+        console.log('🔍 Progetto non trovato, errore:', error);
+        console.log('🔍 Creo nuovo progetto...');
       }
       
       let result;
       if (existingProject) {
         // Aggiorna progetto esistente
-        result = await ProjectService.updateProject(site.id, {
-          sections,
-          theme,
-          layout_type: layoutType
-        });
-        console.log('✅ Progetto aggiornato con successo!', result);
+        console.log('🔄 Aggiornando progetto esistente:', existingProject.id);
+        try {
+          result = await ProjectService.updateProject(site.id, {
+            sections,
+            theme,
+            layout_type: layoutType
+          });
+          console.log('✅ Progetto aggiornato con successo!', result);
+        } catch (updateError) {
+          console.error('❌ Errore nell\'aggiornamento, provo a creare nuovo progetto:', updateError);
+          // Se l'aggiornamento fallisce, crea un nuovo progetto
+          result = await ProjectService.createProject(user.id, {
+            name: site.name || 'Nuovo Progetto',
+            slug: site.slug || site.id,
+            sections,
+            theme,
+            layout_type: layoutType
+          });
+          console.log('✅ Nuovo progetto creato dopo errore aggiornamento!', result);
+          site.id = result.id;
+        }
       } else {
         // Crea nuovo progetto
         console.log('🆕 Creando nuovo progetto nel database...');
+        console.log('🆕 Dati progetto:', {
+          userId: user.id,
+          name: site.name || 'Nuovo Progetto',
+          slug: site.slug || site.id,
+          sectionsCount: sections.length,
+          theme: theme,
+          layoutType: layoutType
+        });
+        
         result = await ProjectService.createProject(user.id, {
           name: site.name || 'Nuovo Progetto',
           slug: site.slug || site.id,
@@ -693,10 +719,14 @@ export function ElementorStyleBuilder({
           theme,
           layout_type: layoutType
         });
+        
         console.log('✅ Nuovo progetto creato con successo!', result);
+        console.log('✅ Nuovo ID progetto:', result.id);
         
         // Aggiorna l'ID del sito con quello del progetto creato
+        const oldId = site.id;
         site.id = result.id;
+        console.log('🔄 Aggiornato site.id da', oldId, 'a', site.id);
       }
       
       console.log('✅ Progetto salvato automaticamente con successo!', result);

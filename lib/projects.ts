@@ -55,23 +55,33 @@ export class ProjectService {
 
   // Crea un nuovo progetto
   static async createProject(userId: string, data: CreateProjectData): Promise<Project> {
+    console.log('🆕 ProjectService.createProject chiamato:', { userId, data });
     const hasSupabase = this.checkSupabaseConfig();
     
     if (hasSupabase) {
       try {
+        console.log('🆕 Creando progetto su Supabase...');
+        const insertData = {
+          user_id: userId,
+          ...data,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        console.log('🆕 Dati da inserire:', insertData);
+        
         const { data: project, error } = await supabase
           .from('projects')
-          .insert({
-            user_id: userId,
-            ...data,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
+          .insert(insertData)
           .select()
           .single()
 
-        if (error) throw error
-        return project
+        if (error) {
+          console.error('❌ Errore Supabase createProject:', error);
+          throw error;
+        }
+        
+        console.log('✅ Progetto creato su Supabase:', project);
+        return project;
       } catch (error) {
         console.warn('⚠️ Creazione progetto su Supabase fallita, uso fallback locale:', error)
         // Fallback locale
@@ -85,6 +95,7 @@ export class ProjectService {
         const projects = this.getLocalProjects();
         projects.push(newProject);
         this.saveLocalProjects(projects);
+        console.log('✅ Progetto creato localmente (fallback):', newProject);
         return newProject;
       }
     } else {
@@ -145,10 +156,12 @@ export class ProjectService {
 
   // Ottiene un progetto specifico
   static async getProject(projectId: string): Promise<Project | null> {
+    console.log('🔍 ProjectService.getProject chiamato con ID:', projectId);
     const hasSupabase = this.checkSupabaseConfig();
     
     if (hasSupabase) {
       try {
+        console.log('🔍 Cercando progetto su Supabase...');
         const { data: project, error } = await supabase
           .from('projects')
           .select('*')
@@ -157,21 +170,30 @@ export class ProjectService {
 
         if (error) {
           console.warn('⚠️ Errore nel recupero progetto da Supabase:', error);
+          console.log('⚠️ Fallback a progetti locali...');
           // Fallback locale
           const projects = this.getLocalProjects();
-          return projects.find(p => p.id === projectId) || null;
+          const localProject = projects.find(p => p.id === projectId);
+          console.log('🔍 Progetto locale trovato:', localProject?.id || 'null');
+          return localProject || null;
         }
         
+        console.log('✅ Progetto trovato su Supabase:', project?.id);
         return project;
       } catch (error) {
-        console.warn('⚠️ Fallback a progetti locali per ID:', projectId);
+        console.warn('⚠️ Fallback a progetti locali per ID:', projectId, 'errore:', error);
         const projects = this.getLocalProjects();
-        return projects.find(p => p.id === projectId) || null;
+        const localProject = projects.find(p => p.id === projectId);
+        console.log('🔍 Progetto locale trovato (catch):', localProject?.id || 'null');
+        return localProject || null;
       }
     } else {
       // Fallback locale
+      console.log('🔍 Supabase non configurato, uso progetti locali');
       const projects = this.getLocalProjects();
-      return projects.find(p => p.id === projectId) || null;
+      const localProject = projects.find(p => p.id === projectId);
+      console.log('🔍 Progetto locale trovato (no supabase):', localProject?.id || 'null');
+      return localProject || null;
     }
   }
 
