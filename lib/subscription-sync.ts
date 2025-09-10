@@ -22,13 +22,35 @@ interface SubscriptionData {
 }
 
 // Sincronizza lo stato dell'abbonamento per un utente
-export async function syncUserSubscription(userId: string, customerId: string) {
+export async function syncUserSubscription(userId: string, customerId?: string, userEmail?: string) {
   try {
     console.log(`🔄 Sincronizzazione abbonamento per utente: ${userId}`)
     
+    let customerIdToUse = customerId
+    
+    // ✅ Se non abbiamo il customerId, proviamo a trovarlo tramite email
+    if (!customerIdToUse && userEmail) {
+      console.log('🔍 Ricerca customer ID tramite email:', userEmail)
+      const customers = await stripe.customers.list({
+        email: userEmail,
+        limit: 1
+      })
+      
+      if (customers.data.length > 0) {
+        customerIdToUse = customers.data[0].id
+        console.log('✅ Customer ID trovato:', customerIdToUse)
+      }
+    }
+    
+    if (!customerIdToUse) {
+      console.log('❌ Nessun customer ID trovato')
+      await updateUserSubscriptionStatus(userId, 'NONE', null, null, null)
+      return { success: false, error: 'Nessun customer ID trovato' }
+    }
+    
     // Recupera l'abbonamento da Stripe
     const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
+      customer: customerIdToUse,
       status: 'all',
       limit: 1
     })
@@ -87,13 +109,34 @@ async function updateUserSubscriptionStatus(
   trialEnd: Date | null
 ) {
   try {
+    // ✅ Prima recupera i metadati esistenti per preservarli
+    const { data: existingUser, error: fetchError } = await supabaseAdmin.auth.admin.getUserById(userId)
+    
+    if (fetchError) {
+      console.error('❌ Errore recupero utente:', fetchError)
+      throw fetchError
+    }
+    
+    const existingMetadata = existingUser.user?.user_metadata || {}
+    
+    // ✅ Aggiorna solo i campi dell'abbonamento, preservando gli altri
+    const updatedMetadata = {
+      ...existingMetadata,
+      subscriptionStatus: status,
+      currentPeriodStart: periodStart?.toISOString(),
+      currentPeriodEnd: periodEnd?.toISOString(),
+      trialEnd: trialEnd?.toISOString()
+    }
+    
+    console.log('🔄 Aggiornamento metadati:', {
+      userId,
+      status,
+      existingMetadata,
+      updatedMetadata
+    })
+    
     const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-      user_metadata: {
-        subscriptionStatus: status,
-        currentPeriodStart: periodStart?.toISOString(),
-        currentPeriodEnd: periodEnd?.toISOString(),
-        trialEnd: trialEnd?.toISOString()
-      }
+      user_metadata: updatedMetadata
     })
 
     if (error) {

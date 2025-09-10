@@ -5,14 +5,14 @@ import { createClient } from '@supabase/supabase-js'
 // Endpoint per sincronizzare manualmente l'abbonamento
 export async function POST(request: Request) {
   try {
-    const { userId, customerId } = await request.json()
+    const { userId, customerId, userEmail } = await request.json()
     
-    if (!userId || !customerId) {
-      return NextResponse.json({ error: 'userId e customerId richiesti' }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ error: 'userId richiesto' }, { status: 400 })
     }
     
     // Sincronizza l'abbonamento
-    const result = await syncUserSubscription(userId, customerId)
+    const result = await syncUserSubscription(userId, customerId, userEmail)
     
     if (result.success) {
       return NextResponse.json({ 

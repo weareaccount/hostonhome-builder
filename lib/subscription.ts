@@ -10,6 +10,17 @@ export function isSubscriptionActive(user: User | null): boolean {
   if (!user) return false
   
   const status = normalizeStatus((user as any).subscriptionStatus)
+  const rawStatus = (user as any).subscriptionStatus
+  
+  // ✅ Debug: Log dello status per capire il problema
+  console.log('🔍 Debug subscription status:', {
+    userId: user.id,
+    email: user.email,
+    rawStatus,
+    normalizedStatus: status,
+    plan: (user as any).plan,
+    stripeCustomerId: (user as any).stripeCustomerId
+  })
   
   // ✅ Stati che permettono l'accesso
   if (status === 'ACTIVE' || status === 'TRIALING') return true

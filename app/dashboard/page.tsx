@@ -66,8 +66,8 @@ export default function Dashboard() {
   
   // ✅ Funzione per sincronizzare l'abbonamento
   const syncSubscription = async () => {
-    if (!user || !(user as any).stripeCustomerId) {
-      alert('Customer ID Stripe non trovato. Contatta il supporto.')
+    if (!user) {
+      alert('Utente non trovato.')
       return
     }
     
@@ -78,7 +78,8 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
-          customerId: (user as any).stripeCustomerId
+          customerId: (user as any).stripeCustomerId,
+          userEmail: user.email
         })
       })
       
@@ -96,6 +97,45 @@ export default function Dashboard() {
       setSyncingSubscription(false)
     }
   }
+  
+  // ✅ Sincronizzazione automatica all'avvio della dashboard
+  useEffect(() => {
+    const autoSyncSubscription = async () => {
+      if (!user) return
+      
+      // Controlla se l'abbonamento è attivo
+      const isActive = isSubscriptionActive(user)
+      if (isActive) return // Se è già attivo, non serve sincronizzare
+      
+      console.log('🔄 Sincronizzazione automatica abbonamento...')
+      try {
+        const response = await fetch('/api/sync-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            customerId: (user as any).stripeCustomerId,
+            userEmail: user.email
+          })
+        })
+        
+        const data = await response.json()
+        if (data.success) {
+          console.log('✅ Abbonamento sincronizzato automaticamente')
+          // Ricarica la pagina per aggiornare lo stato
+          window.location.reload()
+        } else {
+          console.log('⚠️ Sincronizzazione automatica fallita:', data.error)
+        }
+      } catch (error: any) {
+        console.log('⚠️ Errore sincronizzazione automatica:', error.message)
+      }
+    }
+    
+    // Sincronizza dopo 2 secondi dall'avvio
+    const timeout = setTimeout(autoSyncSubscription, 2000)
+    return () => clearTimeout(timeout)
+  }, [user])
   
   // Dati dell'host (potrebbero venire da un database)
   const [hostProfile, setHostProfile] = useState({
