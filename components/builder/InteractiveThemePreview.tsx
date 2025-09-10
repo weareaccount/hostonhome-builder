@@ -479,13 +479,7 @@ const InlineEditor = ({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Testo del bottone</label>
-                    <input
-                      type="text"
-                      value={sectionProps.ctaText || ''}
-                      onChange={(e) => onUpdate({ ctaText: e.target.value })}
-                      placeholder="MORE ABOUT US"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    {renderEditableField('ctaText', 'MORE ABOUT US', sectionProps.ctaText)}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Colore del bottone</label>
