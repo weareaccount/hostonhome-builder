@@ -33,6 +33,9 @@ export async function POST(request: Request) {
         },
       ],
       mode: 'subscription',
+      subscription_data: {
+        trial_period_days: 7, // ✅ TRIAL GRATUITO DI 7 GIORNI
+      },
       success_url:
         (successUrl && `${successUrl}&session_id={CHECKOUT_SESSION_ID}`) ||
         `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?checkout=success&session_id={CHECKOUT_SESSION_ID}`,

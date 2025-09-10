@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PLAN_LIMITS, STRIPE_PRICING } from '@/lib/constants'
-import { isSubscriptionActive, getSubscriptionBlockReason } from '@/lib/subscription'
+import { isSubscriptionActive, getSubscriptionBlockReason, getTrialInfo } from '@/lib/subscription'
 
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth()
@@ -59,6 +59,9 @@ export default function Dashboard() {
   const [upgradeInterval, setUpgradeInterval] = useState<'monthly' | 'yearly'>('monthly')
 
   const formatEuro = (cents: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+  
+  // ✅ Informazioni sul trial
+  const trialInfo = useMemo(() => getTrialInfo(user), [user])
   
   // Dati dell'host (potrebbero venire da un database)
   const [hostProfile, setHostProfile] = useState({
@@ -1036,6 +1039,38 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </div>
+                          {/* ✅ Trial Status Banner */}
+                          {trialInfo.isTrial && (
+                            <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 flex items-start gap-3">
+                              <div className="text-2xl">🎉</div>
+                              <div className="flex-1">
+                                <div className="text-xs uppercase tracking-wide text-blue-600 font-semibold">Prova Gratuita Attiva</div>
+                                <div className="text-sm text-blue-900 font-medium mb-2">
+                                  {trialInfo.daysRemaining} giorni rimanenti
+                                </div>
+                                <div className="text-xs text-blue-700">
+                                  Al termine del trial, l'abbonamento si attiverà automaticamente.
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* ✅ Payment Issue Banner */}
+                          {!isSubscriptionActive(user) && !trialInfo.isTrial && (
+                            <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 flex items-start gap-3">
+                              <div className="text-2xl">⚠️</div>
+                              <div className="flex-1">
+                                <div className="text-xs uppercase tracking-wide text-red-600 font-semibold">Servizi Sospesi</div>
+                                <div className="text-sm text-red-900 font-medium mb-2">
+                                  {getSubscriptionBlockReason(user)}
+                                </div>
+                                <div className="text-xs text-red-700">
+                                  Completa il pagamento per riattivare tutti i servizi.
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
                           <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3">
                             <Calendar className="w-5 h-5 text-purple-500 mt-0.5" />
                             <div>

@@ -500,8 +500,9 @@ export default function BuilderPage() {
 
   const handlePublish = async () => {
     try {
+      // ✅ CONTROLLO RIGOROSO: Solo utenti con abbonamento attivo o in trial possono pubblicare
       if (!isSubscriptionActive(user)) {
-        alert(getSubscriptionBlockReason(user));
+        alert(`❌ PUBBLICAZIONE BLOCCATA\n\n${getSubscriptionBlockReason(user)}\n\nCompleta il pagamento per pubblicare il tuo sito.`);
         return;
       }
       // TODO: Publish site via API
@@ -524,6 +525,31 @@ export default function BuilderPage() {
         return { maxSections: 5, maxImages: 5, maxPages: 1 };
     }
   };
+
+  // ✅ CONTROLLO DI ACCESSO RIGOROSO: Blocca completamente l'accesso ai non paganti
+  if (!isSubscriptionActive(user)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Accesso Bloccato</h1>
+          <p className="text-gray-600 mb-6">{getSubscriptionBlockReason(user)}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-red-700">
+              <strong>I servizi sono stati sospesi</strong> a causa di problemi di pagamento. 
+              Completa il pagamento per riattivare l'accesso al builder.
+            </p>
+          </div>
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Torna alla Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

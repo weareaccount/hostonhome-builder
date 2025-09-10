@@ -6,6 +6,7 @@ import { InteractiveThemePreview } from '@/components/builder/InteractiveThemePr
 import { ProjectService, Project } from '@/lib/projects';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Section, LayoutType, ThemeAccent, ThemeFont } from '@/types';
+import { isSubscriptionActive, getSubscriptionBlockReason } from '@/lib/subscription';
 
 export default function PreviewPage() {
   const params = useParams();
@@ -34,6 +35,31 @@ export default function PreviewPage() {
 
     loadProject();
   }, [user, params.siteId]);
+
+  // ✅ CONTROLLO DI ACCESSO RIGOROSO: Blocca completamente l'accesso ai non paganti
+  if (!isSubscriptionActive(user)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Accesso Bloccato</h1>
+          <p className="text-gray-600 mb-6">{getSubscriptionBlockReason(user)}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-red-700">
+              <strong>I servizi sono stati sospesi</strong> a causa di problemi di pagamento. 
+              Completa il pagamento per riattivare l'accesso all'anteprima.
+            </p>
+          </div>
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Torna alla Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
