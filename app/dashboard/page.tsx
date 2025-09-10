@@ -14,7 +14,7 @@ import { PLAN_LIMITS, STRIPE_PRICING } from '@/lib/constants'
 import { isSubscriptionActive, getSubscriptionBlockReason, getTrialInfo } from '@/lib/subscription'
 
 export default function Dashboard() {
-  const { user, loading, signOut } = useAuth()
+  const { user, loading, signOut, refreshUser } = useAuth()
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsLoading, setProjectsLoading] = useState(true)
@@ -97,8 +97,8 @@ export default function Dashboard() {
           console.log('✅ Abbonamento sincronizzato automaticamente')
           // ✅ Salva il timestamp della sincronizzazione
           sessionStorage.setItem('lastSync', now.toString())
-          // Ricarica la pagina per aggiornare lo stato
-          window.location.reload()
+          // ✅ Ricarica i dati dell'utente invece di ricaricare la pagina
+          await refreshUser()
         } else {
           console.log('⚠️ Sincronizzazione automatica fallita:', data.error)
         }
@@ -1186,8 +1186,8 @@ Sei sicuro di voler procedere con la disdetta?`)) return
 • I dati saranno conservati per 30 giorni dopo la scadenza
 
 💡 Per riattivare l'abbonamento, contatta il supporto.`)
-                              // ✅ Ricarica la pagina per aggiornare lo stato
-                              window.location.reload()
+                              // ✅ Ricarica i dati dell'utente per aggiornare lo stato
+                              await refreshUser()
                             }
                           }}
                         >

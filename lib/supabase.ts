@@ -31,7 +31,10 @@ export interface User {
   plan?: PlanType;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
-  subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'NONE';
+  subscriptionStatus?: 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'NONE' | 'TRIALING' | 'INCOMPLETE' | 'UNPAID';
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  trialEnd?: string;
 }
 
 export interface Project {

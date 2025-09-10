@@ -9,6 +9,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -29,12 +30,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          const plan = (session.user.user_metadata as any)?.plan
+          const metadata = session.user.user_metadata as any
           setUser({
             id: session.user.id,
             email: session.user.email!,
             created_at: session.user.created_at,
-            plan,
+            plan: metadata?.plan,
+            // ✅ Carica tutti i metadati dell'abbonamento
+            subscriptionStatus: metadata?.subscriptionStatus,
+            stripeCustomerId: metadata?.stripeCustomerId,
+            stripeSubscriptionId: metadata?.stripeSubscriptionId,
+            currentPeriodStart: metadata?.currentPeriodStart,
+            currentPeriodEnd: metadata?.currentPeriodEnd,
+            trialEnd: metadata?.trialEnd,
           })
         } else {
           setUser(null)
@@ -71,12 +79,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // ✅ Se la registrazione è completata, autentica automaticamente l'utente
     if (data.user && data.session) {
+      const metadata = data.user.user_metadata as any
       setUser({
         id: data.user.id,
         email: data.user.email!,
         created_at: data.user.created_at,
-        plan: (data.user.user_metadata as any)?.plan,
+        plan: metadata?.plan,
+        // ✅ Carica tutti i metadati dell'abbonamento
+        subscriptionStatus: metadata?.subscriptionStatus,
+        stripeCustomerId: metadata?.stripeCustomerId,
+        stripeSubscriptionId: metadata?.stripeSubscriptionId,
+        currentPeriodStart: metadata?.currentPeriodStart,
+        currentPeriodEnd: metadata?.currentPeriodEnd,
+        trialEnd: metadata?.trialEnd,
       })
+    }
+  }
+
+  const refreshUser = async () => {
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (currentUser) {
+        const metadata = currentUser.user_metadata as any
+        setUser({
+          id: currentUser.id,
+          email: currentUser.email!,
+          created_at: currentUser.created_at,
+          plan: metadata?.plan,
+          // ✅ Carica tutti i metadati dell'abbonamento
+          subscriptionStatus: metadata?.subscriptionStatus,
+          stripeCustomerId: metadata?.stripeCustomerId,
+          stripeSubscriptionId: metadata?.stripeSubscriptionId,
+          currentPeriodStart: metadata?.currentPeriodStart,
+          currentPeriodEnd: metadata?.currentPeriodEnd,
+          trialEnd: metadata?.trialEnd,
+        })
+      }
+    } catch (error) {
+      console.error('❌ Errore refresh utente:', error)
     }
   }
 
@@ -102,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
