@@ -325,16 +325,118 @@ const InlineEditor = ({
         <div className="p-8 space-y-6">
           {section.type === 'HERO' && (
             <>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-blue-800 mb-3">🏷️ Titolo Principale</h3>
-                {renderEditableField('title', 'Titolo principale', sectionProps.title)}
-                <p className="text-sm text-blue-600 mt-2">Il titolo principale che apparirà in grande nella sezione hero</p>
-              </div>
-              
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-green-800 mb-3">📝 Sottotitolo</h3>
                 {renderEditableField('subtitle', 'Sottotitolo descrittivo', sectionProps.subtitle)}
                 <p className="text-sm text-green-600 mt-2">Descrizione breve sotto il titolo principale</p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-3">⭐ Badge Superiore</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Icona del badge</label>
+                    <div className="flex gap-2">
+                      {['⭐', '🏆', '💎', '✨', '🌟', '🎯'].map((icon) => (
+                        <button
+                          key={icon}
+                          onClick={() => onUpdate({ badgeIcon: icon })}
+                          className={cn(
+                            "w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg transition-all",
+                            sectionProps.badgeIcon === icon
+                              ? "border-gray-800 bg-gray-100"
+                              : "border-gray-300 hover:border-gray-400"
+                          )}
+                        >
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Testo del badge</label>
+                    {renderEditableField('badgeText', 'Case Vacanze nel Cuore di Roma', sectionProps.badgeText)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-indigo-800 mb-3">📍 Info Aggiuntive</h3>
+                <div className="space-y-4">
+                  {(sectionProps.infoItems || [
+                    { icon: '🚇', text: '350m dalla Metro' },
+                    { icon: '🏛️', text: 'Centro Storico' },
+                    { icon: '✨', text: 'WiFi Gratis' }
+                  ]).map((item: any, index: number) => (
+                    <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-gray-800">Info {index + 1}</h4>
+                        <button
+                          onClick={() => {
+                            const infoItems = [...(sectionProps.infoItems || [])];
+                            infoItems.splice(index, 1);
+                            onUpdate({ infoItems });
+                          }}
+                          className="text-red-500 hover:text-red-700 text-sm font-medium"
+                        >
+                          🗑️ Rimuovi
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Icona</label>
+                          <div className="flex gap-1">
+                            {['🚇', '🏛️', '✨', '🏊', '🍳', '🅿️', '🐶', '🚭', '🛜', '🧯', '🔒', '🔌'].map((icon) => (
+                              <button
+                                key={icon}
+                                onClick={() => {
+                                  const infoItems = [...(sectionProps.infoItems || [])];
+                                  infoItems[index] = { ...infoItems[index], icon };
+                                  onUpdate({ infoItems });
+                                }}
+                                className={cn(
+                                  "w-8 h-8 rounded border flex items-center justify-center text-sm transition-all",
+                                  item.icon === icon
+                                    ? "border-gray-800 bg-gray-100"
+                                    : "border-gray-300 hover:border-gray-400"
+                                )}
+                              >
+                                {icon}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Testo</label>
+                          <input
+                            type="text"
+                            value={item.text || ''}
+                            onChange={(e) => {
+                              const infoItems = [...(sectionProps.infoItems || [])];
+                              infoItems[index] = { ...infoItems[index], text: e.target.value };
+                              onUpdate({ infoItems });
+                            }}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Testo info"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <button
+                    onClick={() => {
+                      const infoItems = [...(sectionProps.infoItems || [])];
+                      infoItems.push({ icon: '📍', text: 'Nuova info' });
+                      onUpdate({ infoItems });
+                    }}
+                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+                  >
+                    ➕ Aggiungi Info
+                  </button>
+                </div>
               </div>
               
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
@@ -1569,21 +1671,11 @@ const SectionComponent = ({
               <div className={cn("max-w-4xl mx-auto", deviceType === 'mobile' ? 'space-y-6' : 'space-y-8')}>
                 {/* Badge superiore */}
                 <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
-                  <span className="text-yellow-300">⭐</span>
+                  <span className="text-yellow-300">{sectionProps.badgeIcon || '⭐'}</span>
                   <span className={cn("font-medium text-white", deviceType === 'mobile' ? 'text-sm' : 'text-base')}>
-                    Case Vacanze nel Cuore di Roma
+                    {sectionProps.badgeText || 'Case Vacanze nel Cuore di Roma'}
                   </span>
                 </div>
-                
-                {/* Titolo principale */}
-                <h1 className={cn(
-                  "font-bold leading-tight text-white drop-shadow-2xl",
-                  deviceType === 'mobile' ? 'text-3xl' : 
-                  deviceType === 'tablet' ? 'text-4xl lg:text-5xl' : 
-                  'text-4xl sm:text-5xl lg:text-6xl'
-                )}>
-                  {sectionProps.title || 'Benvenuti al San Vito Suites'}
-                </h1>
                 
                 {/* Sottotitolo */}
                 <p className={cn(
@@ -1631,18 +1723,19 @@ const SectionComponent = ({
                   deviceType === 'tablet' ? 'grid-cols-2 text-sm' : 
                   'grid-cols-3 text-base'
                 )}>
-                  <div className="flex items-center justify-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
-                    <span className="text-xl">🚇</span>
-                    <span className="font-medium">350m dalla Metro</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
-                    <span className="text-xl">🏛️</span>
-                    <span className="font-medium">Centro Storico</span>
-                  </div>
-                  <div className={cn("flex items-center justify-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm", deviceType === 'tablet' ? 'col-span-2 md:col-span-1' : '')}>
-                    <span className="text-xl">✨</span>
-                    <span className="font-medium">WiFi Gratis</span>
-                  </div>
+                  {(sectionProps.infoItems || [
+                    { icon: '🚇', text: '350m dalla Metro' },
+                    { icon: '🏛️', text: 'Centro Storico' },
+                    { icon: '✨', text: 'WiFi Gratis' }
+                  ]).map((item: any, index: number) => (
+                    <div key={index} className={cn(
+                      "flex items-center justify-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm",
+                      deviceType === 'tablet' && index === 2 ? 'col-span-2 md:col-span-1' : ''
+                    )}>
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="font-medium">{item.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
