@@ -155,36 +155,11 @@ const BuilderHeader = ({
           {/* Desktop: selettori visibili */}
           <div className="hidden sm:flex items-center space-x-2">
             <Type className="w-4 h-4 text-gray-600" />
-            <select
-              value={theme.font}
-              onChange={(e) => onThemeChange({ ...theme, font: e.target.value as ThemeFont })}
-              className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {AVAILABLE_FONTS.map(font => (
-                <option key={font.key} value={font.key}>
-                  {font.name}
-                </option>
-              ))}
-            </select>
+            <span className="text-sm text-gray-500">Font nelle sezioni</span>
           </div>
           <div className="hidden sm:flex items-center space-x-2">
             <Palette className="w-4 h-4 text-gray-600" />
-            <div className="flex space-x-1">
-              {AVAILABLE_COLORS.map(color => (
-                <button
-                  key={color.key}
-                  onClick={() => onThemeChange({ ...theme, accent: color.key })}
-                  className={cn(
-                    "w-6 h-6 rounded-full border-2 transition-all",
-                    theme.accent === color.key 
-                      ? "border-gray-800 scale-110" 
-                      : "border-gray-300 hover:border-gray-500"
-                  )}
-                  style={{ backgroundColor: color.color }}
-                  title={color.name}
-                />
-              ))}
-            </div>
+            <span className="text-sm text-gray-500">Colori nelle sezioni</span>
           </div>
 
           {/* PULSANTE SALVA */}
@@ -215,45 +190,13 @@ const BuilderHeader = ({
             </div>
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Font</label>
-                <select
-                  value={theme.font}
-                  onChange={(e) => {
-                    console.log('📝 Cambio font:', e.target.value);
-                    onThemeChange({ ...theme, font: e.target.value as ThemeFont });
-                  }}
-                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {AVAILABLE_FONTS.map(font => (
-                    <option key={font.key} value={font.key}>{font.name}</option>
-                  ))}
-                </select>
+                <div className="text-center text-sm text-gray-500">
+                  I font vengono gestiti direttamente nelle singole sezioni
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Colore Accento</label>
-                <div className="flex items-center justify-center gap-4">
-                  {AVAILABLE_COLORS.map(color => (
-                    <button
-                      key={color.key}
-                      onClick={() => {
-                        console.log('🎨 Cambio colore mobile:', color.key);
-                        console.log('🎨 Tema attuale:', theme);
-                        console.log('🎨 Nuovo tema:', { ...theme, accent: color.key });
-                        onThemeChange({ ...theme, accent: color.key });
-                      }}
-                      className={cn(
-                        "w-12 h-12 rounded-full border-3 transition-all duration-200 hover:scale-110",
-                        theme.accent === color.key 
-                          ? 'border-gray-900 shadow-lg scale-110' 
-                          : 'border-gray-300 hover:border-gray-500'
-                      )}
-                      style={{ backgroundColor: color.color }}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
-                <div className="text-center mt-2 text-xs text-gray-500">
-                  Tocca un colore per applicarlo
+                <div className="text-center text-sm text-gray-500">
+                  I colori vengono gestiti direttamente nelle singole sezioni
                 </div>
               </div>
             </div>

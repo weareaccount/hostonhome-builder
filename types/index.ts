@@ -18,6 +18,8 @@ export interface BaseSectionProps {
   order: number;
   isPublished?: boolean;
   publishedAt?: string;
+  primaryButtonColor?: ThemeAccent;
+  secondaryButtonColor?: ThemeAccent;
 }
 
 export interface HeroSectionProps extends BaseSectionProps {

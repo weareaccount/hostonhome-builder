@@ -590,14 +590,79 @@ export const SectionForm: React.FC<SectionFormProps> = ({ section, onUpdate, onD
 
         {activeTab === 'theme' && (
           <div className="space-y-6">
-            <div className="text-center py-8 text-muted-foreground">
-              <div className="w-16 h-16 mx-auto mb-4 bg-muted/50 rounded-full flex items-center justify-center">
-                <Palette className="w-8 h-8" />
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-foreground">Colori Bottoni</h3>
+              <div className="space-y-4">
+                {/* Colore Bottoni Primari */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Colore Bottoni Primari</label>
+                  <div className="flex items-center justify-center gap-4">
+                    {[
+                      { key: 'BLUE', name: 'Blu', color: '#3b82f6' },
+                      { key: 'GREEN', name: 'Verde', color: '#16a34a' },
+                      { key: 'RED', name: 'Rosso', color: '#dc2626' },
+                      { key: 'VIOLET', name: 'Viola', color: '#8b5cf6' }
+                    ].map(color => (
+                      <button
+                        key={color.key}
+                        onClick={() => {
+                          console.log('🎨 Cambio colore bottoni primari:', color.key);
+                          onUpdate({
+                            ...section.props,
+                            primaryButtonColor: color.key
+                          });
+                        }}
+                        className={cn(
+                          "w-12 h-12 rounded-full border-3 transition-all duration-200 hover:scale-110",
+                          section.props?.primaryButtonColor === color.key 
+                            ? 'border-gray-900 shadow-lg scale-110' 
+                            : 'border-gray-300 hover:border-gray-500'
+                        )}
+                        style={{ backgroundColor: color.color }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-center mt-2 text-xs text-gray-500">
+                    Tocca un colore per applicarlo ai bottoni primari
+                  </div>
+                </div>
+
+                {/* Colore Bottoni Secondari */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Colore Bottoni Secondari</label>
+                  <div className="flex items-center justify-center gap-4">
+                    {[
+                      { key: 'BLUE', name: 'Blu', color: '#3b82f6' },
+                      { key: 'GREEN', name: 'Verde', color: '#16a34a' },
+                      { key: 'RED', name: 'Rosso', color: '#dc2626' },
+                      { key: 'VIOLET', name: 'Viola', color: '#8b5cf6' }
+                    ].map(color => (
+                      <button
+                        key={color.key}
+                        onClick={() => {
+                          console.log('🎨 Cambio colore bottoni secondari:', color.key);
+                          onUpdate({
+                            ...section.props,
+                            secondaryButtonColor: color.key
+                          });
+                        }}
+                        className={cn(
+                          "w-12 h-12 rounded-full border-3 transition-all duration-200 hover:scale-110",
+                          section.props?.secondaryButtonColor === color.key 
+                            ? 'border-gray-900 shadow-lg scale-110' 
+                            : 'border-gray-300 hover:border-gray-500'
+                        )}
+                        style={{ backgroundColor: color.color }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-center mt-2 text-xs text-gray-500">
+                    Tocca un colore per applicarlo ai bottoni secondari
+                  </div>
+                </div>
               </div>
-              <h3 className="text-sm font-medium mb-2">Gestione Tema</h3>
-              <p className="text-xs">
-                Le impostazioni del tema vengono gestite globalmente per tutto il sito
-              </p>
             </div>
           </div>
         )}
