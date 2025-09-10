@@ -224,9 +224,30 @@ const BuilderHeader = ({
                 </select>
               </div>
               <div>
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-gray-500 mb-4">
                   I colori vengono gestiti direttamente nelle singole sezioni
                 </div>
+              </div>
+              
+              {/* Pulsanti di azione */}
+              <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowThemePanel(false)}
+                  className="flex items-center gap-2"
+                >
+                  <Layers className="w-4 h-4" />
+                  Sezioni
+                </Button>
+                <Button 
+                  onClick={onSave}
+                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  size="sm"
+                >
+                  <Save className="w-4 h-4" />
+                  Salva
+                </Button>
               </div>
             </div>
           </div>
