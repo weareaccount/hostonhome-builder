@@ -622,9 +622,12 @@ export function ElementorStyleBuilder({
     setTheme(newTheme);
     // Salvataggio automatico quando cambia il tema
     if (user && site.id) {
+      console.log('💾 Avviando salvataggio automatico per cambio tema...');
       setTimeout(() => {
         saveProject();
       }, 500); // Piccolo delay per assicurarsi che lo state sia aggiornato
+    } else {
+      console.log('❌ Impossibile salvare: user o site.id mancanti', { user: !!user, siteId: site.id });
     }
   };
 
@@ -642,8 +645,18 @@ export function ElementorStyleBuilder({
         sectionsCount: sections.length,
         theme: theme,
         layoutType: layoutType,
-        sections: sections
+        sections: sections,
+        user: user
       });
+      
+      // Verifica che i dati siano validi
+      if (!theme || !theme.accent || !theme.font) {
+        throw new Error('Tema non valido: ' + JSON.stringify(theme));
+      }
+      
+      if (!sections || !Array.isArray(sections)) {
+        throw new Error('Sezioni non valide: ' + JSON.stringify(sections));
+      }
       
       const result = await ProjectService.updateProject(site.id, {
         sections,
@@ -654,6 +667,11 @@ export function ElementorStyleBuilder({
       console.log('✅ Progetto salvato automaticamente con successo!', result);
     } catch (error) {
       console.error('❌ Errore nel salvataggio automatico:', error);
+      console.error('❌ Dettagli errore:', {
+        error: error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       alert('❌ Errore nel salvataggio: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setSaving(false);
@@ -1019,20 +1037,20 @@ export function ElementorStyleBuilder({
       {/* Floating Save button su mobile solo in anteprima */}
       {mobileTab === 'preview' && (
         <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-          <div className="flex justify-end items-center gap-3">
+          <div className="flex justify-end items-center gap-2">
             <Button 
               variant="outline" 
               onClick={() => setMobileTab('widgets')} 
-              className="bg-white border-gray-300 px-4 py-2"
+              className="bg-white border-gray-300 px-3 py-2 min-w-0"
             >
               <Layers className="w-4 h-4" />
             </Button>
             <Button 
               onClick={onSave} 
-              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-6 py-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-4 py-2 min-w-0"
               data-save-button
             >
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4 mr-1" />
               Salva
             </Button>
           </div>
