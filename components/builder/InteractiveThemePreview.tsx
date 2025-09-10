@@ -1589,7 +1589,14 @@ const SectionComponent = ({
                     <p className={cn("text-gray-600 leading-relaxed mb-8 text-lg")}>
                       {sectionProps.content || 'Consectetur adipisicing elit. Nihil, illum voluptate eveniet ex fugit ea delectus, sed voluptatem. Laborum accusantium libero commodi id officiis itaque esse adipisci, necessitatibus asperiores, illo odio.'}
                     </p>
-                    <Button className={cn("px-6 py-3 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors")}>
+                    <Button className={cn(
+                      "px-6 py-3 text-white font-medium rounded-lg transition-colors",
+                      sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
+                      sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
+                      sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
+                      sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 hover:bg-violet-700' :
+                      'bg-gray-800 hover:bg-gray-700'
+                    )}>
                       {sectionProps.ctaText || 'MORE ABOUT US'}
                     </Button>
                   </div>
@@ -2346,7 +2353,14 @@ const SectionComponent = ({
                             rel="noopener noreferrer"
                             className="flex-1"
                           >
-                            <Button className="w-full px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all duration-300 shadow-lg transform hover:scale-105">
+                            <Button className={cn(
+                              "w-full px-6 py-3 text-white font-semibold rounded-full transition-all duration-300 shadow-lg transform hover:scale-105",
+                              sectionProps.primaryButtonColor === 'BLUE' ? 'bg-blue-600 hover:bg-blue-700' :
+                              sectionProps.primaryButtonColor === 'GREEN' ? 'bg-green-600 hover:bg-green-700' :
+                              sectionProps.primaryButtonColor === 'RED' ? 'bg-red-600 hover:bg-red-700' :
+                              sectionProps.primaryButtonColor === 'VIOLET' ? 'bg-violet-600 hover:bg-violet-700' :
+                              'bg-orange-500 hover:bg-orange-600'
+                            )}>
                               🎫 Prenota su GetYourGuide
                             </Button>
                           </a>
