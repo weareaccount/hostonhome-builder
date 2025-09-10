@@ -1188,13 +1188,26 @@ export default function Dashboard() {
                           onClick={() => {
                             setShowUpgradeSelector((s) => !s)
                           }}
-                          disabled={!user?.plan || user.plan === 'PRO'}
+                          disabled={
+                            (user as any)?.subscriptionStatus === 'CANCELED' 
+                              ? false 
+                              : (!user?.plan || user.plan === 'PRO')
+                          }
+                          className={
+                            (user as any)?.subscriptionStatus === 'CANCELED' 
+                              ? 'bg-green-500 text-white hover:bg-green-600 border-green-500' 
+                              : ''
+                          }
                         >
-                          {user?.plan === 'PRO' ? 'Piano massimo' : 'Fai Upgrade'}
+                          {(user as any)?.subscriptionStatus === 'CANCELED' 
+                            ? 'Sottoscrivi' 
+                            : (user?.plan === 'PRO' ? 'Piano massimo' : 'Fai Upgrade')
+                          }
                         </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={async () => {
+                        {(user as any)?.subscriptionStatus !== 'CANCELED' && (
+                          <Button
+                            variant="destructive"
+                            onClick={async () => {
                             const subscriptionId = user?.stripeSubscriptionId
                             if (!subscriptionId) {
                               alert('Nessuna sottoscrizione attiva')
@@ -1239,6 +1252,7 @@ Sei sicuro di voler procedere con la disdetta?`)) return
                         >
                           Disdici
                         </Button>
+                        )}
                       </div>
 
                       <AnimatePresence>
