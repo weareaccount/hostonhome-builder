@@ -539,7 +539,7 @@ export default function BuilderPage() {
   return (
     <div className="h-screen w-full bg-gray-50 overflow-hidden">
       {/* Barra rapida: Torna alla Dashboard - Solo desktop */}
-      <div className="hidden md:block absolute top-4 left-4 z-30">
+      <div className="hidden md:block absolute top-4 right-4 z-30">
         <button
           onClick={() => (window.location.href = '/dashboard')}
           className="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm text-sm font-medium"
