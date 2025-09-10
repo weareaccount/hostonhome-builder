@@ -69,18 +69,7 @@ export default function Dashboard() {
     const autoSyncSubscription = async () => {
       if (!user) return
       
-      // ✅ Controlla se abbiamo già sincronizzato in questa sessione
-      const syncKey = `sync_${user.id}_${Date.now()}`
-      const lastSync = sessionStorage.getItem('lastSync')
-      const now = Date.now()
-      
-      // Se abbiamo sincronizzato negli ultimi 30 secondi, non sincronizzare di nuovo
-      if (lastSync && (now - parseInt(lastSync)) < 30000) {
-        console.log('⏭️ Sincronizzazione saltata (già fatta di recente)')
-        return
-      }
-      
-      console.log('🔄 Sincronizzazione automatica abbonamento...')
+      console.log('🔄 Sincronizzazione automatica abbonamento per:', user.email)
       try {
         const response = await fetch('/api/sync-subscription', {
           method: 'POST',
@@ -95,9 +84,7 @@ export default function Dashboard() {
         const data = await response.json()
         if (data.success) {
           console.log('✅ Abbonamento sincronizzato automaticamente')
-          // ✅ Salva il timestamp della sincronizzazione
-          sessionStorage.setItem('lastSync', now.toString())
-          // ✅ Ricarica i dati dell'utente invece di ricaricare la pagina
+          // ✅ Ricarica i dati dell'utente per aggiornare lo stato
           await refreshUser()
         } else {
           console.log('⚠️ Sincronizzazione automatica fallita:', data.error)
@@ -110,7 +97,41 @@ export default function Dashboard() {
     // ✅ Sincronizza SEMPRE dopo 1 secondo dall'avvio
     const timeout = setTimeout(autoSyncSubscription, 1000)
     return () => clearTimeout(timeout)
-  }, [user])
+  }, [user, refreshUser])
+  
+  // ✅ Sincronizzazione automatica quando l'utente torna nella dashboard
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        console.log('🔄 Dashboard tornata in primo piano - sincronizzazione abbonamento...')
+        // Sincronizza dopo 500ms per evitare conflitti
+        setTimeout(async () => {
+          try {
+            const response = await fetch('/api/sync-subscription', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: user.id,
+                customerId: (user as any).stripeCustomerId,
+                userEmail: user.email
+              })
+            })
+            
+            const data = await response.json()
+            if (data.success) {
+              console.log('✅ Abbonamento sincronizzato al ritorno')
+              await refreshUser()
+            }
+          } catch (error: any) {
+            console.log('⚠️ Errore sincronizzazione al ritorno:', error.message)
+          }
+        }, 500)
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [user, refreshUser])
   
   // Dati dell'host (potrebbero venire da un database)
   const [hostProfile, setHostProfile] = useState({
@@ -1170,51 +1191,6 @@ export default function Dashboard() {
                           disabled={!user?.plan || user.plan === 'PRO'}
                         >
                           {user?.plan === 'PRO' ? 'Piano massimo' : 'Fai Upgrade'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={async () => {
-                            if (!user?.id) {
-                              alert('ID utente non trovato')
-                              return
-                            }
-                            
-                            try {
-                              const resp = await fetch('/api/test-subscription', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userId: user.id }),
-                              })
-                              
-                              const data = await resp.json()
-                              console.log('🔍 Test abbonamento:', data)
-                              
-                              if (data.success) {
-                                alert(`✅ Test Completato!
-
-📊 STATO UTENTE:
-• Email: ${data.user.email}
-• Stato: ${data.user.subscriptionStatus}
-• ID Cliente: ${data.user.stripeCustomerId}
-• ID Abbonamento: ${data.user.stripeSubscriptionId}
-• Fine Periodo: ${data.user.currentPeriodEnd}
-• Disdetto alla Fine: ${data.user.cancelAtPeriodEnd}
-
-💳 STRIPE:
-• Cliente: ${data.stripe?.customer?.id}
-• Abbonamenti: ${data.stripe?.subscriptions?.length || 0}
-
-Controlla la console per dettagli completi.`)
-                              } else {
-                                alert(`❌ Errore Test: ${data.error}`)
-                              }
-                            } catch (error: any) {
-                              alert(`❌ Errore: ${error.message}`)
-                            }
-                          }}
-                          className="bg-purple-500 text-white hover:bg-purple-600"
-                        >
-                          🔍 Test
                         </Button>
                         <Button
                           variant="destructive"
