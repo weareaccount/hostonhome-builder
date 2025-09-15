@@ -286,7 +286,7 @@ const InlineEditor = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300"
       onClick={(e) => {
         // Chiudi solo se si clicca sul backdrop, non sul contenuto
         if (e.target === e.currentTarget) {
@@ -295,57 +295,72 @@ const InlineEditor = ({
       }}
     >
       <div 
-        className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border-4 border-blue-500"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden border border-gray-200 animate-in zoom-in-95 duration-300 mx-4 sm:mx-0"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header prominente */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <Edit3 className="w-6 h-6 text-white" />
+        {/* Header moderno con gradiente migliorato */}
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-6 sm:p-8 rounded-t-2xl relative overflow-hidden">
+          {/* Pattern decorativo di sfondo */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/15 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-lg">
+                <Edit3 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Modifica {SECTION_LABELS[section.type] || section.type}</h2>
-                <p className="text-blue-100 text-sm mt-1">
+                <h2 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">Modifica {SECTION_LABELS[section.type] || section.type}</h2>
+                <p className="text-indigo-100 text-sm sm:text-base">
                   Personalizza il contenuto della tua sezione
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors backdrop-blur-sm"
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-white/15 hover:bg-white/25 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm border border-white/20 hover:scale-105"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </button>
           </div>
         </div>
         
-        {/* Contenuto del form */}
-        <div className="p-8 space-y-6">
+        {/* Contenuto del form con scroll migliorato */}
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 overflow-y-auto max-h-[calc(95vh-180px)] sm:max-h-[calc(95vh-200px)]">
           {section.type === 'HERO' && (
             <>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-green-800 mb-3">📝 Sottotitolo</h3>
+              {/* Card Sottotitolo migliorata */}
+              <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">📝</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-emerald-800">Sottotitolo</h3>
+                </div>
                 {renderEditableField('subtitle', 'Sottotitolo descrittivo', sectionProps.subtitle)}
-                <p className="text-sm text-green-600 mt-2">Descrizione breve sotto il titolo principale</p>
+                <p className="text-sm text-emerald-600 mt-3 font-medium">Descrizione breve sotto il titolo principale</p>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-3">⭐ Badge Superiore</h3>
-                <div className="space-y-3">
+              {/* Card Badge Superiore migliorata */}
+              <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">⭐</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-amber-800">Badge Superiore</h3>
+                </div>
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Icona del badge</label>
-                    <div className="flex gap-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Icona del badge</label>
+                    <div className="flex gap-3 flex-wrap">
                       {['⭐', '🏆', '💎', '✨', '🌟', '🎯'].map((icon) => (
                         <button
                           key={icon}
                           onClick={() => onUpdate({ badgeIcon: icon })}
                           className={cn(
-                            "w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg transition-all",
+                            "w-12 h-12 rounded-xl border-2 flex items-center justify-center text-xl transition-all duration-200 hover:scale-110",
                             sectionProps.badgeIcon === icon
-                              ? "border-gray-800 bg-gray-100"
-                              : "border-gray-300 hover:border-gray-400"
+                              ? "border-amber-500 bg-amber-100 shadow-md"
+                              : "border-gray-300 hover:border-amber-400 hover:bg-amber-50"
                           )}
                         >
                           {icon}
@@ -354,23 +369,29 @@ const InlineEditor = ({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Testo del badge</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Testo del badge</label>
                     {renderEditableField('badgeText', 'Case Vacanze nel Cuore di Roma', sectionProps.badgeText)}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-indigo-800 mb-3">📍 Info Aggiuntive</h3>
+              {/* Card Info Aggiuntive migliorata */}
+              <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">📍</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-violet-800">Info Aggiuntive</h3>
+                </div>
                 <div className="space-y-4">
                   {(sectionProps.infoItems || [
                     { icon: '🚇', text: '350m dalla Metro' },
                     { icon: '🏛️', text: 'Centro Storico' },
                     { icon: '✨', text: 'WiFi Gratis' }
                   ]).map((item: any, index: number) => (
-                    <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
+                    <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-gray-800">Info {index + 1}</h4>
+                        <h4 className="font-bold text-gray-800 text-lg">Info {index + 1}</h4>
                         <button
                           onClick={() => {
                             const infoItems = [...(sectionProps.infoItems || [])];
@@ -383,10 +404,10 @@ const InlineEditor = ({
                         </button>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Icona</label>
-                          <div className="flex gap-1">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Icona</label>
+                          <div className="flex gap-2 flex-wrap">
                             {['🚇', '🏛️', '✨', '🏊', '🍳', '🅿️', '🐶', '🚭', '🛜', '🧯', '🔒', '🔌'].map((icon) => (
                               <button
                                 key={icon}
@@ -396,10 +417,10 @@ const InlineEditor = ({
                                   onUpdate({ infoItems });
                                 }}
                                 className={cn(
-                                  "w-8 h-8 rounded border flex items-center justify-center text-sm transition-all",
+                                  "w-10 h-10 rounded-xl border-2 flex items-center justify-center text-lg transition-all duration-200 hover:scale-110",
                                   item.icon === icon
-                                    ? "border-gray-800 bg-gray-100"
-                                    : "border-gray-300 hover:border-gray-400"
+                                    ? "border-violet-500 bg-violet-100 shadow-md"
+                                    : "border-gray-300 hover:border-violet-400 hover:bg-violet-50"
                                 )}
                               >
                                 {icon}
@@ -409,7 +430,7 @@ const InlineEditor = ({
                         </div>
                         
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Testo</label>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Testo</label>
                           <input
                             type="text"
                             value={item.text || ''}
@@ -418,7 +439,7 @@ const InlineEditor = ({
                               infoItems[index] = { ...infoItems[index], text: e.target.value };
                               onUpdate({ infoItems });
                             }}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
                             placeholder="Testo info"
                           />
                         </div>
@@ -432,22 +453,34 @@ const InlineEditor = ({
                       infoItems.push({ icon: '📍', text: 'Nuova info' });
                       onUpdate({ infoItems });
                     }}
-                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+                    className="w-full py-3 border-2 border-dashed border-violet-300 rounded-xl text-violet-600 hover:border-violet-400 hover:text-violet-700 hover:bg-violet-50 transition-all duration-200 font-semibold"
                   >
                     ➕ Aggiungi Info
                   </button>
                 </div>
               </div>
               
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-purple-800 mb-3">🔘 Call to Action</h3>
+              {/* Card Call to Action migliorata */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">🔘</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-purple-800">Call to Action</h3>
+                </div>
                 {renderEditableField('ctaText', 'Scopri di più', sectionProps.ctaText)}
-                <p className="text-sm text-purple-600 mt-2">Testo del pulsante principale per guidare i visitatori</p>
+                <p className="text-sm text-purple-600 mt-3 font-medium">Testo del pulsante principale per guidare i visitatori</p>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-orange-800 mb-3">🎨 Colore del Bottone Principale</h3>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Card Colore Bottone migliorata */}
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">🎨</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-orange-800">Colore del Bottone Principale</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   {[
                     { key: 'BLUE', label: 'Blu', color: 'bg-blue-600' },
                     { key: 'GREEN', label: 'Verde', color: 'bg-green-600' },
@@ -458,22 +491,28 @@ const InlineEditor = ({
                       key={color.key}
                       onClick={() => onUpdate({ primaryButtonColor: color.key })}
                       className={cn(
-                        "px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all",
+                        "px-4 py-3 text-sm font-semibold rounded-xl border-2 transition-all duration-200 hover:scale-105",
                         sectionProps.primaryButtonColor === color.key
-                          ? "border-gray-800 text-gray-800"
-                          : "border-gray-300 text-gray-600 hover:border-gray-400"
+                          ? "border-orange-500 bg-orange-100 text-orange-800 shadow-md"
+                          : "border-gray-300 text-gray-600 hover:border-orange-400 hover:bg-orange-50"
                       )}
                     >
-                      <div className={cn("w-4 h-4 rounded-full mx-auto mb-1", color.color)}></div>
+                      <div className={cn("w-5 h-5 rounded-full mx-auto mb-2 shadow-sm", color.color)}></div>
                       {color.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-pink-800 mb-3">🎨 Colore del Bottone Secondario</h3>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Card Colore Bottone Secondario migliorata */}
+              <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">🎨</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-pink-800">Colore del Bottone Secondario</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   {[
                     { key: 'BLUE', label: 'Blu', color: 'bg-blue-600' },
                     { key: 'GREEN', label: 'Verde', color: 'bg-green-600' },
@@ -484,32 +523,38 @@ const InlineEditor = ({
                       key={color.key}
                       onClick={() => onUpdate({ secondaryButtonColor: color.key })}
                       className={cn(
-                        "px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all",
+                        "px-4 py-3 text-sm font-semibold rounded-xl border-2 transition-all duration-200 hover:scale-105",
                         sectionProps.secondaryButtonColor === color.key
-                          ? "border-gray-800 text-gray-800"
-                          : "border-gray-300 text-gray-600 hover:border-gray-400"
+                          ? "border-pink-500 bg-pink-100 text-pink-800 shadow-md"
+                          : "border-gray-300 text-gray-600 hover:border-pink-400 hover:bg-pink-50"
                       )}
                     >
-                      <div className={cn("w-4 h-4 rounded-full mx-auto mb-1", color.color)}></div>
+                      <div className={cn("w-5 h-5 rounded-full mx-auto mb-2 shadow-sm", color.color)}></div>
                       {color.label}
                     </button>
                   ))}
                 </div>
               </div>
               
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-orange-800 mb-3">🖼️ Immagine di Sfondo</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+              {/* Card Immagine di Sfondo migliorata */}
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 border border-orange-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">🖼️</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-orange-800">Immagine di Sfondo</h3>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">URL immagine di sfondo</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">URL immagine di sfondo</label>
                     <input
                       type="text"
                       value={sectionProps.backgroundImage || ''}
                       onChange={(e) => onUpdate({ backgroundImage: e.target.value })}
                       placeholder="https://.../background.jpg"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-sm"
                     />
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2">
                       <input
                         id="hero-background-upload"
                         type="file"
@@ -528,28 +573,28 @@ const InlineEditor = ({
                       />
                       <button
                         onClick={() => document.getElementById('hero-background-upload')?.click()}
-                        className={cn('px-3 py-2 rounded-lg text-white text-sm', accentColor.button)}
+                        className={cn('px-4 py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:scale-105', accentColor.button)}
                       >
                         ⬆️ Carica immagine dal PC
                       </button>
                       {sectionProps.backgroundImage && (
                         <button
                           onClick={() => onUpdate({ backgroundImage: '' })}
-                          className="px-3 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600"
+                          className="px-4 py-2 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-all duration-200 hover:scale-105"
                         >
                           🗑️ Rimuovi
                         </button>
                       )}
                     </div>
                   </div>
-                  <div className="border border-gray-200 rounded-lg bg-white p-2 flex items-center justify-center min-h-[120px]">
+                  <div className="border border-gray-200 rounded-xl bg-white p-4 flex items-center justify-center min-h-[140px] shadow-sm">
                     {sectionProps.backgroundImage ? (
-                      <img src={sectionProps.backgroundImage} alt="Background Hero" className="max-h-32 rounded object-cover" />
+                      <img src={sectionProps.backgroundImage} alt="Background Hero" className="max-h-36 rounded-lg object-cover shadow-md" />
                     ) : (
                       <div className="text-gray-400 text-sm text-center">
-                        <div className="text-2xl mb-2">🖼️</div>
-                        <p>Nessuna immagine</p>
-                        <p className="text-xs">Sarà usato il gradiente blu</p>
+                        <div className="text-3xl mb-3">🖼️</div>
+                        <p className="font-medium">Nessuna immagine</p>
+                        <p className="text-xs mt-1">Sarà usato il gradiente blu</p>
                       </div>
                     )}
                   </div>
