@@ -15,6 +15,7 @@ import { isSubscriptionActive, getSubscriptionBlockReason, getTrialInfo } from '
 import ChallengeSection from '@/components/challenges/ChallengeSection'
 import BadgeShowcase from '@/components/challenges/BadgeShowcase'
 import ChallengeStats from '@/components/challenges/ChallengeStats'
+import { BadgeService } from '@/lib/badges'
 
 export default function Dashboard() {
   const { user, loading, signOut, refreshUser } = useAuth()
@@ -24,6 +25,8 @@ export default function Dashboard() {
   const [showHostProfile, setShowHostProfile] = useState(false)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [tempValue, setTempValue] = useState('')
+  const [userBadges, setUserBadges] = useState<any[]>([])
+  const [badgesLoading, setBadgesLoading] = useState(true)
   
   // State per editing nome progetto
   const [editingProject, setEditingProject] = useState<string | null>(null)
@@ -340,8 +343,26 @@ export default function Dashboard() {
       
       // Poi carica i progetti da Supabase
       loadProjects()
+      
+      // Carica i badge dell'utente
+      loadUserBadges()
     }
   }, [user])
+
+  const loadUserBadges = async () => {
+    if (!user) return
+    
+    try {
+      setBadgesLoading(true)
+      const badges = await BadgeService.getUserBadges(user.id)
+      setUserBadges(badges)
+      console.log('🏆 Badge caricati:', badges.length)
+    } catch (error) {
+      console.error('Errore nel caricamento dei badge:', error)
+    } finally {
+      setBadgesLoading(false)
+    }
+  }
 
   // Aggiorna i progetti quando la pagina viene caricata (per tornare dalla creazione)
   useEffect(() => {
@@ -1108,18 +1129,7 @@ export default function Dashboard() {
 
               {/* Badge Showcase */}
               <BadgeShowcase 
-                badges={[
-                  {
-                    id: '1',
-                    challengeId: '3',
-                    userId: user?.id || '',
-                    title: 'Badge "Ospite Felice"',
-                    description: 'Mostra il badge di ospite felice',
-                    icon: '⭐',
-                    earnedAt: new Date('2024-01-15'),
-                    isVisible: true
-                  }
-                ]}
+                badges={userBadges}
                 userId={user?.id || ''}
               />
             </div>
