@@ -183,11 +183,24 @@ export default function AdminVerificationsPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                            <img
-                              src={notification.photoUrl}
-                              alt="Verifica foto"
-                              className="w-full h-full object-cover"
-                            />
+                            {notification.photoUrl ? (
+                              <img
+                                src={notification.photoUrl}
+                                alt="Verifica foto"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gray-200"><svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-1">
@@ -269,14 +282,30 @@ export default function AdminVerificationsPage() {
 
               {/* Content */}
               <div className="p-6 space-y-6">
-                {/* Photo */}
-                <div className="text-center">
+              {/* Photo */}
+              <div className="text-center">
+                {selectedNotification.photoUrl ? (
                   <img
                     src={selectedNotification.photoUrl}
                     alt="Verifica foto"
                     className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = '<div class="w-full max-w-md mx-auto rounded-lg shadow-lg bg-gray-200 h-64 flex items-center justify-center"><div class="text-center"><svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><p class="text-gray-500">Immagine non disponibile</p></div></div>';
+                    }}
                   />
-                </div>
+                ) : (
+                  <div className="w-full max-w-md mx-auto rounded-lg shadow-lg bg-gray-200 h-64 flex items-center justify-center">
+                    <div className="text-center">
+                      <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      <p className="text-gray-500">Immagine non disponibile</p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
                 {/* Info */}
                 <div className="bg-gray-50 rounded-lg p-4">

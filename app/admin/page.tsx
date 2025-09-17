@@ -34,8 +34,12 @@ export default function AdminDashboard() {
       setLoading(true)
       const notificationStats = await VerificationService.getNotificationStats()
       
+      // Calcola utenti reali dalle verifiche
+      const notifications = await VerificationService.getAdminNotifications()
+      const uniqueUsers = new Set(notifications.map(n => n.userId)).size
+      
       setStats({
-        totalUsers: 156, // Mock data
+        totalUsers: uniqueUsers || 0, // Dati reali dalle verifiche
         totalNotifications: notificationStats.total,
         unreadNotifications: notificationStats.unread,
         pendingVerifications: notificationStats.pending
