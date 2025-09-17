@@ -12,6 +12,8 @@ export class VerificationService {
     description?: string
   ): Promise<ChallengeVerification> {
     try {
+      console.log('🚀 Inizio submitVerification:', { challengeId, userId, photoUrl })
+      
       const verification: ChallengeVerification = {
         id: `verification_${Date.now()}`,
         challengeId,
@@ -22,20 +24,25 @@ export class VerificationService {
         submittedAt: new Date()
       }
 
+      console.log('📝 Verifica creata:', verification)
+
       // Salva la verifica
       await this.saveVerification(verification)
+      console.log('💾 Verifica salvata')
 
       // Aggiorna lo stato della challenge a PENDING_VERIFICATION
       const { ChallengeService } = await import('./challenges')
       await ChallengeService.updateChallengeStatus(userId, challengeId, 'PENDING_VERIFICATION')
+      console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
 
       // Crea notifica per admin
       await this.createAdminNotification(verification)
+      console.log('🔔 Notifica admin creata')
 
-      console.log('Verifica inviata:', verification.id)
+      console.log('✅ Verifica inviata completamente:', verification.id)
       return verification
     } catch (error) {
-      console.error('Errore nell\'invio della verifica:', error)
+      console.error('❌ Errore nell\'invio della verifica:', error)
       throw error
     }
   }
@@ -56,17 +63,26 @@ export class VerificationService {
   // Ottieni tutte le notifiche admin
   static async getAdminNotifications(): Promise<AdminNotification[]> {
     try {
-      if (typeof window === 'undefined') return []
+      if (typeof window === 'undefined') {
+        console.log('⚠️ Window undefined, ritorno array vuoto')
+        return []
+      }
       
       const data = localStorage.getItem(this.NOTIFICATIONS_KEY)
+      console.log('📦 Dati localStorage:', data)
+      
       const notifications = data ? JSON.parse(data) : []
+      console.log('🔔 Notifiche parse:', notifications)
       
       // Ordina per data di creazione (più recenti prima)
-      return notifications.sort((a: AdminNotification, b: AdminNotification) => 
+      const sortedNotifications = notifications.sort((a: AdminNotification, b: AdminNotification) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
+      
+      console.log('📋 Notifiche ordinate:', sortedNotifications)
+      return sortedNotifications
     } catch (error) {
-      console.error('Errore nel caricamento delle notifiche:', error)
+      console.error('❌ Errore nel caricamento delle notifiche:', error)
       return []
     }
   }
@@ -185,7 +201,12 @@ export class VerificationService {
 
   private static async createAdminNotification(verification: ChallengeVerification): Promise<void> {
     try {
-      if (typeof window === 'undefined') return
+      if (typeof window === 'undefined') {
+        console.log('⚠️ Window undefined in createAdminNotification')
+        return
+      }
+      
+      console.log('🔔 Creazione notifica admin per verifica:', verification.id)
       
       const notification: AdminNotification = {
         id: `notification_${Date.now()}`,
@@ -200,16 +221,24 @@ export class VerificationService {
         createdAt: new Date()
       }
 
+      console.log('📝 Notifica creata:', notification)
+
       const existing = localStorage.getItem(this.NOTIFICATIONS_KEY)
+      console.log('📦 Dati esistenti:', existing)
+      
       const notifications = existing ? JSON.parse(existing) : []
+      console.log('📋 Notifiche esistenti:', notifications)
       
       notifications.push(notification)
-      localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(notifications))
+      console.log('➕ Notifica aggiunta, totale:', notifications.length)
       
-      console.log('🔔 Notifica admin creata:', notification.id)
+      localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(notifications))
+      console.log('💾 Notifiche salvate in localStorage')
+      
+      console.log('✅ Notifica admin creata con successo:', notification.id)
       console.log('📸 Foto URL:', verification.photoUrl)
     } catch (error) {
-      console.error('Errore nella creazione della notifica:', error)
+      console.error('❌ Errore nella creazione della notifica:', error)
     }
   }
 

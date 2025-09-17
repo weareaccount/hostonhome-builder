@@ -39,12 +39,29 @@ export default function AdminVerificationsPage() {
   const loadNotifications = async () => {
     try {
       setLoading(true)
+      console.log('🔄 Caricamento notifiche admin...')
       const data = await VerificationService.getAdminNotifications()
+      console.log('📋 Notifiche caricate:', data)
       setNotifications(data)
     } catch (error) {
-      console.error('Errore nel caricamento delle notifiche:', error)
+      console.error('❌ Errore nel caricamento delle notifiche:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const debugNotifications = async () => {
+    console.log('🔍 DEBUG: Controllo localStorage...')
+    const data = localStorage.getItem('admin_notifications')
+    console.log('📦 Raw localStorage data:', data)
+    
+    if (data) {
+      try {
+        const parsed = JSON.parse(data)
+        console.log('📋 Parsed notifications:', parsed)
+      } catch (e) {
+        console.error('❌ Errore parsing:', e)
+      }
     }
   }
 
@@ -154,9 +171,19 @@ export default function AdminVerificationsPage() {
         {/* Notifications List */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-3">
-              <Bell className="w-5 h-5 text-blue-600" />
-              <span>Notifiche Verifiche</span>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Bell className="w-5 h-5 text-blue-600" />
+                <span>Notifiche Verifiche</span>
+              </div>
+              <Button 
+                onClick={debugNotifications}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                🔍 Debug
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
