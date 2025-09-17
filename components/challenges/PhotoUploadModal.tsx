@@ -72,6 +72,9 @@ export default function PhotoUploadModal({
       
       await onUpload(photoUrl, description)
       
+      // Mostra messaggio di successo
+      alert('✅ Foto inviata con successo!\n\nLa tua verifica è stata inviata all\'admin per l\'approvazione. Riceverai una notifica quando sarà esaminata.')
+      
       // Reset form
       setSelectedFile(null)
       setPreviewUrl(null)

@@ -179,7 +179,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {/* Notifications Badge */}
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <button 
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    onClick={() => window.location.href = '/admin/verifications'}
+                  >
                     <Bell className="w-5 h-5 text-gray-600" />
                   </button>
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>

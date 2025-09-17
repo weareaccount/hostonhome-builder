@@ -27,6 +27,13 @@ export default function AdminVerificationsPage() {
 
   useEffect(() => {
     loadNotifications()
+
+    // Polling per aggiornare le notifiche ogni 3 secondi
+    const interval = setInterval(() => {
+      loadNotifications()
+    }, 3000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const loadNotifications = async () => {

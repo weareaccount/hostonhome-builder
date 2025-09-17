@@ -91,7 +91,11 @@ export class VerificationService {
       // Completa automaticamente la challenge
       await this.completeChallenge(notification.userId, notification.challengeId)
 
-      console.log('Verifica approvata:', verificationId)
+      // Notifica l'utente dell'approvazione
+      await this.notifyUserApproval(notification.userId, notification.challengeId)
+
+      console.log('✅ Verifica approvata:', verificationId)
+      console.log('👤 Utente notificato:', notification.userId)
       return true
     } catch (error) {
       console.error('Errore nell\'approvazione:', error)
@@ -190,7 +194,7 @@ export class VerificationService {
         challengeId: verification.challengeId,
         verificationId: verification.id,
         title: 'Nuova verifica challenge',
-        message: `L'utente ha inviato una foto per verificare il completamento della challenge.`,
+        message: `L'utente ${verification.userId.slice(0, 8)} ha inviato una foto per verificare il completamento della challenge.`,
         photoUrl: verification.photoUrl,
         isRead: false,
         createdAt: new Date()
@@ -201,6 +205,9 @@ export class VerificationService {
       
       notifications.push(notification)
       localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(notifications))
+      
+      console.log('🔔 Notifica admin creata:', notification.id)
+      console.log('📸 Foto URL:', verification.photoUrl)
     } catch (error) {
       console.error('Errore nella creazione della notifica:', error)
     }
@@ -263,6 +270,33 @@ export class VerificationService {
       await BadgeService.simulateBadgeEarned(userId, challengeId)
     } catch (error) {
       console.error('Errore nel completamento della challenge:', error)
+    }
+  }
+
+  private static async notifyUserApproval(userId: string, challengeId: string): Promise<void> {
+    try {
+      // Crea una notifica per l'utente
+      const userNotification = {
+        id: `user_notification_${Date.now()}`,
+        userId: userId,
+        challengeId: challengeId,
+        type: 'CHALLENGE_APPROVED',
+        title: '🎉 Challenge Approvata!',
+        message: 'La tua verifica è stata approvata! Hai guadagnato un badge.',
+        isRead: false,
+        createdAt: new Date()
+      }
+
+      // Salva la notifica utente
+      const key = `user_notifications_${userId}`
+      const existing = localStorage.getItem(key)
+      const notifications = existing ? JSON.parse(existing) : []
+      notifications.push(userNotification)
+      localStorage.setItem(key, JSON.stringify(notifications))
+
+      console.log('🔔 Notifica utente creata:', userNotification.id)
+    } catch (error) {
+      console.error('Errore nella notifica utente:', error)
     }
   }
 }

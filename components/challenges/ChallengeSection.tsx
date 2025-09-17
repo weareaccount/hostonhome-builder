@@ -52,6 +52,15 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
     }
 
     loadChallenges()
+
+    // Polling per aggiornare le challenge ogni 5 secondi
+    const interval = setInterval(() => {
+      if (userId) {
+        loadChallenges()
+      }
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [userId])
 
   // Statistiche delle challenge
