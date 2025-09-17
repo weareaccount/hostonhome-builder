@@ -26,15 +26,47 @@ export default function AdminVerificationsPage() {
   const [processing, setProcessing] = useState<string | null>(null)
 
   useEffect(() => {
+    // Carica notifiche iniziali
     loadNotifications()
+
+    // Sincronizza con storage globale all'avvio
+    syncWithGlobalStorage()
 
     // Polling per aggiornare le notifiche ogni 3 secondi
     const interval = setInterval(() => {
       loadNotifications()
+      syncWithGlobalStorage()
     }, 3000)
 
     return () => clearInterval(interval)
   }, [])
+
+  const syncWithGlobalStorage = async () => {
+    try {
+      // Recupera notifiche dal storage globale
+      const globalData = localStorage.getItem('global_admin_notifications')
+      if (globalData) {
+        const globalNotifications = JSON.parse(globalData)
+        
+        // Sincronizza con localStorage locale
+        const localData = localStorage.getItem('admin_notifications')
+        const localNotifications = localData ? JSON.parse(localData) : []
+        
+        // Aggiungi nuove notifiche globali che non sono già locali
+        const newNotifications = globalNotifications.filter((global: any) => 
+          !localNotifications.some((local: any) => local.id === global.id)
+        )
+        
+        if (newNotifications.length > 0) {
+          const updatedLocal = [...localNotifications, ...newNotifications]
+          localStorage.setItem('admin_notifications', JSON.stringify(updatedLocal))
+          console.log('🔄 Sincronizzate', newNotifications.length, 'nuove notifiche')
+        }
+      }
+    } catch (error) {
+      console.error('❌ Errore nella sincronizzazione:', error)
+    }
+  }
 
   const loadNotifications = async () => {
     try {
@@ -51,18 +83,51 @@ export default function AdminVerificationsPage() {
   }
 
   const debugNotifications = async () => {
-    console.log('🔍 DEBUG: Controllo localStorage...')
-    const data = localStorage.getItem('admin_notifications')
-    console.log('📦 Raw localStorage data:', data)
+    console.log('🔍 DEBUG: Controllo tutti gli storage...')
     
-    if (data) {
+    // localStorage locale
+    const localData = localStorage.getItem('admin_notifications')
+    console.log('📦 localStorage locale:', localData)
+    
+    // sessionStorage condiviso
+    const sharedData = sessionStorage.getItem('shared_admin_notifications')
+    console.log('📦 sessionStorage condiviso:', sharedData)
+    
+    // storage globale simulato
+    const globalData = localStorage.getItem('global_admin_notifications')
+    console.log('📦 storage globale:', globalData)
+    
+    // Parsing e visualizzazione
+    if (localData) {
       try {
-        const parsed = JSON.parse(data)
-        console.log('📋 Parsed notifications:', parsed)
+        const parsed = JSON.parse(localData)
+        console.log('📋 Notifiche localStorage:', parsed)
       } catch (e) {
-        console.error('❌ Errore parsing:', e)
+        console.error('❌ Errore parsing localStorage:', e)
       }
     }
+    
+    if (sharedData) {
+      try {
+        const parsed = JSON.parse(sharedData)
+        console.log('📋 Notifiche sessionStorage:', parsed)
+      } catch (e) {
+        console.error('❌ Errore parsing sessionStorage:', e)
+      }
+    }
+    
+    if (globalData) {
+      try {
+        const parsed = JSON.parse(globalData)
+        console.log('📋 Notifiche storage globale:', parsed)
+      } catch (e) {
+        console.error('❌ Errore parsing storage globale:', e)
+      }
+    }
+    
+    // Mostra anche le notifiche combinate
+    const combined = await VerificationService.getAdminNotifications()
+    console.log('🔔 Notifiche combinate finali:', combined)
   }
 
   const handleApprove = async (notification: AdminNotification) => {

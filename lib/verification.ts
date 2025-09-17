@@ -3,6 +3,7 @@ import type { ChallengeVerification, AdminNotification } from '@/types'
 export class VerificationService {
   private static readonly STORAGE_KEY = 'challenge_verifications'
   private static readonly NOTIFICATIONS_KEY = 'admin_notifications'
+  private static readonly SHARED_NOTIFICATIONS_KEY = 'shared_admin_notifications'
 
   // Invia una verifica per approvazione
   static async submitVerification(
@@ -68,14 +69,50 @@ export class VerificationService {
         return []
       }
       
-      const data = localStorage.getItem(this.NOTIFICATIONS_KEY)
-      console.log('📦 Dati localStorage:', data)
+      // Recupera da localStorage locale
+      const localData = localStorage.getItem(this.NOTIFICATIONS_KEY)
+      console.log('📦 Dati localStorage locale:', localData)
       
-      const notifications = data ? JSON.parse(data) : []
-      console.log('🔔 Notifiche parse:', notifications)
+      // Recupera da sessionStorage condiviso
+      const sharedData = sessionStorage.getItem(this.SHARED_NOTIFICATIONS_KEY)
+      console.log('📦 Dati sessionStorage condiviso:', sharedData)
+      
+      // Recupera da storage globale simulato
+      const globalData = localStorage.getItem('global_admin_notifications')
+      console.log('📦 Dati storage globale:', globalData)
+      
+      let allNotifications: AdminNotification[] = []
+      
+      // Combina tutte le notifiche da tutti i storage
+      if (localData) {
+        const localNotifications = JSON.parse(localData)
+        allNotifications = [...allNotifications, ...localNotifications]
+      }
+      
+      if (sharedData) {
+        const sharedNotifications = JSON.parse(sharedData)
+        allNotifications = [...allNotifications, ...sharedNotifications]
+      }
+      
+      if (globalData) {
+        const globalNotifications = JSON.parse(globalData)
+        // Rimuovi i campi server-specifici
+        const cleanGlobalNotifications = globalNotifications.map((n: any) => {
+          const { serverId, syncedAt, ...cleanNotification } = n
+          return cleanNotification
+        })
+        allNotifications = [...allNotifications, ...cleanGlobalNotifications]
+      }
+      
+      // Rimuovi duplicati basati sull'ID
+      const uniqueNotifications = allNotifications.filter((notification, index, self) => 
+        index === self.findIndex(n => n.id === notification.id)
+      )
+      
+      console.log('🔔 Notifiche combinate:', uniqueNotifications)
       
       // Ordina per data di creazione (più recenti prima)
-      const sortedNotifications = notifications.sort((a: AdminNotification, b: AdminNotification) => 
+      const sortedNotifications = uniqueNotifications.sort((a: AdminNotification, b: AdminNotification) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
       
@@ -223,22 +260,60 @@ export class VerificationService {
 
       console.log('📝 Notifica creata:', notification)
 
+      // Salva in localStorage locale
       const existing = localStorage.getItem(this.NOTIFICATIONS_KEY)
-      console.log('📦 Dati esistenti:', existing)
+      console.log('📦 Dati esistenti localStorage:', existing)
       
       const notifications = existing ? JSON.parse(existing) : []
-      console.log('📋 Notifiche esistenti:', notifications)
+      console.log('📋 Notifiche esistenti localStorage:', notifications)
       
       notifications.push(notification)
-      console.log('➕ Notifica aggiunta, totale:', notifications.length)
+      console.log('➕ Notifica aggiunta localStorage, totale:', notifications.length)
       
       localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(notifications))
       console.log('💾 Notifiche salvate in localStorage')
+
+      // Salva anche in sessionStorage per condivisione tra tab
+      const sharedExisting = sessionStorage.getItem(this.SHARED_NOTIFICATIONS_KEY)
+      const sharedNotifications = sharedExisting ? JSON.parse(sharedExisting) : []
+      
+      sharedNotifications.push(notification)
+      sessionStorage.setItem(this.SHARED_NOTIFICATIONS_KEY, JSON.stringify(sharedNotifications))
+      console.log('💾 Notifiche salvate in sessionStorage per condivisione')
+
+      // Simula invio a "server" usando un timestamp per sincronizzazione
+      await this.syncToSharedStorage(notification)
       
       console.log('✅ Notifica admin creata con successo:', notification.id)
       console.log('📸 Foto URL:', verification.photoUrl)
     } catch (error) {
       console.error('❌ Errore nella creazione della notifica:', error)
+    }
+  }
+
+  // Simula sincronizzazione con "server" condiviso
+  private static async syncToSharedStorage(notification: AdminNotification): Promise<void> {
+    try {
+      // Usa un timestamp per simulare un ID server
+      const serverId = `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      
+      // Salva in un storage "globale" simulato
+      const globalKey = 'global_admin_notifications'
+      const existing = localStorage.getItem(globalKey)
+      const globalNotifications = existing ? JSON.parse(existing) : []
+      
+      const serverNotification = {
+        ...notification,
+        serverId,
+        syncedAt: new Date()
+      }
+      
+      globalNotifications.push(serverNotification)
+      localStorage.setItem(globalKey, JSON.stringify(globalNotifications))
+      
+      console.log('🌐 Notifica sincronizzata con server simulato:', serverId)
+    } catch (error) {
+      console.error('❌ Errore nella sincronizzazione:', error)
     }
   }
 
