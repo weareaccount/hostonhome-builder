@@ -89,8 +89,14 @@ export default function PhotoUploadModal({
     // Simula delay di upload
     await new Promise(resolve => setTimeout(resolve, 2000))
     
-    // In produzione, qui faresti l'upload reale
-    return `https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=${encodeURIComponent(challenge.title)}`
+    // Crea un URL locale per l'immagine caricata
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        resolve(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    })
   }
 
   const handleClose = () => {
