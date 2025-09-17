@@ -1,0 +1,263 @@
+'use client'
+
+import React, { useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { 
+  X, 
+  Camera, 
+  Upload, 
+  Image as ImageIcon,
+  CheckCircle,
+  AlertCircle,
+  Loader2
+} from 'lucide-react'
+import type { Challenge } from '@/types'
+
+interface PhotoUploadModalProps {
+  challenge: Challenge
+  isOpen: boolean
+  onClose: () => void
+  onUpload: (photoUrl: string, description: string) => Promise<void>
+}
+
+export default function PhotoUploadModal({ 
+  challenge, 
+  isOpen, 
+  onClose, 
+  onUpload 
+}: PhotoUploadModalProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [description, setDescription] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // Validazione file
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Seleziona un file immagine valido')
+        return
+      }
+      
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        setUploadError('Il file deve essere inferiore a 5MB')
+        return
+      }
+
+      setSelectedFile(file)
+      setUploadError(null)
+      
+      // Crea preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile) return
+
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      // Simula upload (in produzione userai un servizio reale come Cloudinary)
+      const photoUrl = await simulatePhotoUpload(selectedFile)
+      
+      await onUpload(photoUrl, description)
+      
+      // Reset form
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      setDescription('')
+      onClose()
+    } catch (error) {
+      setUploadError('Errore durante l\'upload. Riprova.')
+      console.error('Upload error:', error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const simulatePhotoUpload = async (file: File): Promise<string> => {
+    // Simula delay di upload
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // In produzione, qui faresti l'upload reale
+    return `https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=${encodeURIComponent(challenge.title)}`
+  }
+
+  const handleClose = () => {
+    if (!isUploading) {
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      setDescription('')
+      setUploadError(null)
+      onClose()
+    }
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={handleClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Camera className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Verifica Challenge</h3>
+                  <p className="text-sm text-gray-600">{challenge.title}</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClose}
+                disabled={isUploading}
+                className="w-8 h-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Istruzioni */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-900 mb-1">Come verificare la challenge</h4>
+                    <p className="text-sm text-blue-800">
+                      Carica una foto che dimostri il completamento della challenge "{challenge.title}".
+                      La foto verrà esaminata dall'admin e riceverai una notifica con il risultato.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Area */}
+              <div className="space-y-4">
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    selectedFile 
+                      ? 'border-green-300 bg-green-50' 
+                      : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                  }`}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                  
+                  {previewUrl ? (
+                    <div className="space-y-3">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg mx-auto"
+                      />
+                      <div className="flex items-center justify-center space-x-2 text-green-600">
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="text-sm font-medium">Foto selezionata</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Clicca per caricare una foto</p>
+                        <p className="text-sm text-gray-500">PNG, JPG fino a 5MB</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Descrizione */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descrizione (opzionale)
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Descrivi cosa mostra la foto e come dimostra il completamento della challenge..."
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    rows={3}
+                    disabled={isUploading}
+                  />
+                </div>
+
+                {/* Error */}
+                {uploadError && (
+                  <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-lg">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{uploadError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={isUploading}
+                  className="flex-1"
+                >
+                  Annulla
+                </Button>
+                <Button
+                  onClick={handleUpload}
+                  disabled={!selectedFile || isUploading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Caricamento...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Invia per Verifica
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}

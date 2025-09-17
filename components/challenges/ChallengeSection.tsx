@@ -213,9 +213,15 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
                       >
                         <ChallengeCard
                           challenge={challenge}
+                          userId={userId}
                           onStart={handleStartChallenge}
                           onClaim={handleClaimReward}
                           onShare={handleShareChallenge}
+                          onVerificationSubmitted={(challengeId) => {
+                            console.log('Verifica inviata per challenge:', challengeId)
+                            // Ricarica le challenge per aggiornare lo stato
+                            loadChallenges()
+                          }}
                         />
                       </motion.div>
                     ))}

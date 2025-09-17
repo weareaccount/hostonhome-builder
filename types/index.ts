@@ -248,7 +248,7 @@ export type ChallengeType =
   | 'TOP_HOST_MONTH'
   | 'SUPER_HOST_INDEPENDENT';
 
-export type ChallengeStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
+export type ChallengeStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'PENDING_VERIFICATION' | 'COMPLETED' | 'REJECTED';
 
 export type RewardType = 'BADGE' | 'CONSULTATION' | 'TEMPLATE' | 'GUIDE' | 'TRANSLATION' | 'SHOWCASE';
 
@@ -295,6 +295,33 @@ export interface UserBadge {
   icon: string;
   earnedAt: Date;
   isVisible: boolean;
+}
+
+// Sistema di verifica foto
+export interface ChallengeVerification {
+  id: string;
+  challengeId: string;
+  userId: string;
+  photoUrl: string;
+  photoDescription?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  submittedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  rejectionReason?: string;
+}
+
+export interface AdminNotification {
+  id: string;
+  type: 'CHALLENGE_VERIFICATION';
+  userId: string;
+  challengeId: string;
+  verificationId: string;
+  title: string;
+  message: string;
+  photoUrl: string;
+  isRead: boolean;
+  createdAt: Date;
 }
 
 // Form validation types

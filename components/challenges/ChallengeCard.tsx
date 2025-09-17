@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,15 +18,21 @@ import {
   Lock,
   CheckCircle,
   Clock,
-  Gift
+  Gift,
+  Upload,
+  AlertCircle
 } from 'lucide-react'
 import type { Challenge, ChallengeStatus } from '@/types'
+import PhotoUploadModal from './PhotoUploadModal'
+import { VerificationService } from '@/lib/verification'
 
 interface ChallengeCardProps {
   challenge: Challenge
+  userId: string
   onStart?: (challengeId: string) => void
   onClaim?: (challengeId: string) => void
   onShare?: (challengeId: string) => void
+  onVerificationSubmitted?: (challengeId: string) => void
 }
 
 const getChallengeIcon = (type: string) => {
@@ -53,8 +59,12 @@ const getStatusIcon = (status: ChallengeStatus) => {
       return <Clock className="w-4 h-4 text-blue-500" />
     case 'IN_PROGRESS':
       return <Clock className="w-4 h-4 text-orange-500" />
+    case 'PENDING_VERIFICATION':
+      return <Upload className="w-4 h-4 text-purple-500" />
     case 'COMPLETED':
       return <CheckCircle className="w-4 h-4 text-green-500" />
+    case 'REJECTED':
+      return <AlertCircle className="w-4 h-4 text-red-500" />
     default:
       return <Clock className="w-4 h-4 text-gray-400" />
   }
@@ -68,8 +78,12 @@ const getStatusColor = (status: ChallengeStatus) => {
       return 'border-blue-200 bg-blue-50'
     case 'IN_PROGRESS':
       return 'border-orange-200 bg-orange-50'
+    case 'PENDING_VERIFICATION':
+      return 'border-purple-200 bg-purple-50'
     case 'COMPLETED':
       return 'border-green-200 bg-green-50'
+    case 'REJECTED':
+      return 'border-red-200 bg-red-50'
     default:
       return 'border-gray-200 bg-gray-50'
   }
@@ -94,10 +108,37 @@ const getRewardIcon = (type: string) => {
   }
 }
 
-export default function ChallengeCard({ challenge, onStart, onClaim, onShare }: ChallengeCardProps) {
+export default function ChallengeCard({ 
+  challenge, 
+  userId, 
+  onStart, 
+  onClaim, 
+  onShare, 
+  onVerificationSubmitted 
+}: ChallengeCardProps) {
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  
   const isLocked = challenge.status === 'LOCKED'
   const isCompleted = challenge.status === 'COMPLETED'
   const isInProgress = challenge.status === 'IN_PROGRESS'
+  const isPendingVerification = challenge.status === 'PENDING_VERIFICATION'
+  const isRejected = challenge.status === 'REJECTED'
+
+  const handlePhotoUpload = async (photoUrl: string, description: string) => {
+    try {
+      await VerificationService.submitVerification(
+        challenge.id,
+        userId,
+        photoUrl,
+        description
+      )
+      
+      onVerificationSubmitted?.(challenge.id)
+      console.log('Verifica inviata con successo')
+    } catch (error) {
+      console.error('Errore nell\'invio della verifica:', error)
+    }
+  }
 
   return (
     <motion.div
@@ -205,13 +246,36 @@ export default function ChallengeCard({ challenge, onStart, onClaim, onShare }: 
                   <Share2 className="w-4 h-4" />
                 </Button>
               </>
+            ) : isPendingVerification ? (
+              <Button disabled className="flex-1 bg-purple-300 text-purple-700">
+                <Upload className="w-4 h-4 mr-2" />
+                In Verifica
+              </Button>
+            ) : isRejected ? (
+              <>
+                <Button 
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Riprova
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => onShare?.(challenge.id)}
+                  className="px-3"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+              </>
             ) : (
               <>
                 <Button 
-                  onClick={() => onStart?.(challenge.id)}
+                  onClick={() => setShowUploadModal(true)}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {isInProgress ? 'Continua' : 'Inizia'}
+                  <Camera className="w-4 h-4 mr-2" />
+                  Verifica con Foto
                 </Button>
                 <Button 
                   variant="outline"
@@ -225,6 +289,14 @@ export default function ChallengeCard({ challenge, onStart, onClaim, onShare }: 
           </div>
         </CardContent>
       </Card>
+
+      {/* Photo Upload Modal */}
+      <PhotoUploadModal
+        challenge={challenge}
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onUpload={handlePhotoUpload}
+      />
     </motion.div>
   )
 }
