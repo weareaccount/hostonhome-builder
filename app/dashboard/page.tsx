@@ -920,10 +920,9 @@ export default function Dashboard() {
           </div>
         )}
         {/* Dashboard Layout Responsive */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
           {/* Area Personale Host - Sidebar */}
-          <div className="xl:col-span-1">
-            <div className="space-y-4">
+          <div className="xl:col-span-1 space-y-4">
               {/* Profilo Header Editabile */}
               <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
                 <CardContent className="p-6">
@@ -1132,7 +1131,6 @@ export default function Dashboard() {
                 badges={userBadges}
                 userId={user?.id || ''}
               />
-            </div>
           </div>
           
           {/* Area Progetti - Destra */}

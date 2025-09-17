@@ -94,9 +94,8 @@ const getRarityColor = (rarity: string) => {
   }
 }
 
-// Componente BadgeCard avanzato
+// Componente BadgeCard semplificato e funzionale
 const BadgeCard = ({ badge, index }: { badge: UserBadge; index: number }) => {
-  const [isHovered, setIsHovered] = useState(false)
   const [isVisible, setIsVisible] = useState(badge.isVisible)
   const config = getBadgeConfig(badge.title)
   const IconComponent = config.icon
@@ -110,7 +109,7 @@ const BadgeCard = ({ badge, index }: { badge: UserBadge; index: number }) => {
       console.log(`Badge ${badge.id} visibility updated: ${newVisibility}`)
     } catch (error) {
       console.error('Errore nell\'aggiornamento della visibilità:', error)
-      setIsVisible(!newVisibility) // Ripristina lo stato precedente
+      setIsVisible(!newVisibility)
     }
   }
 
@@ -129,88 +128,62 @@ const BadgeCard = ({ badge, index }: { badge: UserBadge; index: number }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.1 }}
+      className="group"
     >
-      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${config.gradient} p-1 shadow-lg ${config.glow} transition-all duration-300 ${isHovered ? 'scale-105 shadow-2xl' : ''}`}>
-        {/* Effetto shimmer */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          initial={{ x: '-100%' }}
-          animate={{ x: isHovered ? '100%' : '-100%' }}
-          transition={{ duration: 0.6 }}
-        />
-        
-        <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6">
-          {/* Header del badge */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <IconComponent className="w-6 h-6 text-white" />
-                </div>
-                {/* Effetto sparkle */}
-                <motion.div
-                  className="absolute -top-1 -right-1"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <Sparkles className="w-4 h-4 text-yellow-300" />
-                </motion.div>
-              </div>
-              <div>
-                <h3 className="font-bold text-white text-lg">{badge.title}</h3>
-                <div className="flex items-center space-x-2">
-                  <span className={`text-xs px-2 py-1 rounded-full bg-white/20 text-white font-medium ${getRarityColor(config.rarity)}`}>
-                    {config.rarity.toUpperCase()}
-                  </span>
-                  <span className="text-2xl">{config.emoji}</span>
-                </div>
-              </div>
+      <div className={`bg-gradient-to-r ${config.gradient} rounded-lg p-4 shadow-md hover:shadow-lg transition-all duration-200`}>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <IconComponent className="w-4 h-4 text-white" />
             </div>
-            
-            {/* Azioni badge */}
-            <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleToggleVisibility}
-                className="w-8 h-8 p-0 bg-white/20 border-white/30 text-white hover:bg-white/30"
-              >
-                {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleShare}
-                className="w-8 h-8 p-0 bg-white/20 border-white/30 text-white hover:bg-white/30"
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-white text-sm truncate">{badge.title}</h3>
+              <div className="flex items-center space-x-2 mt-1">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white">
+                  {config.rarity.toUpperCase()}
+                </span>
+                <span className="text-sm">{config.emoji}</span>
+              </div>
             </div>
           </div>
+          
+          {/* Azioni */}
+          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={handleToggleVisibility}
+              className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors"
+            >
+              {isVisible ? <Eye className="w-3 h-3 mx-auto" /> : <EyeOff className="w-3 h-3 mx-auto" />}
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors"
+            >
+              <Share2 className="w-3 h-3 mx-auto" />
+            </button>
+          </div>
+        </div>
 
-          {/* Descrizione */}
-          <p className="text-white/90 text-sm mb-4 leading-relaxed">
-            {config.description}
-          </p>
+        {/* Descrizione */}
+        <p className="text-white/90 text-xs mb-3 leading-relaxed">
+          {config.description}
+        </p>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-300" />
-              <span className="text-xs text-white/80">
-                Guadagnato il {new Date(badge.earnedAt).toLocaleDateString('it-IT')}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4 text-yellow-300" />
-              <span className="text-xs text-yellow-300 font-medium">Badge</span>
-            </div>
+        {/* Footer */}
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-1">
+            <CheckCircle className="w-3 h-3 text-green-300" />
+            <span className="text-white/80">
+              {new Date(badge.earnedAt).toLocaleDateString('it-IT')}
+            </span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Star className="w-3 h-3 text-yellow-300" />
+            <span className="text-yellow-300 font-medium">Badge</span>
           </div>
         </div>
       </div>
@@ -273,48 +246,24 @@ export default function BadgeShowcase({ badges, userId }: BadgeShowcaseProps) {
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
+    <Card className="border-0 shadow-md">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-3">
-            <div className="p-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-xl shadow-lg">
-              <Trophy className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <span className="text-2xl font-bold text-gray-900">I Tuoi Badge</span>
-              <p className="text-sm text-gray-600 font-normal">
-                {earnedBadges.length} di {totalBadges} badge guadagnati
-              </p>
-            </div>
-          </CardTitle>
-          
-          {/* Controlli vista */}
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              className="flex items-center space-x-2"
-            >
-              {viewMode === 'grid' ? (
-                <>
-                  <Download className="w-4 h-4" />
-                  <span>Lista</span>
-                </>
-              ) : (
-                <>
-                  <Trophy className="w-4 h-4" />
-                  <span>Griglia</span>
-                </>
-              )}
-            </Button>
+        <CardTitle className="flex items-center space-x-3">
+          <div className="p-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg">
+            <Trophy className="w-5 h-5 text-white" />
           </div>
-        </div>
+          <div>
+            <span className="text-lg font-bold text-gray-900">I Tuoi Badge</span>
+            <p className="text-sm text-gray-600 font-normal">
+              {earnedBadges.length} di {totalBadges} badge guadagnati
+            </p>
+          </div>
+        </CardTitle>
       </CardHeader>
       
       <CardContent>
-        {/* Badge Grid */}
-        <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'}`}>
+        {/* Badge List */}
+        <div className="space-y-3">
           <AnimatePresence>
             {displayedBadges.map((badge, index) => (
               <BadgeCard key={badge.id} badge={badge} index={index} />
@@ -324,9 +273,10 @@ export default function BadgeShowcase({ badges, userId }: BadgeShowcaseProps) {
 
         {/* Mostra più badge */}
         {earnedBadges.length > 3 && (
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setShowAll(!showAll)}
               className="flex items-center space-x-2"
             >
@@ -346,43 +296,32 @@ export default function BadgeShowcase({ badges, userId }: BadgeShowcaseProps) {
         )}
 
         {/* Progresso badge */}
-        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Trophy className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Progresso Badge</h3>
-                <p className="text-sm text-gray-600">Continua a guadagnare badge!</p>
-              </div>
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <Trophy className="w-4 h-4 text-blue-600" />
+              <span className="font-medium text-gray-900">Progresso Badge</span>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-blue-600">{earnedBadges.length}</div>
-              <div className="text-sm text-gray-600">di {totalBadges}</div>
-            </div>
+            <span className="text-sm font-bold text-blue-600">
+              {earnedBadges.length}/{totalBadges}
+            </span>
           </div>
           
           {/* Barra progresso */}
-          <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
             <motion.div
-              className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${(earnedBadges.length / totalBadges) * 100}%` }}
               transition={{ duration: 1, delay: 0.5 }}
             />
           </div>
           
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">
-              {earnedBadges.length < totalBadges ? 
-                `${totalBadges - earnedBadges.length} badge da sbloccare` : 
-                'Tutti i badge guadagnati! 🎉'
-              }
-            </span>
-            <span className="font-medium text-blue-600">
-              {Math.round((earnedBadges.length / totalBadges) * 100)}% completato
-            </span>
+          <div className="text-xs text-gray-600 text-center">
+            {earnedBadges.length < totalBadges ? 
+              `${totalBadges - earnedBadges.length} badge da sbloccare` : 
+              'Tutti i badge guadagnati! 🎉'
+            }
           </div>
         </div>
       </CardContent>
