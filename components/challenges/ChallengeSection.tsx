@@ -217,10 +217,10 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
                           onStart={handleStartChallenge}
                           onClaim={handleClaimReward}
                           onShare={handleShareChallenge}
-                          onVerificationSubmitted={(challengeId) => {
+                          onVerificationSubmitted={async (challengeId) => {
                             console.log('Verifica inviata per challenge:', challengeId)
                             // Ricarica le challenge per aggiornare lo stato
-                            loadChallenges()
+                            await loadChallenges()
                           }}
                         />
                       </motion.div>

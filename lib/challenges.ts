@@ -173,7 +173,7 @@ export class ChallengeService {
           icon: definition.icon,
           reward: definition.reward,
           target: definition.target,
-          status: this.calculateStatus(progress.current, definition.target.value),
+          status: this.calculateStatus(progress.current, definition.target.value, progress.status),
           progress: {
             current: progress.current,
             target: definition.target.value,
@@ -243,6 +243,37 @@ export class ChallengeService {
     }
   }
 
+  // Aggiorna lo stato di una challenge
+  static async updateChallengeStatus(
+    userId: string, 
+    challengeId: string, 
+    status: 'IN_PROGRESS' | 'PENDING_VERIFICATION' | 'COMPLETED' | 'REJECTED'
+  ): Promise<boolean> {
+    try {
+      const progressData = this.getLocalProgress(userId)
+      const challenge = await this.getChallengeById(challengeId)
+      
+      if (!challenge) return false
+      
+      // Aggiorna il progresso con il nuovo stato
+      progressData[challengeId] = {
+        ...progressData[challengeId],
+        current: challenge.target.value,
+        target: challenge.target.value,
+        percentage: 100,
+        status: status,
+        lastUpdated: new Date()
+      }
+      
+      this.saveLocalProgress(userId, progressData)
+      console.log(`Challenge ${challengeId} status updated to: ${status}`)
+      return true
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento dello stato:', error)
+      return false
+    }
+  }
+
   // Ottieni una challenge specifica
   static async getChallengeById(challengeId: string): Promise<Challenge | null> {
     const challenges = await this.getUserChallenges('dummy-user-id') // In produzione passerai l'userId reale
@@ -250,7 +281,12 @@ export class ChallengeService {
   }
 
   // Calcola lo status di una challenge
-  private static calculateStatus(current: number, target: number): ChallengeStatus {
+  private static calculateStatus(current: number, target: number, customStatus?: string): ChallengeStatus {
+    // Se c'è uno stato personalizzato (es. PENDING_VERIFICATION), usalo
+    if (customStatus && ['PENDING_VERIFICATION', 'REJECTED'].includes(customStatus)) {
+      return customStatus as ChallengeStatus
+    }
+    
     if (current >= target) return 'COMPLETED'
     if (current > 0) return 'IN_PROGRESS'
     return 'AVAILABLE'

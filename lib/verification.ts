@@ -25,6 +25,10 @@ export class VerificationService {
       // Salva la verifica
       await this.saveVerification(verification)
 
+      // Aggiorna lo stato della challenge a PENDING_VERIFICATION
+      const { ChallengeService } = await import('./challenges')
+      await ChallengeService.updateChallengeStatus(userId, challengeId, 'PENDING_VERIFICATION')
+
       // Crea notifica per admin
       await this.createAdminNotification(verification)
 
