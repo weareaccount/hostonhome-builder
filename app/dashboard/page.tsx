@@ -12,6 +12,9 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PLAN_LIMITS, STRIPE_PRICING } from '@/lib/constants'
 import { isSubscriptionActive, getSubscriptionBlockReason, getTrialInfo } from '@/lib/subscription'
+import ChallengeSection from '@/components/challenges/ChallengeSection'
+import BadgeShowcase from '@/components/challenges/BadgeShowcase'
+import ChallengeStats from '@/components/challenges/ChallengeStats'
 
 export default function Dashboard() {
   const { user, loading, signOut, refreshUser } = useAuth()
@@ -1099,6 +1102,26 @@ export default function Dashboard() {
                   />
                 </CollapsibleSection>
               </div>
+
+              {/* Challenge Stats */}
+              <ChallengeStats userId={user?.id || ''} />
+
+              {/* Badge Showcase */}
+              <BadgeShowcase 
+                badges={[
+                  {
+                    id: '1',
+                    challengeId: '3',
+                    userId: user?.id || '',
+                    title: 'Badge "Ospite Felice"',
+                    description: 'Mostra il badge di ospite felice',
+                    icon: '⭐',
+                    earnedAt: new Date('2024-01-15'),
+                    isVisible: true
+                  }
+                ]}
+                userId={user?.id || ''}
+              />
             </div>
           </div>
           
@@ -1379,6 +1402,16 @@ Sei sicuro di voler procedere con la disdetta?`)) return
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Challenge Section */}
+              <ChallengeSection 
+                userId={user?.id || ''} 
+                onChallengeComplete={(challengeId) => {
+                  console.log('Challenge completed:', challengeId)
+                  // Qui puoi aggiungere logica per aggiornare lo stato delle challenge
+                }}
+              />
+
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900">I Tuoi Progetti</h2>
               <Button 

@@ -235,6 +235,68 @@ export interface StripeProduct {
   };
 }
 
+// Challenge types
+export type ChallengeType = 
+  | 'SHARE_SITE'
+  | 'FIRST_VISITS'
+  | 'FIRST_REVIEW'
+  | 'WHATSAPP_CONTACT'
+  | 'UPDATE_PHOTOS'
+  | 'FIRST_BOOKING'
+  | 'SOCIAL_SHARE'
+  | 'INTERNATIONAL_GUEST'
+  | 'TOP_HOST_MONTH'
+  | 'SUPER_HOST_INDEPENDENT';
+
+export type ChallengeStatus = 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
+
+export type RewardType = 'BADGE' | 'CONSULTATION' | 'TEMPLATE' | 'GUIDE' | 'TRANSLATION' | 'SHOWCASE';
+
+export interface Challenge {
+  id: string;
+  type: ChallengeType;
+  title: string;
+  description: string;
+  icon: string;
+  reward: {
+    type: RewardType;
+    title: string;
+    description: string;
+  };
+  target: {
+    value: number;
+    unit: string;
+    description: string;
+  };
+  status: ChallengeStatus;
+  progress: {
+    current: number;
+    target: number;
+    percentage: number;
+  };
+  completedAt?: Date;
+  unlockedAt?: Date;
+}
+
+export interface ChallengeProgress {
+  challengeId: string;
+  userId: string;
+  currentValue: number;
+  lastUpdated: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface UserBadge {
+  id: string;
+  challengeId: string;
+  userId: string;
+  title: string;
+  description: string;
+  icon: string;
+  earnedAt: Date;
+  isVisible: boolean;
+}
+
 // Form validation types
 export interface CreateSiteFormData {
   name: string;
