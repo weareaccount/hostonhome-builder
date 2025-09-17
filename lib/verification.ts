@@ -4,6 +4,8 @@ export class VerificationService {
   private static readonly STORAGE_KEY = 'challenge_verifications'
   private static readonly NOTIFICATIONS_KEY = 'admin_notifications'
   private static readonly SHARED_NOTIFICATIONS_KEY = 'shared_admin_notifications'
+  private static readonly GLOBAL_NOTIFICATIONS_KEY = 'global_admin_notifications'
+  private static readonly NOTIFICATION_COUNTER_KEY = 'notification_counter'
 
   // Invia una verifica per approvazione
   static async submitVerification(
@@ -69,6 +71,8 @@ export class VerificationService {
         return []
       }
       
+      console.log('🔍 Ricerca notifiche in tutti gli storage...')
+      
       // Recupera da localStorage locale
       const localData = localStorage.getItem(this.NOTIFICATIONS_KEY)
       console.log('📦 Dati localStorage locale:', localData)
@@ -78,37 +82,55 @@ export class VerificationService {
       console.log('📦 Dati sessionStorage condiviso:', sharedData)
       
       // Recupera da storage globale simulato
-      const globalData = localStorage.getItem('global_admin_notifications')
+      const globalData = localStorage.getItem(this.GLOBAL_NOTIFICATIONS_KEY)
       console.log('📦 Dati storage globale:', globalData)
       
       let allNotifications: AdminNotification[] = []
       
       // Combina tutte le notifiche da tutti i storage
       if (localData) {
-        const localNotifications = JSON.parse(localData)
-        allNotifications = [...allNotifications, ...localNotifications]
+        try {
+          const localNotifications = JSON.parse(localData)
+          allNotifications = [...allNotifications, ...localNotifications]
+          console.log('✅ Aggiunte', localNotifications.length, 'notifiche locali')
+        } catch (e) {
+          console.error('❌ Errore parsing localStorage:', e)
+        }
       }
       
       if (sharedData) {
-        const sharedNotifications = JSON.parse(sharedData)
-        allNotifications = [...allNotifications, ...sharedNotifications]
+        try {
+          const sharedNotifications = JSON.parse(sharedData)
+          allNotifications = [...allNotifications, ...sharedNotifications]
+          console.log('✅ Aggiunte', sharedNotifications.length, 'notifiche condivise')
+        } catch (e) {
+          console.error('❌ Errore parsing sessionStorage:', e)
+        }
       }
       
       if (globalData) {
-        const globalNotifications = JSON.parse(globalData)
-        // Rimuovi i campi server-specifici
-        const cleanGlobalNotifications = globalNotifications.map((n: any) => {
-          const { serverId, syncedAt, ...cleanNotification } = n
-          return cleanNotification
-        })
-        allNotifications = [...allNotifications, ...cleanGlobalNotifications]
+        try {
+          const globalNotifications = JSON.parse(globalData)
+          // Rimuovi i campi server-specifici
+          const cleanGlobalNotifications = globalNotifications.map((n: any) => {
+            const { serverId, syncedAt, uniqueTimestamp, hash, ...cleanNotification } = n
+            return cleanNotification
+          })
+          allNotifications = [...allNotifications, ...cleanGlobalNotifications]
+          console.log('✅ Aggiunte', cleanGlobalNotifications.length, 'notifiche globali')
+        } catch (e) {
+          console.error('❌ Errore parsing storage globale:', e)
+        }
       }
       
-      // Rimuovi duplicati basati sull'ID
+      console.log('📊 Totale notifiche prima della deduplicazione:', allNotifications.length)
+      
+      // Rimuovi duplicati basati sull'ID e sull'hash
       const uniqueNotifications = allNotifications.filter((notification, index, self) => 
         index === self.findIndex(n => n.id === notification.id)
       )
       
+      console.log('📊 Totale notifiche dopo deduplicazione:', uniqueNotifications.length)
       console.log('🔔 Notifiche combinate:', uniqueNotifications)
       
       // Ordina per data di creazione (più recenti prima)
@@ -297,23 +319,91 @@ export class VerificationService {
       // Usa un timestamp per simulare un ID server
       const serverId = `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       
-      // Salva in un storage "globale" simulato
-      const globalKey = 'global_admin_notifications'
+      // Salva in un storage "globale" simulato usando un approccio diverso
+      const globalKey = this.GLOBAL_NOTIFICATIONS_KEY
       const existing = localStorage.getItem(globalKey)
       const globalNotifications = existing ? JSON.parse(existing) : []
       
       const serverNotification = {
         ...notification,
         serverId,
-        syncedAt: new Date()
+        syncedAt: new Date(),
+        // Aggiungi un timestamp unico per identificare questa notifica
+        uniqueTimestamp: Date.now(),
+        // Aggiungi un hash per identificare univocamente la notifica
+        hash: this.generateNotificationHash(notification)
       }
       
       globalNotifications.push(serverNotification)
       localStorage.setItem(globalKey, JSON.stringify(globalNotifications))
       
+      // Incrementa il contatore globale delle notifiche
+      this.incrementGlobalCounter()
+      
       console.log('🌐 Notifica sincronizzata con server simulato:', serverId)
+      console.log('📊 Contatore globale aggiornato')
     } catch (error) {
       console.error('❌ Errore nella sincronizzazione:', error)
+    }
+  }
+
+  // Genera un hash unico per la notifica
+  private static generateNotificationHash(notification: AdminNotification): string {
+    const data = `${notification.challengeId}_${notification.userId}_${notification.photoUrl}_${notification.createdAt}`
+    return btoa(data).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16)
+  }
+
+  // Incrementa il contatore globale delle notifiche
+  private static incrementGlobalCounter(): void {
+    try {
+      const current = localStorage.getItem(this.NOTIFICATION_COUNTER_KEY)
+      const count = current ? parseInt(current) + 1 : 1
+      localStorage.setItem(this.NOTIFICATION_COUNTER_KEY, count.toString())
+      console.log('📊 Contatore notifiche:', count)
+    } catch (error) {
+      console.error('❌ Errore nell\'incremento del contatore:', error)
+    }
+  }
+
+  // Ottieni il contatore globale delle notifiche
+  static getGlobalNotificationCount(): number {
+    try {
+      const current = localStorage.getItem(this.NOTIFICATION_COUNTER_KEY)
+      return current ? parseInt(current) : 0
+    } catch (error) {
+      console.error('❌ Errore nel recupero del contatore:', error)
+      return 0
+    }
+  }
+
+  // Forza la sincronizzazione delle notifiche
+  static async forceSyncNotifications(): Promise<void> {
+    try {
+      console.log('🔄 Forzando sincronizzazione notifiche...')
+      
+      // Recupera tutte le notifiche da tutti gli storage
+      const allNotifications = await this.getAdminNotifications()
+      
+      // Salva le notifiche combinate in tutti gli storage
+      localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(allNotifications))
+      sessionStorage.setItem(this.SHARED_NOTIFICATIONS_KEY, JSON.stringify(allNotifications))
+      
+      console.log('✅ Sincronizzazione forzata completata:', allNotifications.length, 'notifiche')
+    } catch (error) {
+      console.error('❌ Errore nella sincronizzazione forzata:', error)
+    }
+  }
+
+  // Pulisci tutti gli storage delle notifiche (per debug)
+  static clearAllNotifications(): void {
+    try {
+      localStorage.removeItem(this.NOTIFICATIONS_KEY)
+      sessionStorage.removeItem(this.SHARED_NOTIFICATIONS_KEY)
+      localStorage.removeItem(this.GLOBAL_NOTIFICATIONS_KEY)
+      localStorage.removeItem(this.NOTIFICATION_COUNTER_KEY)
+      console.log('🧹 Tutti gli storage delle notifiche puliti')
+    } catch (error) {
+      console.error('❌ Errore nella pulizia:', error)
     }
   }
 

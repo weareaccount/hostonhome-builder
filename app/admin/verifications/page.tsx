@@ -43,28 +43,17 @@ export default function AdminVerificationsPage() {
 
   const syncWithGlobalStorage = async () => {
     try {
-      // Recupera notifiche dal storage globale
-      const globalData = localStorage.getItem('global_admin_notifications')
-      if (globalData) {
-        const globalNotifications = JSON.parse(globalData)
-        
-        // Sincronizza con localStorage locale
-        const localData = localStorage.getItem('admin_notifications')
-        const localNotifications = localData ? JSON.parse(localData) : []
-        
-        // Aggiungi nuove notifiche globali che non sono già locali
-        const newNotifications = globalNotifications.filter((global: any) => 
-          !localNotifications.some((local: any) => local.id === global.id)
-        )
-        
-        if (newNotifications.length > 0) {
-          const updatedLocal = [...localNotifications, ...newNotifications]
-          localStorage.setItem('admin_notifications', JSON.stringify(updatedLocal))
-          console.log('🔄 Sincronizzate', newNotifications.length, 'nuove notifiche')
-        }
-      }
+      console.log('🔄 Sincronizzazione automatica...')
+      
+      // Usa il nuovo metodo di sincronizzazione forzata
+      await VerificationService.forceSyncNotifications()
+      
+      // Ricarica le notifiche per aggiornare l'interfaccia
+      await loadNotifications()
+      
+      console.log('✅ Sincronizzazione automatica completata')
     } catch (error) {
-      console.error('❌ Errore nella sincronizzazione:', error)
+      console.error('❌ Errore nella sincronizzazione automatica:', error)
     }
   }
 
@@ -83,7 +72,11 @@ export default function AdminVerificationsPage() {
   }
 
   const debugNotifications = async () => {
-    console.log('🔍 DEBUG: Controllo tutti gli storage...')
+    console.log('🔍 DEBUG: Controllo completo sistema notifiche...')
+    
+    // Contatore globale
+    const globalCount = VerificationService.getGlobalNotificationCount()
+    console.log('📊 Contatore globale notifiche:', globalCount)
     
     // localStorage locale
     const localData = localStorage.getItem('admin_notifications')
@@ -128,6 +121,16 @@ export default function AdminVerificationsPage() {
     // Mostra anche le notifiche combinate
     const combined = await VerificationService.getAdminNotifications()
     console.log('🔔 Notifiche combinate finali:', combined)
+    
+    // Forza sincronizzazione
+    await VerificationService.forceSyncNotifications()
+    console.log('🔄 Sincronizzazione forzata completata')
+  }
+
+  const clearAllNotifications = () => {
+    VerificationService.clearAllNotifications()
+    loadNotifications()
+    alert('🧹 Tutte le notifiche sono state pulite!')
   }
 
   const handleApprove = async (notification: AdminNotification) => {
@@ -241,14 +244,24 @@ export default function AdminVerificationsPage() {
                 <Bell className="w-5 h-5 text-blue-600" />
                 <span>Notifiche Verifiche</span>
               </div>
-              <Button 
-                onClick={debugNotifications}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                🔍 Debug
-              </Button>
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={debugNotifications}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  🔍 Debug
+                </Button>
+                <Button 
+                  onClick={clearAllNotifications}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-red-600 hover:text-red-700"
+                >
+                  🧹 Pulisci
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
