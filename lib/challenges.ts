@@ -260,13 +260,18 @@ export class ChallengeService {
       if (!challenge) return false
       
       // Aggiorna il progresso con il nuovo stato
+      const currentProgress = progressData[challengeId] || { current: 0, target: challenge.target.value, percentage: 0 }
       const updatedProgress = {
-        ...progressData[challengeId],
-        current: challenge.target.value,
-        target: challenge.target.value,
-        percentage: 100,
+        ...currentProgress,
         status: status,
         lastUpdated: new Date()
+      }
+      
+      // Solo per COMPLETED imposta current e percentage al 100%
+      if (status === 'COMPLETED') {
+        updatedProgress.current = challenge.target.value
+        updatedProgress.target = challenge.target.value
+        updatedProgress.percentage = 100
       }
       
       // Imposta completedAt solo quando lo stato è COMPLETED (approvato dall'admin)
@@ -282,7 +287,8 @@ export class ChallengeService {
       progressData[challengeId] = updatedProgress
       
       this.saveLocalProgress(userId, progressData)
-      console.log(`Challenge ${challengeId} status updated to: ${status}`)
+      console.log(`✅ Challenge ${challengeId} status updated to: ${status}`)
+      console.log(`📊 Progress data:`, updatedProgress)
       return true
     } catch (error) {
       console.error('Errore nell\'aggiornamento dello stato:', error)

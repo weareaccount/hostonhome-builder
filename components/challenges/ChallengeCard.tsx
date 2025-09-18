@@ -126,6 +126,7 @@ export default function ChallengeCard({
   const isAvailable = challenge.status === 'AVAILABLE'
   const hasReachedTarget = challenge.progress.current >= challenge.progress.target
   const canRequestVerification = isAvailable && hasReachedTarget
+  const canVerifyWithPhoto = isAvailable && !isCompleted && !isPendingVerification
 
   const handlePhotoUpload = async (photoUrl: string, description: string) => {
     try {
@@ -134,19 +135,25 @@ export default function ChallengeCard({
       // Prima imposta lo stato su PENDING_VERIFICATION
       const { ChallengeService } = await import('@/lib/challenges')
       await ChallengeService.updateChallengeStatus(userId, challenge.id, 'PENDING_VERIFICATION')
+      console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
       
       // Poi invia la verifica
-      await VerificationService.submitVerification(
+      const verification = await VerificationService.submitVerification(
         challenge.id,
         userId,
         photoUrl,
         description
       )
       
-      onVerificationSubmitted?.(challenge.id)
-      console.log('✅ Verifica richiesta e inviata con successo')
+      if (verification) {
+        onVerificationSubmitted?.(challenge.id)
+        console.log('✅ Verifica richiesta e inviata con successo:', verification.id)
+      } else {
+        console.error('❌ Verifica non inviata correttamente')
+      }
     } catch (error) {
       console.error('❌ Errore nell\'invio della verifica:', error)
+      alert('❌ Errore nell\'invio della verifica. Riprova.')
     }
   }
 
@@ -297,7 +304,7 @@ export default function ChallengeCard({
                   <Share2 className="w-4 h-4" />
                 </Button>
               </>
-            ) : (
+            ) : canVerifyWithPhoto ? (
               <>
                 <Button 
                   onClick={() => setShowUploadModal(true)}
@@ -314,6 +321,11 @@ export default function ChallengeCard({
                   <Share2 className="w-4 h-4" />
                 </Button>
               </>
+            ) : (
+              <Button disabled className="flex-1 bg-gray-300 text-gray-500">
+                <Lock className="w-4 h-4 mr-2" />
+                Non Disponibile
+              </Button>
             )}
           </div>
         </CardContent>
