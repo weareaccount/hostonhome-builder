@@ -146,6 +146,46 @@ export class VerificationService {
     }
   }
 
+  // Metodo alternativo per ottenere notifiche solo dal server simulato
+  static async getGlobalNotificationsOnly(): Promise<AdminNotification[]> {
+    try {
+      if (typeof window === 'undefined') {
+        console.log('⚠️ Window undefined, ritorno array vuoto')
+        return []
+      }
+      
+      console.log('🌐 Recupero notifiche solo dal server simulato...')
+      
+      const globalData = localStorage.getItem(this.GLOBAL_NOTIFICATIONS_KEY)
+      console.log('📦 Dati storage globale:', globalData)
+      
+      if (!globalData) {
+        console.log('📭 Nessuna notifica nel server simulato')
+        return []
+      }
+      
+      const globalNotifications = JSON.parse(globalData)
+      console.log('📋 Notifiche dal server simulato:', globalNotifications.length)
+      
+      // Rimuovi i campi server-specifici
+      const cleanNotifications = globalNotifications.map((n: any) => {
+        const { serverId, syncedAt, uniqueTimestamp, hash, ...cleanNotification } = n
+        return cleanNotification
+      })
+      
+      // Ordina per data di creazione (più recenti prima)
+      const sortedNotifications = cleanNotifications.sort((a: AdminNotification, b: AdminNotification) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      
+      console.log('📋 Notifiche dal server simulato ordinate:', sortedNotifications)
+      return sortedNotifications
+    } catch (error) {
+      console.error('❌ Errore nel recupero delle notifiche globali:', error)
+      return []
+    }
+  }
+
   // Approva una verifica
   static async approveVerification(
     verificationId: string,
@@ -316,6 +356,8 @@ export class VerificationService {
   // Simula sincronizzazione con "server" condiviso
   private static async syncToSharedStorage(notification: AdminNotification): Promise<void> {
     try {
+      console.log('🌐 Inizio sincronizzazione con server simulato...')
+      
       // Usa un timestamp per simulare un ID server
       const serverId = `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       
@@ -334,14 +376,25 @@ export class VerificationService {
         hash: this.generateNotificationHash(notification)
       }
       
-      globalNotifications.push(serverNotification)
-      localStorage.setItem(globalKey, JSON.stringify(globalNotifications))
+      // Controlla se la notifica esiste già
+      const exists = globalNotifications.some((n: any) => n.hash === serverNotification.hash)
+      if (!exists) {
+        globalNotifications.push(serverNotification)
+        localStorage.setItem(globalKey, JSON.stringify(globalNotifications))
+        console.log('💾 Notifica aggiunta al server simulato:', serverId)
+      } else {
+        console.log('⚠️ Notifica già esistente nel server simulato')
+      }
       
       // Incrementa il contatore globale delle notifiche
       this.incrementGlobalCounter()
       
       console.log('🌐 Notifica sincronizzata con server simulato:', serverId)
       console.log('📊 Contatore globale aggiornato')
+      
+      // Verifica che sia stata salvata
+      const verify = localStorage.getItem(globalKey)
+      console.log('🔍 Verifica salvataggio:', verify ? JSON.parse(verify).length : 0, 'notifiche')
     } catch (error) {
       console.error('❌ Errore nella sincronizzazione:', error)
     }
@@ -404,6 +457,42 @@ export class VerificationService {
       console.log('🧹 Tutti gli storage delle notifiche puliti')
     } catch (error) {
       console.error('❌ Errore nella pulizia:', error)
+    }
+  }
+
+  // Crea una notifica di test per verificare il sistema
+  static async createTestNotification(): Promise<void> {
+    try {
+      console.log('🧪 Creazione notifica di test...')
+      
+      const testNotification: AdminNotification = {
+        id: `test_${Date.now()}`,
+        type: 'CHALLENGE_VERIFICATION',
+        userId: 'test_user_123',
+        challengeId: 'test_challenge_456',
+        verificationId: `test_verification_${Date.now()}`,
+        title: '🧪 Notifica di Test',
+        message: 'Questa è una notifica di test per verificare che il sistema funzioni correttamente.',
+        photoUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwN2JmZiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlRFU1Q8L3RleHQ+PC9zdmc+',
+        isRead: false,
+        createdAt: new Date()
+      }
+
+      // Salva direttamente nel server simulato
+      const globalKey = this.GLOBAL_NOTIFICATIONS_KEY
+      const existing = localStorage.getItem(globalKey)
+      const globalNotifications = existing ? JSON.parse(existing) : []
+      
+      globalNotifications.push(testNotification)
+      localStorage.setItem(globalKey, JSON.stringify(globalNotifications))
+      
+      // Incrementa il contatore
+      this.incrementGlobalCounter()
+      
+      console.log('✅ Notifica di test creata:', testNotification.id)
+      console.log('📊 Contatore globale:', this.getGlobalNotificationCount())
+    } catch (error) {
+      console.error('❌ Errore nella creazione della notifica di test:', error)
     }
   }
 

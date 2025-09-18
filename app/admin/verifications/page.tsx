@@ -61,8 +61,18 @@ export default function AdminVerificationsPage() {
     try {
       setLoading(true)
       console.log('🔄 Caricamento notifiche admin...')
-      const data = await VerificationService.getAdminNotifications()
-      console.log('📋 Notifiche caricate:', data)
+      
+      // Prova prima il metodo globale
+      let data = await VerificationService.getGlobalNotificationsOnly()
+      console.log('📋 Notifiche dal server simulato:', data)
+      
+      // Se non ci sono notifiche globali, prova il metodo combinato
+      if (data.length === 0) {
+        console.log('🔄 Nessuna notifica globale, provo metodo combinato...')
+        data = await VerificationService.getAdminNotifications()
+        console.log('📋 Notifiche combinate:', data)
+      }
+      
       setNotifications(data)
     } catch (error) {
       console.error('❌ Errore nel caricamento delle notifiche:', error)
@@ -131,6 +141,25 @@ export default function AdminVerificationsPage() {
     VerificationService.clearAllNotifications()
     loadNotifications()
     alert('🧹 Tutte le notifiche sono state pulite!')
+  }
+
+  const testGlobalNotifications = async () => {
+    console.log('🧪 Test notifiche globali...')
+    const globalNotifications = await VerificationService.getGlobalNotificationsOnly()
+    console.log('📋 Notifiche globali trovate:', globalNotifications)
+    
+    if (globalNotifications.length > 0) {
+      setNotifications(globalNotifications)
+      alert(`✅ Trovate ${globalNotifications.length} notifiche globali!`)
+    } else {
+      alert('❌ Nessuna notifica globale trovata')
+    }
+  }
+
+  const createTestNotification = async () => {
+    await VerificationService.createTestNotification()
+    await loadNotifications()
+    alert('🧪 Notifica di test creata! Controlla se appare nella lista.')
   }
 
   const handleApprove = async (notification: AdminNotification) => {
@@ -252,6 +281,22 @@ export default function AdminVerificationsPage() {
                   className="text-xs"
                 >
                   🔍 Debug
+                </Button>
+                <Button 
+                  onClick={testGlobalNotifications}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
+                  🧪 Test Globale
+                </Button>
+                <Button 
+                  onClick={createTestNotification}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-green-600 hover:text-green-700"
+                >
+                  ➕ Test Notifica
                 </Button>
                 <Button 
                   onClick={clearAllNotifications}
