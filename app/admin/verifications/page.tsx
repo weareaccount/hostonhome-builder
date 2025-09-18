@@ -105,6 +105,25 @@ export default function AdminVerificationsPage() {
     }
   }
 
+  const showAllNotifications = async () => {
+    try {
+      setLoading(true)
+      console.log('🔄 Mostrando tutte le notifiche senza deduplicazione...')
+      
+      const allData = await VerificationService.getAdminNotifications()
+      console.log('📋 Tutte le notifiche:', allData)
+      
+      setNotifications(allData)
+      
+      alert(`📋 Mostrate ${allData.length} notifiche totali (con deduplicazione)`)
+    } catch (error) {
+      console.error('❌ Errore nel caricamento completo:', error)
+      alert('❌ Errore nel caricamento delle notifiche')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const debugNotifications = async () => {
     console.log('🔍 DEBUG: Controllo completo sistema notifiche...')
     
@@ -156,9 +175,49 @@ export default function AdminVerificationsPage() {
     const combined = await VerificationService.getAdminNotifications()
     console.log('🔔 Notifiche combinate finali:', combined)
     
+    // Conta le notifiche in ogni storage
+    let localCount = 0
+    let sharedCount = 0
+    let globalCount = 0
+    
+    if (localData) {
+      try {
+        localCount = JSON.parse(localData).length
+      } catch (e) {
+        console.error('❌ Errore parsing locale:', e)
+      }
+    }
+    
+    if (sharedData) {
+      try {
+        sharedCount = JSON.parse(sharedData).length
+      } catch (e) {
+        console.error('❌ Errore parsing condiviso:', e)
+      }
+    }
+    
+    if (globalData) {
+      try {
+        globalCount = JSON.parse(globalData).length
+      } catch (e) {
+        console.error('❌ Errore parsing globale:', e)
+      }
+    }
+    
     // Forza sincronizzazione
     await VerificationService.forceSyncNotifications()
     console.log('🔄 Sincronizzazione forzata completata')
+    
+    // Mostra alert con i conteggi
+    alert(`🔍 DEBUG NOTIFICHE:
+    
+📊 Contatore globale: ${globalCount}
+📦 Storage locale: ${localCount} notifiche
+📦 Storage condiviso: ${sharedCount} notifiche  
+📦 Storage globale: ${globalCount} notifiche
+📊 Totale: ${localCount + sharedCount + globalCount} notifiche
+
+✅ Notifiche combinate: ${combined.length}`)
   }
 
   const clearAllNotifications = () => {
@@ -331,6 +390,14 @@ export default function AdminVerificationsPage() {
                   🔄 Forza Caricamento
                 </Button>
                 <Button 
+                  onClick={showAllNotifications}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-orange-600 hover:text-orange-700"
+                >
+                  📋 Mostra Tutte
+                </Button>
+                <Button 
                   onClick={testGlobalNotifications}
                   variant="outline"
                   size="sm"
@@ -482,7 +549,7 @@ export default function AdminVerificationsPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+              className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -507,14 +574,14 @@ export default function AdminVerificationsPage() {
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6">
+              <div className="p-4 space-y-4">
               {/* Photo */}
               <div className="text-center">
                 {selectedNotification.photoUrl ? (
                   <img
                     src={selectedNotification.photoUrl}
                     alt="Verifica foto"
-                    className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+                    className="w-full max-w-sm mx-auto rounded-lg shadow-lg"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -522,7 +589,7 @@ export default function AdminVerificationsPage() {
                     }}
                   />
                 ) : (
-                  <div className="w-full max-w-md mx-auto rounded-lg shadow-lg bg-gray-200 h-64 flex items-center justify-center">
+                  <div className="w-full max-w-sm mx-auto rounded-lg shadow-lg bg-gray-200 h-48 flex items-center justify-center">
                     <div className="text-center">
                       <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -555,7 +622,9 @@ export default function AdminVerificationsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex space-x-3">
+                <div className="border-t border-gray-200 pt-4">
+                  <p className="text-sm text-gray-600 mb-3 text-center">Scegli un'azione:</p>
+                  <div className="flex space-x-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowModal(false)}
@@ -598,6 +667,7 @@ export default function AdminVerificationsPage() {
                       </>
                     )}
                   </Button>
+                  </div>
                 </div>
               </div>
             </motion.div>
