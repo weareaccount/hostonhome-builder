@@ -225,10 +225,15 @@ export class VerificationService {
     reason: string
   ): Promise<boolean> {
     try {
+      console.log('❌ Rifiuto verifica:', verificationId, 'Motivo:', reason)
+      
       const notifications = await this.getAdminNotifications()
       const notification = notifications.find(n => n.verificationId === verificationId)
       
-      if (!notification) return false
+      if (!notification) {
+        console.log('❌ Notifica non trovata per verifica:', verificationId)
+        return false
+      }
 
       // Aggiorna lo stato della verifica
       await this.updateVerificationStatus(verificationId, 'REJECTED', adminId, reason)
@@ -236,10 +241,14 @@ export class VerificationService {
       // Rimuovi la notifica
       await this.removeNotification(notification.id)
 
-      console.log('Verifica rifiutata:', verificationId)
+      // Notifica l'utente del rifiuto
+      await this.notifyUserRejection(notification.userId, notification.challengeId, reason)
+
+      console.log('✅ Verifica rifiutata:', verificationId)
+      console.log('👤 Utente notificato del rifiuto:', notification.userId)
       return true
     } catch (error) {
-      console.error('Errore nel rifiuto:', error)
+      console.error('❌ Errore nel rifiuto:', error)
       return false
     }
   }
@@ -503,6 +512,8 @@ export class VerificationService {
     reason?: string
   ): Promise<void> {
     try {
+      console.log('🔄 Aggiornamento stato verifica:', verificationId, 'a', status)
+      
       // Trova e aggiorna la verifica in tutti gli utenti
       const keys = Object.keys(localStorage).filter(key => 
         key.startsWith(this.STORAGE_KEY)
@@ -524,21 +535,57 @@ export class VerificationService {
         
         if (updatedVerifications.some((v: ChallengeVerification) => v.id === verificationId)) {
           localStorage.setItem(key, JSON.stringify(updatedVerifications))
+          console.log('✅ Verifica aggiornata in:', key)
           break
         }
       }
+      
+      // Aggiorna anche lo stato della challenge nell'utente
+      const notifications = await this.getAdminNotifications()
+      const notification = notifications.find(n => n.verificationId === verificationId)
+      
+      if (notification) {
+        const { ChallengeService } = await import('./challenges')
+        const newStatus = status === 'APPROVED' ? 'COMPLETED' : 'REJECTED'
+        await ChallengeService.updateChallengeStatus(notification.userId, notification.challengeId, newStatus)
+        console.log('✅ Stato challenge aggiornato a:', newStatus)
+      }
     } catch (error) {
-      console.error('Errore nell\'aggiornamento dello stato:', error)
+      console.error('❌ Errore nell\'aggiornamento dello stato:', error)
     }
   }
 
   private static async removeNotification(notificationId: string): Promise<void> {
     try {
-      const notifications = await this.getAdminNotifications()
-      const updatedNotifications = notifications.filter(n => n.id !== notificationId)
-      localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(updatedNotifications))
+      console.log('🗑️ Rimozione notifica:', notificationId)
+      
+      // Rimuovi da localStorage locale
+      const localNotifications = await this.getAdminNotifications()
+      const updatedLocalNotifications = localNotifications.filter(n => n.id !== notificationId)
+      localStorage.setItem(this.NOTIFICATIONS_KEY, JSON.stringify(updatedLocalNotifications))
+      console.log('✅ Rimossa da localStorage locale')
+      
+      // Rimuovi da sessionStorage condiviso
+      const sharedData = sessionStorage.getItem(this.SHARED_NOTIFICATIONS_KEY)
+      if (sharedData) {
+        const sharedNotifications = JSON.parse(sharedData)
+        const updatedSharedNotifications = sharedNotifications.filter((n: AdminNotification) => n.id !== notificationId)
+        sessionStorage.setItem(this.SHARED_NOTIFICATIONS_KEY, JSON.stringify(updatedSharedNotifications))
+        console.log('✅ Rimossa da sessionStorage condiviso')
+      }
+      
+      // Rimuovi dal server simulato
+      const globalData = localStorage.getItem(this.GLOBAL_NOTIFICATIONS_KEY)
+      if (globalData) {
+        const globalNotifications = JSON.parse(globalData)
+        const updatedGlobalNotifications = globalNotifications.filter((n: any) => n.id !== notificationId)
+        localStorage.setItem(this.GLOBAL_NOTIFICATIONS_KEY, JSON.stringify(updatedGlobalNotifications))
+        console.log('✅ Rimossa dal server simulato')
+      }
+      
+      console.log('🗑️ Notifica rimossa completamente:', notificationId)
     } catch (error) {
-      console.error('Errore nella rimozione della notifica:', error)
+      console.error('❌ Errore nella rimozione della notifica:', error)
     }
   }
 
@@ -558,6 +605,8 @@ export class VerificationService {
 
   private static async notifyUserApproval(userId: string, challengeId: string): Promise<void> {
     try {
+      console.log('🔔 Creazione notifica utente per approvazione:', userId, challengeId)
+      
       // Crea una notifica per l'utente
       const userNotification = {
         id: `user_notification_${Date.now()}`,
@@ -565,7 +614,7 @@ export class VerificationService {
         challengeId: challengeId,
         type: 'CHALLENGE_APPROVED',
         title: '🎉 Challenge Approvata!',
-        message: 'La tua verifica è stata approvata! Hai guadagnato un badge.',
+        message: 'La tua verifica è stata approvata! Hai guadagnato un badge e puoi riscuotere la ricompensa.',
         isRead: false,
         createdAt: new Date()
       }
@@ -577,9 +626,37 @@ export class VerificationService {
       notifications.push(userNotification)
       localStorage.setItem(key, JSON.stringify(notifications))
 
-      console.log('🔔 Notifica utente creata:', userNotification.id)
+      console.log('✅ Notifica utente creata:', userNotification.id)
     } catch (error) {
-      console.error('Errore nella notifica utente:', error)
+      console.error('❌ Errore nella notifica utente:', error)
+    }
+  }
+
+  // Crea notifica utente per rifiuto
+  private static async notifyUserRejection(userId: string, challengeId: string, reason: string): Promise<void> {
+    try {
+      console.log('🔔 Creazione notifica utente per rifiuto:', userId, challengeId)
+      
+      const userNotification = {
+        id: `user_notification_${Date.now()}`,
+        userId: userId,
+        challengeId: challengeId,
+        type: 'CHALLENGE_REJECTED',
+        title: '❌ Challenge Rifiutata',
+        message: `La tua verifica è stata rifiutata. Motivo: ${reason}. Puoi riprovare caricando una nuova foto.`,
+        isRead: false,
+        createdAt: new Date()
+      }
+
+      const key = `user_notifications_${userId}`
+      const existing = localStorage.getItem(key)
+      const notifications = existing ? JSON.parse(existing) : []
+      notifications.push(userNotification)
+      localStorage.setItem(key, JSON.stringify(notifications))
+      
+      console.log('✅ Notifica utente rifiuto creata:', userNotification.id)
+    } catch (error) {
+      console.error('❌ Errore nella notifica utente rifiuto:', error)
     }
   }
 }

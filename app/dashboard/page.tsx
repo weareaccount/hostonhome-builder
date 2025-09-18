@@ -15,6 +15,7 @@ import { isSubscriptionActive, getSubscriptionBlockReason, getTrialInfo } from '
 import ChallengeSection from '@/components/challenges/ChallengeSection'
 import BadgeShowcase from '@/components/challenges/BadgeShowcase'
 import ChallengeStats from '@/components/challenges/ChallengeStats'
+import UserNotifications from '@/components/challenges/UserNotifications'
 import { BadgeService } from '@/lib/badges'
 
 export default function Dashboard() {
@@ -1410,6 +1411,9 @@ Sei sicuro di voler procedere con la disdetta?`)) return
                   </div>
                 </CardContent>
               </Card>
+
+              {/* User Notifications */}
+              <UserNotifications userId={user?.id || ''} />
 
               {/* Challenge Section */}
               <ChallengeSection 

@@ -165,18 +165,26 @@ export default function AdminVerificationsPage() {
   const handleApprove = async (notification: AdminNotification) => {
     setProcessing(notification.id)
     try {
+      console.log('✅ Approvazione verifica:', notification.verificationId)
+      
       const success = await VerificationService.approveVerification(
         notification.verificationId,
         'admin-user-id' // In produzione userai l'ID dell'admin loggato
       )
       
       if (success) {
+        alert('✅ Verifica approvata con successo!\n\nL\'utente è stato notificato e può riscuotere la ricompensa.')
         await loadNotifications()
         setShowModal(false)
         setSelectedNotification(null)
+        console.log('✅ Verifica approvata e notifiche ricaricate')
+      } else {
+        alert('❌ Errore nell\'approvazione della verifica')
+        console.log('❌ Errore nell\'approvazione')
       }
     } catch (error) {
-      console.error('Errore nell\'approvazione:', error)
+      console.error('❌ Errore nell\'approvazione:', error)
+      alert('❌ Errore nell\'approvazione della verifica')
     } finally {
       setProcessing(null)
     }
@@ -185,6 +193,8 @@ export default function AdminVerificationsPage() {
   const handleReject = async (notification: AdminNotification, reason: string) => {
     setProcessing(notification.id)
     try {
+      console.log('❌ Rifiuto verifica:', notification.verificationId, 'Motivo:', reason)
+      
       const success = await VerificationService.rejectVerification(
         notification.verificationId,
         'admin-user-id',
@@ -192,12 +202,18 @@ export default function AdminVerificationsPage() {
       )
       
       if (success) {
+        alert('❌ Verifica rifiutata.\n\nL\'utente è stato notificato e può riprovare caricando una nuova foto.')
         await loadNotifications()
         setShowModal(false)
         setSelectedNotification(null)
+        console.log('✅ Verifica rifiutata e notifiche ricaricate')
+      } else {
+        alert('❌ Errore nel rifiuto della verifica')
+        console.log('❌ Errore nel rifiuto')
       }
     } catch (error) {
-      console.error('Errore nel rifiuto:', error)
+      console.error('❌ Errore nel rifiuto:', error)
+      alert('❌ Errore nel rifiuto della verifica')
     } finally {
       setProcessing(null)
     }
