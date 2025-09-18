@@ -235,6 +235,18 @@ export default function PhotoUploadModal({
                 )}
               </div>
 
+              {/* Test Button */}
+              <div className="border-t border-gray-200 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleTestUpload}
+                  disabled={isUploading}
+                  className="w-full text-xs text-purple-600 hover:text-purple-700"
+                >
+                  🧪 Test Upload (per admin)
+                </Button>
+              </div>
+
               {/* Actions */}
               <div className="flex space-x-3">
                 <Button

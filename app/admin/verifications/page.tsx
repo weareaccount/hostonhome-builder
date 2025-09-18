@@ -124,6 +124,25 @@ export default function AdminVerificationsPage() {
     }
   }
 
+  const forceSyncAllNotifications = async () => {
+    try {
+      setLoading(true)
+      console.log('🔄 Forzando sincronizzazione di tutte le notifiche...')
+      
+      await VerificationService.forceSyncAllNotifications()
+      
+      // Ricarica le notifiche dopo la sincronizzazione
+      await loadNotifications()
+      
+      alert('✅ Sincronizzazione forzata completata!\n\nTutte le notifiche locali sono state sincronizzate con il server simulato.')
+    } catch (error) {
+      console.error('❌ Errore nella sincronizzazione forzata:', error)
+      alert('❌ Errore nella sincronizzazione forzata')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const debugNotifications = async () => {
     console.log('🔍 DEBUG: Controllo completo sistema notifiche...')
     
@@ -398,6 +417,14 @@ export default function AdminVerificationsPage() {
                   📋 Mostra Tutte
                 </Button>
                 <Button 
+                  onClick={forceSyncAllNotifications}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-indigo-600 hover:text-indigo-700"
+                >
+                  🔄 Sincronizza Tutto
+                </Button>
+                <Button 
                   onClick={testGlobalNotifications}
                   variant="outline"
                   size="sm"
@@ -447,6 +474,14 @@ export default function AdminVerificationsPage() {
                       className="text-xs"
                     >
                       🔄 Forza Caricamento
+                    </Button>
+                    <Button 
+                      onClick={forceSyncAllNotifications}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      🔄 Sincronizza Tutto
                     </Button>
                     <Button 
                       onClick={createTestNotification}

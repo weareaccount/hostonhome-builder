@@ -1,4 +1,6 @@
 import type { ChallengeVerification, AdminNotification } from '@/types'
+import { VerificationService as SupabaseVerificationService } from './verifications'
+import { NotificationService as SupabaseNotificationService } from './notifications'
 
 export class VerificationService {
   private static readonly STORAGE_KEY = 'challenge_verifications'
@@ -13,40 +15,28 @@ export class VerificationService {
     userId: string,
     photoUrl: string,
     description?: string
-  ): Promise<ChallengeVerification> {
+  ): Promise<ChallengeVerification | null> {
     try {
-      console.log('🚀 Inizio submitVerification:', { challengeId, userId, photoUrl })
+      console.log('🚀 Inizio submitVerification tramite Supabase:', { challengeId, userId, photoUrl })
       
-      const verification: ChallengeVerification = {
-        id: `verification_${Date.now()}`,
-        challengeId,
+      // Usa il nuovo servizio Supabase
+      const verification = await SupabaseVerificationService.submitVerification(
         userId,
+        challengeId,
         photoUrl,
-        photoDescription: description,
-        status: 'PENDING',
-        submittedAt: new Date()
+        description || ''
+      )
+
+      if (verification) {
+        console.log('✅ Verifica inviata completamente tramite Supabase:', verification.id)
+        return verification
+      } else {
+        console.error('❌ Errore nell\'invio della verifica tramite Supabase')
+        return null
       }
-
-      console.log('📝 Verifica creata:', verification)
-
-      // Salva la verifica
-      await this.saveVerification(verification)
-      console.log('💾 Verifica salvata')
-
-      // Aggiorna lo stato della challenge a PENDING_VERIFICATION
-      const { ChallengeService } = await import('./challenges')
-      await ChallengeService.updateChallengeStatus(userId, challengeId, 'PENDING_VERIFICATION')
-      console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
-
-      // Crea notifica per admin
-      await this.createAdminNotification(verification)
-      console.log('🔔 Notifica admin creata')
-
-      console.log('✅ Verifica inviata completamente:', verification.id)
-      return verification
     } catch (error) {
       console.error('❌ Errore nell\'invio della verifica:', error)
-      throw error
+      return null
     }
   }
 
@@ -66,80 +56,13 @@ export class VerificationService {
   // Ottieni tutte le notifiche admin
   static async getAdminNotifications(): Promise<AdminNotification[]> {
     try {
-      if (typeof window === 'undefined') {
-        console.log('⚠️ Window undefined, ritorno array vuoto')
-        return []
-      }
+      console.log('🔍 Recupero notifiche admin da Supabase...')
       
-      console.log('🔍 Ricerca notifiche in tutti gli storage...')
+      // Usa il nuovo servizio Supabase
+      const notifications = await SupabaseNotificationService.getAdminNotifications()
       
-      // Recupera da localStorage locale
-      const localData = localStorage.getItem(this.NOTIFICATIONS_KEY)
-      console.log('📦 Dati localStorage locale:', localData)
-      
-      // Recupera da sessionStorage condiviso
-      const sharedData = sessionStorage.getItem(this.SHARED_NOTIFICATIONS_KEY)
-      console.log('📦 Dati sessionStorage condiviso:', sharedData)
-      
-      // Recupera da storage globale simulato
-      const globalData = localStorage.getItem(this.GLOBAL_NOTIFICATIONS_KEY)
-      console.log('📦 Dati storage globale:', globalData)
-      
-      let allNotifications: AdminNotification[] = []
-      
-      // Combina tutte le notifiche da tutti i storage
-      if (localData) {
-        try {
-          const localNotifications = JSON.parse(localData)
-          allNotifications = [...allNotifications, ...localNotifications]
-          console.log('✅ Aggiunte', localNotifications.length, 'notifiche locali')
-        } catch (e) {
-          console.error('❌ Errore parsing localStorage:', e)
-        }
-      }
-      
-      if (sharedData) {
-        try {
-          const sharedNotifications = JSON.parse(sharedData)
-          allNotifications = [...allNotifications, ...sharedNotifications]
-          console.log('✅ Aggiunte', sharedNotifications.length, 'notifiche condivise')
-        } catch (e) {
-          console.error('❌ Errore parsing sessionStorage:', e)
-        }
-      }
-      
-      if (globalData) {
-        try {
-          const globalNotifications = JSON.parse(globalData)
-          // Rimuovi i campi server-specifici
-          const cleanGlobalNotifications = globalNotifications.map((n: any) => {
-            const { serverId, syncedAt, uniqueTimestamp, hash, ...cleanNotification } = n
-            return cleanNotification
-          })
-          allNotifications = [...allNotifications, ...cleanGlobalNotifications]
-          console.log('✅ Aggiunte', cleanGlobalNotifications.length, 'notifiche globali')
-        } catch (e) {
-          console.error('❌ Errore parsing storage globale:', e)
-        }
-      }
-      
-      console.log('📊 Totale notifiche prima della deduplicazione:', allNotifications.length)
-      
-      // Rimuovi duplicati basati sull'ID e sull'hash
-      const uniqueNotifications = allNotifications.filter((notification, index, self) => 
-        index === self.findIndex(n => n.id === notification.id)
-      )
-      
-      console.log('📊 Totale notifiche dopo deduplicazione:', uniqueNotifications.length)
-      console.log('🔔 Notifiche combinate:', uniqueNotifications)
-      
-      // Ordina per data di creazione (più recenti prima)
-      const sortedNotifications = uniqueNotifications.sort((a: AdminNotification, b: AdminNotification) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      
-      console.log('📋 Notifiche ordinate:', sortedNotifications)
-      return sortedNotifications
+      console.log('✅ Notifiche admin recuperate da Supabase:', notifications.length)
+      return notifications
     } catch (error) {
       console.error('❌ Errore nel caricamento delle notifiche:', error)
       return []
@@ -192,28 +115,20 @@ export class VerificationService {
     adminId: string
   ): Promise<boolean> {
     try {
-      const notifications = await this.getAdminNotifications()
-      const notification = notifications.find(n => n.verificationId === verificationId)
-      
-      if (!notification) return false
+      console.log('✅ Approvazione verifica tramite Supabase:', verificationId, 'da admin:', adminId)
 
-      // Aggiorna lo stato della verifica
-      await this.updateVerificationStatus(verificationId, 'APPROVED', adminId)
+      // Usa il nuovo servizio Supabase
+      const success = await SupabaseVerificationService.approveVerification(verificationId, adminId)
 
-      // Rimuovi la notifica
-      await this.removeNotification(notification.id)
-
-      // Completa automaticamente la challenge
-      await this.completeChallenge(notification.userId, notification.challengeId)
-
-      // Notifica l'utente dell'approvazione
-      await this.notifyUserApproval(notification.userId, notification.challengeId)
-
-      console.log('✅ Verifica approvata:', verificationId)
-      console.log('👤 Utente notificato:', notification.userId)
-      return true
+      if (success) {
+        console.log('✅ Approvazione completata tramite Supabase')
+        return true
+      } else {
+        console.error('❌ Errore nell\'approvazione tramite Supabase')
+        return false
+      }
     } catch (error) {
-      console.error('Errore nell\'approvazione:', error)
+      console.error('❌ Errore nell\'approvazione:', error)
       return false
     }
   }
@@ -225,28 +140,18 @@ export class VerificationService {
     reason: string
   ): Promise<boolean> {
     try {
-      console.log('❌ Rifiuto verifica:', verificationId, 'Motivo:', reason)
-      
-      const notifications = await this.getAdminNotifications()
-      const notification = notifications.find(n => n.verificationId === verificationId)
-      
-      if (!notification) {
-        console.log('❌ Notifica non trovata per verifica:', verificationId)
+      console.log('❌ Rifiuto verifica tramite Supabase:', verificationId, 'Motivo:', reason)
+
+      // Usa il nuovo servizio Supabase
+      const success = await SupabaseVerificationService.rejectVerification(verificationId, adminId, reason)
+
+      if (success) {
+        console.log('✅ Rifiuto completato tramite Supabase')
+        return true
+      } else {
+        console.error('❌ Errore nel rifiuto tramite Supabase')
         return false
       }
-
-      // Aggiorna lo stato della verifica
-      await this.updateVerificationStatus(verificationId, 'REJECTED', adminId, reason)
-
-      // Rimuovi la notifica
-      await this.removeNotification(notification.id)
-
-      // Notifica l'utente del rifiuto
-      await this.notifyUserRejection(notification.userId, notification.challengeId, reason)
-
-      console.log('✅ Verifica rifiutata:', verificationId)
-      console.log('👤 Utente notificato del rifiuto:', notification.userId)
-      return true
     } catch (error) {
       console.error('❌ Errore nel rifiuto:', error)
       return false
@@ -661,6 +566,61 @@ export class VerificationService {
       console.log('✅ Notifica utente rifiuto creata:', userNotification.id)
     } catch (error) {
       console.error('❌ Errore nella notifica utente rifiuto:', error)
+    }
+  }
+
+  // Metodo per testare le notifiche globali
+  static async testGlobalNotifications(): Promise<void> {
+    try {
+      console.log('🧪 Test notifiche globali...')
+      
+      const globalData = localStorage.getItem(this.GLOBAL_NOTIFICATIONS_KEY)
+      console.log('📦 Dati storage globale:', globalData)
+      
+      if (globalData) {
+        const notifications = JSON.parse(globalData)
+        console.log('📋 Notifiche globali trovate:', notifications.length)
+        notifications.forEach((n: any, index: number) => {
+          console.log(`📝 Notifica ${index + 1}:`, {
+            id: n.id,
+            userId: n.userId,
+            challengeId: n.challengeId,
+            title: n.title,
+            createdAt: n.createdAt
+          })
+        })
+      } else {
+        console.log('📭 Nessuna notifica globale trovata')
+      }
+    } catch (error) {
+      console.error('❌ Errore nel test globale:', error)
+    }
+  }
+
+  // Metodo per forzare la sincronizzazione di tutte le notifiche esistenti
+  static async forceSyncAllNotifications(): Promise<void> {
+    try {
+      console.log('🔄 Forzando sincronizzazione di tutte le notifiche...')
+      
+      // Recupera tutte le notifiche locali
+      const localData = localStorage.getItem(this.NOTIFICATIONS_KEY)
+      if (!localData) {
+        console.log('📭 Nessuna notifica locale da sincronizzare')
+        return
+      }
+      
+      const localNotifications = JSON.parse(localData)
+      console.log('📋 Notifiche locali da sincronizzare:', localNotifications.length)
+      
+      // Sincronizza ogni notifica
+      for (const notification of localNotifications) {
+        await this.syncToSharedStorage(notification)
+        console.log('✅ Sincronizzata notifica:', notification.id)
+      }
+      
+      console.log('🎉 Sincronizzazione completata!')
+    } catch (error) {
+      console.error('❌ Errore nella sincronizzazione forzata:', error)
     }
   }
 }

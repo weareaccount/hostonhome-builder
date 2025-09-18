@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Bell, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { NotificationService } from '@/lib/notifications'
 
 interface UserNotification {
   id: string
@@ -38,18 +39,15 @@ export default function UserNotifications({ userId }: UserNotificationsProps) {
   const loadNotifications = async () => {
     try {
       setLoading(true)
-      const key = `user_notifications_${userId}`
-      const data = localStorage.getItem(key)
-      const userNotifications = data ? JSON.parse(data) : []
+      console.log('🔍 Caricamento notifiche utente da Supabase:', userId)
       
-      // Ordina per data di creazione (più recenti prima)
-      const sortedNotifications = userNotifications.sort((a: UserNotification, b: UserNotification) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
+      // Usa il nuovo servizio Supabase
+      const userNotifications = await NotificationService.getUserNotifications(userId)
       
-      setNotifications(sortedNotifications)
+      console.log('✅ Notifiche utente recuperate da Supabase:', userNotifications.length)
+      setNotifications(userNotifications)
     } catch (error) {
-      console.error('Errore nel caricamento delle notifiche utente:', error)
+      console.error('❌ Errore nel caricamento delle notifiche utente:', error)
     } finally {
       setLoading(false)
     }
@@ -57,28 +55,36 @@ export default function UserNotifications({ userId }: UserNotificationsProps) {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const key = `user_notifications_${userId}`
-      const data = localStorage.getItem(key)
-      const userNotifications = data ? JSON.parse(data) : []
+      console.log('📖 Marcatura notifica come letta:', notificationId)
       
-      const updatedNotifications = userNotifications.map((n: UserNotification) => 
-        n.id === notificationId ? { ...n, isRead: true } : n
-      )
+      // Usa il nuovo servizio Supabase
+      const success = await NotificationService.markUserNotificationAsRead(notificationId)
       
-      localStorage.setItem(key, JSON.stringify(updatedNotifications))
-      await loadNotifications()
+      if (success) {
+        console.log('✅ Notifica marcata come letta')
+        await loadNotifications()
+      } else {
+        console.error('❌ Errore nella marcatura della notifica')
+      }
     } catch (error) {
-      console.error('Errore nel marcare come letta:', error)
+      console.error('❌ Errore nel marcare come letta:', error)
     }
   }
 
   const clearAllNotifications = async () => {
     try {
+      console.log('🧹 Pulizia di tutte le notifiche utente')
+      
+      // Per ora manteniamo il localStorage come fallback
       const key = `user_notifications_${userId}`
       localStorage.removeItem(key)
+      
+      // TODO: Implementare pulizia completa da Supabase se necessario
       await loadNotifications()
+      
+      console.log('✅ Notifiche pulite')
     } catch (error) {
-      console.error('Errore nella pulizia delle notifiche:', error)
+      console.error('❌ Errore nella pulizia delle notifiche:', error)
     }
   }
 
