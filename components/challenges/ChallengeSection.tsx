@@ -90,11 +90,10 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
 
   const handleClaimReward = async (challengeId: string) => {
     try {
-      // Qui implementerai la logica per riscuotere la ricompensa
-      console.log('Claiming reward for challenge:', challengeId)
+      // Le ricompense possono essere riscosse solo dopo l'approvazione dell'admin
+      console.log('Riscuotendo ricompensa per challenge:', challengeId)
       
-      // Simula il completamento della challenge
-      await ChallengeService.completeChallenge(userId, challengeId)
+      // Non completare automaticamente la challenge - deve essere già COMPLETED dall'admin
       const updatedChallenges = await ChallengeService.getUserChallenges(userId)
       setChallenges(updatedChallenges)
       

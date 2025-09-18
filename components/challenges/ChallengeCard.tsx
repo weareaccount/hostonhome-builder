@@ -125,8 +125,7 @@ export default function ChallengeCard({
   const isRejected = challenge.status === 'REJECTED'
   const isAvailable = challenge.status === 'AVAILABLE'
   const hasReachedTarget = challenge.progress.current >= challenge.progress.target
-  const canRequestVerification = isAvailable && hasReachedTarget
-  const canVerifyWithPhoto = isAvailable && !isCompleted && !isPendingVerification
+  const canVerifyWithPhoto = isAvailable && !isCompleted && !isPendingVerification && !isRejected
 
   const handlePhotoUpload = async (photoUrl: string, description: string) => {
     try {
@@ -287,31 +286,14 @@ export default function ChallengeCard({
                   <Share2 className="w-4 h-4" />
                 </Button>
               </>
-            ) : canRequestVerification ? (
-              <>
-                <Button 
-                  onClick={() => setShowUploadModal(true)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Richiedi Verifica
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => onShare?.(challenge.id)}
-                  className="px-3"
-                >
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </>
             ) : canVerifyWithPhoto ? (
               <>
                 <Button 
                   onClick={() => setShowUploadModal(true)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  className={`flex-1 ${hasReachedTarget ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
                 >
                   <Camera className="w-4 h-4 mr-2" />
-                  Verifica con Foto
+                  {hasReachedTarget ? 'Richiedi Verifica' : 'Verifica con Foto'}
                 </Button>
                 <Button 
                   variant="outline"

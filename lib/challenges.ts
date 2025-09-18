@@ -311,7 +311,7 @@ export class ChallengeService {
     
     // NON sbloccare automaticamente - rimane AVAILABLE anche se raggiunge il target
     // Solo quando l'utente clicca "Verifica con Foto" diventa PENDING_VERIFICATION
-    if (current > 0) return 'IN_PROGRESS'
+    // Le challenge rimangono AVAILABLE finché l'utente non richiede esplicitamente la verifica
     return 'AVAILABLE'
   }
 
