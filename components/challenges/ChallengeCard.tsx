@@ -23,7 +23,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import type { Challenge, ChallengeStatus } from '@/types'
-import PhotoUploadModal from './PhotoUploadModal'
+import SimplePhotoUploadModal from './SimplePhotoUploadModal'
 import { VerificationService } from '@/lib/verification'
 import { ChallengeService } from '@/lib/challenges'
 
@@ -320,7 +320,7 @@ export default function ChallengeCard({
       </Card>
 
       {/* Photo Upload Modal */}
-      <PhotoUploadModal
+      <SimplePhotoUploadModal
         challenge={challenge}
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
