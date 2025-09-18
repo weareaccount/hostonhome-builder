@@ -7,6 +7,12 @@ export class NotificationService {
     try {
       console.log('🔍 Recupero notifiche admin da Supabase...')
       
+      // Controlla se Supabase è configurato
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn('⚠️ Supabase non configurato, ritorno array vuoto')
+        return []
+      }
+      
       const { data, error } = await supabase
         .from('admin_notifications')
         .select('*')
@@ -53,6 +59,16 @@ export class NotificationService {
   static async createAdminNotification(notification: Omit<AdminNotification, 'id' | 'createdAt'>): Promise<AdminNotification | null> {
     try {
       console.log('🔔 Creazione notifica admin in Supabase...')
+      
+      // Controlla se Supabase è configurato
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn('⚠️ Supabase non configurato, simulazione notifica admin')
+        return {
+          id: `mock-admin-${Date.now()}`,
+          ...notification,
+          createdAt: new Date()
+        }
+      }
       
       const { data, error } = await supabase
         .from('admin_notifications')

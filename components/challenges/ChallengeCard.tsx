@@ -25,6 +25,7 @@ import {
 import type { Challenge, ChallengeStatus } from '@/types'
 import PhotoUploadModal from './PhotoUploadModal'
 import { VerificationService } from '@/lib/verification'
+import { ChallengeService } from '@/lib/challenges'
 
 interface ChallengeCardProps {
   challenge: Challenge
@@ -132,7 +133,6 @@ export default function ChallengeCard({
       console.log('📸 Richiesta verifica per challenge:', challenge.id)
       
       // Prima imposta lo stato su PENDING_VERIFICATION
-      const { ChallengeService } = await import('@/lib/challenges')
       await ChallengeService.updateChallengeStatus(userId, challenge.id, 'PENDING_VERIFICATION')
       console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
       

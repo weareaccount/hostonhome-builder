@@ -13,6 +13,20 @@ export class VerificationService {
     try {
       console.log('📝 Invio verifica challenge:', challengeId, 'per utente:', userId)
 
+      // Controlla se Supabase è configurato
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn('⚠️ Supabase non configurato, simulazione verifica')
+        return {
+          id: `mock-${Date.now()}`,
+          challengeId,
+          userId,
+          photoUrl,
+          photoDescription: description,
+          status: 'PENDING',
+          submittedAt: new Date()
+        }
+      }
+
       const verification: Omit<ChallengeVerification, 'id' | 'submittedAt'> = {
         challengeId,
         userId,
