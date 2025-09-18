@@ -213,9 +213,10 @@ export class ChallengeService {
         metadata: { ...currentProgress.metadata, ...metadata }
       }
 
-      // Se la challenge è completata, aggiorna la data di completamento
-      if (newCurrent >= challenge.target.value && !currentProgress.completedAt) {
-        progressData[challengeId].completedAt = new Date()
+      // NON impostare completedAt automaticamente - solo l'admin può completare
+      // Se la challenge raggiunge il target, rimane in attesa di verifica
+      if (newCurrent >= challenge.target.value) {
+        console.log(`🎯 Challenge ${challengeId} raggiunta target ma in attesa di verifica admin`)
       }
 
       this.saveLocalProgress(userId, progressData)
@@ -230,15 +231,18 @@ export class ChallengeService {
     }
   }
 
-  // Completa una challenge
+  // Completa una challenge (solo per approvazione admin)
   static async completeChallenge(userId: string, challengeId: string): Promise<boolean> {
     try {
+      console.log('🎯 Completamento challenge approvata:', challengeId, 'per utente:', userId)
+      
       const challenge = await this.getChallengeById(challengeId)
       if (!challenge) return false
 
-      return await this.updateChallengeProgress(userId, challengeId, challenge.target.value)
+      // Imposta lo stato su COMPLETED solo quando approvata dall'admin
+      return await this.updateChallengeStatus(userId, challengeId, 'COMPLETED')
     } catch (error) {
-      console.error('Errore nel completamento della challenge:', error)
+      console.error('❌ Errore nel completamento della challenge:', error)
       return false
     }
   }
@@ -256,7 +260,7 @@ export class ChallengeService {
       if (!challenge) return false
       
       // Aggiorna il progresso con il nuovo stato
-      progressData[challengeId] = {
+      const updatedProgress = {
         ...progressData[challengeId],
         current: challenge.target.value,
         target: challenge.target.value,
@@ -264,6 +268,18 @@ export class ChallengeService {
         status: status,
         lastUpdated: new Date()
       }
+      
+      // Imposta completedAt solo quando lo stato è COMPLETED (approvato dall'admin)
+      if (status === 'COMPLETED') {
+        updatedProgress.completedAt = new Date()
+        console.log(`✅ Challenge ${challengeId} completata e approvata dall'admin`)
+      } else if (status === 'REJECTED') {
+        // Rimuovi completedAt se rifiutata
+        delete updatedProgress.completedAt
+        console.log(`❌ Challenge ${challengeId} rifiutata dall'admin`)
+      }
+      
+      progressData[challengeId] = updatedProgress
       
       this.saveLocalProgress(userId, progressData)
       console.log(`Challenge ${challengeId} status updated to: ${status}`)
@@ -283,11 +299,12 @@ export class ChallengeService {
   // Calcola lo status di una challenge
   private static calculateStatus(current: number, target: number, customStatus?: string): ChallengeStatus {
     // Se c'è uno stato personalizzato (es. PENDING_VERIFICATION), usalo
-    if (customStatus && ['PENDING_VERIFICATION', 'REJECTED'].includes(customStatus)) {
+    if (customStatus && ['PENDING_VERIFICATION', 'REJECTED', 'COMPLETED'].includes(customStatus)) {
       return customStatus as ChallengeStatus
     }
     
-    if (current >= target) return 'COMPLETED'
+    // NON sbloccare automaticamente - solo l'admin può completare
+    if (current >= target) return 'PENDING_VERIFICATION' // Cambiato da 'COMPLETED' a 'PENDING_VERIFICATION'
     if (current > 0) return 'IN_PROGRESS'
     return 'AVAILABLE'
   }

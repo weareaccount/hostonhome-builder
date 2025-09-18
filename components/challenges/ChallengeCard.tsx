@@ -162,7 +162,9 @@ export default function ChallengeCard({
                   <span className="text-sm text-gray-600 capitalize">
                     {challenge.status === 'LOCKED' ? 'Bloccata' : 
                      challenge.status === 'AVAILABLE' ? 'Disponibile' :
-                     challenge.status === 'IN_PROGRESS' ? 'In corso' : 'Completata'}
+                     challenge.status === 'IN_PROGRESS' ? 'In corso' :
+                     challenge.status === 'PENDING_VERIFICATION' ? 'In attesa di verifica' :
+                     challenge.status === 'REJECTED' ? 'Rifiutata' : 'Completata'}
                   </span>
                 </div>
               </div>
