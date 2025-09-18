@@ -27,6 +27,8 @@ export class VerificationService {
         }
       }
 
+      console.log('🔗 Supabase configurato, URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+
       const verification: Omit<ChallengeVerification, 'id' | 'submittedAt'> = {
         challengeId,
         userId,
@@ -46,6 +48,14 @@ export class VerificationService {
 
       if (error) {
         console.error('❌ Errore nel salvataggio verifica:', error)
+        
+        // Se l'errore è "table not found", mostra un messaggio più chiaro
+        if (error.message?.includes('Could not find the table')) {
+          console.error('🚨 ERRORE: Le tabelle del database Supabase non sono state create!')
+          console.error('🚨 Segui le istruzioni in SUPABASE_SETUP_INSTRUCTIONS.md')
+          alert('❌ Database non configurato!\n\nLe tabelle Supabase non sono state create.\n\nSegui le istruzioni in SUPABASE_SETUP_INSTRUCTIONS.md')
+        }
+        
         return null
       }
 
