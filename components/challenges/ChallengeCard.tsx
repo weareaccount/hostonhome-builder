@@ -123,9 +123,19 @@ export default function ChallengeCard({
   const isInProgress = challenge.status === 'IN_PROGRESS'
   const isPendingVerification = challenge.status === 'PENDING_VERIFICATION'
   const isRejected = challenge.status === 'REJECTED'
+  const isAvailable = challenge.status === 'AVAILABLE'
+  const hasReachedTarget = challenge.progress.current >= challenge.progress.target
+  const canRequestVerification = isAvailable && hasReachedTarget
 
   const handlePhotoUpload = async (photoUrl: string, description: string) => {
     try {
+      console.log('📸 Richiesta verifica per challenge:', challenge.id)
+      
+      // Prima imposta lo stato su PENDING_VERIFICATION
+      const { ChallengeService } = await import('@/lib/challenges')
+      await ChallengeService.updateChallengeStatus(userId, challenge.id, 'PENDING_VERIFICATION')
+      
+      // Poi invia la verifica
       await VerificationService.submitVerification(
         challenge.id,
         userId,
@@ -134,9 +144,9 @@ export default function ChallengeCard({
       )
       
       onVerificationSubmitted?.(challenge.id)
-      console.log('Verifica inviata con successo')
+      console.log('✅ Verifica richiesta e inviata con successo')
     } catch (error) {
-      console.error('Errore nell\'invio della verifica:', error)
+      console.error('❌ Errore nell\'invio della verifica:', error)
     }
   }
 
@@ -261,6 +271,23 @@ export default function ChallengeCard({
                 >
                   <Camera className="w-4 h-4 mr-2" />
                   Riprova
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => onShare?.(challenge.id)}
+                  className="px-3"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+              </>
+            ) : canRequestVerification ? (
+              <>
+                <Button 
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Richiedi Verifica
                 </Button>
                 <Button 
                   variant="outline"

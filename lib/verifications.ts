@@ -37,11 +37,6 @@ export class VerificationService {
 
       console.log('💾 Verifica salvata in Supabase:', data.id)
 
-      // Aggiorna lo stato della challenge a PENDING_VERIFICATION
-      const { ChallengeService } = await import('./challenges')
-      await ChallengeService.updateChallengeStatus(userId, challengeId, 'PENDING_VERIFICATION')
-      console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
-
       // Crea notifica per admin
       await this.createAdminNotification(data)
       console.log('🔔 Notifica admin creata')

@@ -303,8 +303,8 @@ export class ChallengeService {
       return customStatus as ChallengeStatus
     }
     
-    // NON sbloccare automaticamente - solo l'admin può completare
-    if (current >= target) return 'PENDING_VERIFICATION' // Cambiato da 'COMPLETED' a 'PENDING_VERIFICATION'
+    // NON sbloccare automaticamente - rimane AVAILABLE anche se raggiunge il target
+    // Solo quando l'utente clicca "Verifica con Foto" diventa PENDING_VERIFICATION
     if (current > 0) return 'IN_PROGRESS'
     return 'AVAILABLE'
   }
