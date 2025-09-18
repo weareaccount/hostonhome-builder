@@ -131,12 +131,16 @@ export default function ChallengeCard({
   const handlePhotoUpload = async (photoUrl: string, description: string) => {
     try {
       console.log('📸 Richiesta verifica per challenge:', challenge.id)
+      console.log('📸 PhotoUrl length:', photoUrl?.length || 0)
+      console.log('📸 Description:', description)
       
       // Prima imposta lo stato su PENDING_VERIFICATION
+      console.log('🔄 Aggiornamento stato challenge a PENDING_VERIFICATION...')
       await ChallengeService.updateChallengeStatus(userId, challenge.id, 'PENDING_VERIFICATION')
       console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
       
       // Poi invia la verifica
+      console.log('📤 Invio verifica a Supabase...')
       const verification = await VerificationService.submitVerification(
         challenge.id,
         userId,
@@ -145,13 +149,15 @@ export default function ChallengeCard({
       )
       
       if (verification) {
+        console.log('✅ Verifica ricevuta da Supabase:', verification.id)
         onVerificationSubmitted?.(challenge.id)
         console.log('✅ Verifica richiesta e inviata con successo:', verification.id)
       } else {
-        console.error('❌ Verifica non inviata correttamente')
+        console.error('❌ Verifica non inviata correttamente - verification è null')
       }
     } catch (error) {
       console.error('❌ Errore nell\'invio della verifica:', error)
+      console.error('❌ Stack trace:', error.stack)
       alert('❌ Errore nell\'invio della verifica. Riprova.')
     }
   }

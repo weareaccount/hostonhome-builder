@@ -61,16 +61,25 @@ export default function PhotoUploadModal({
   }
 
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!selectedFile) {
+      console.error('❌ Nessun file selezionato')
+      setUploadError('Seleziona una foto prima di inviare.')
+      return
+    }
 
+    console.log('📸 Inizio upload foto per challenge:', challenge.id)
     setIsUploading(true)
     setUploadError(null)
 
     try {
       // Simula upload (in produzione userai un servizio reale come Cloudinary)
+      console.log('📸 Simulazione upload foto...')
       const photoUrl = await simulatePhotoUpload(selectedFile)
+      console.log('📸 Foto caricata con successo:', photoUrl.substring(0, 50) + '...')
       
+      console.log('📸 Invio verifica all\'admin...')
       await onUpload(photoUrl, description)
+      console.log('📸 Verifica inviata con successo')
       
       // Mostra messaggio di successo
       alert('✅ Foto inviata con successo!\n\nLa tua verifica è stata inviata all\'admin per l\'approvazione. Riceverai una notifica quando sarà esaminata.')
@@ -81,24 +90,37 @@ export default function PhotoUploadModal({
       setDescription('')
       onClose()
     } catch (error) {
+      console.error('❌ Errore durante l\'upload:', error)
       setUploadError('Errore durante l\'upload. Riprova.')
-      console.error('Upload error:', error)
     } finally {
       setIsUploading(false)
     }
   }
 
   const simulatePhotoUpload = async (file: File): Promise<string> => {
+    console.log('📸 Simulazione upload per file:', file.name, 'size:', file.size)
+    
     // Simula delay di upload
     await new Promise(resolve => setTimeout(resolve, 2000))
     
     // Crea un URL locale per l'immagine caricata
-    return new Promise((resolve) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        resolve(e.target?.result as string)
+    return new Promise((resolve, reject) => {
+      try {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const result = e.target?.result as string
+          console.log('📸 FileReader completato, risultato length:', result?.length || 0)
+          resolve(result)
+        }
+        reader.onerror = (error) => {
+          console.error('❌ Errore FileReader:', error)
+          reject(error)
+        }
+        reader.readAsDataURL(file)
+      } catch (error) {
+        console.error('❌ Errore nella simulazione upload:', error)
+        reject(error)
       }
-      reader.readAsDataURL(file)
     })
   }
 
