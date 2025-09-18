@@ -295,6 +295,8 @@ export interface UserBadge {
   icon: string;
   earnedAt: Date;
   isVisible: boolean;
+  rarity?: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+  color?: string;
 }
 
 // Sistema di verifica foto

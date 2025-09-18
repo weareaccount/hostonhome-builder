@@ -3,6 +3,37 @@ import type { UserBadge } from '@/types'
 export class BadgeService {
   private static readonly STORAGE_KEY = 'user_badges'
 
+  // Definizione dei gruppi di badge
+  private static readonly BADGE_GROUPS = {
+    'primi-passi': {
+      id: 'primi-passi',
+      title: 'Badge "Primi passi"',
+      description: 'Il tuo primo passo nel mondo dell\'ospitalità digitale',
+      icon: '⭐',
+      rarity: 'COMMON',
+      requiredChallenges: ['1', '2', '3', '4'], // Condividi sito, Prima visita, Prima recensione, WhatsApp First Contact
+      color: 'bg-green-100 border-green-300 text-green-800'
+    },
+    'ospite-felice': {
+      id: 'ospite-felice',
+      title: 'Badge "Ospite Felice"',
+      description: 'Hai dimostrato di saper rendere felici i tuoi ospiti',
+      icon: '🏆',
+      rarity: 'UNCOMMON',
+      requiredChallenges: ['5', '6', '7', '8'], // Foto che parlano, Indipendenza in crescita, Super Condivisione, Ospite del mondo
+      color: 'bg-blue-100 border-blue-300 text-blue-800'
+    },
+    'indipendente': {
+      id: 'indipendente',
+      title: 'Badge "Indipendente"',
+      description: 'Hai raggiunto l\'indipendenza nell\'ospitalità digitale',
+      icon: '👑',
+      rarity: 'RARE',
+      requiredChallenges: ['9', '10'], // Top Host del mese, Super Host Indipendente
+      color: 'bg-purple-100 border-purple-300 text-purple-800'
+    }
+  }
+
   // Ottieni tutti i badge di un utente
   static async getUserBadges(userId: string): Promise<UserBadge[]> {
     try {
@@ -11,54 +42,130 @@ export class BadgeService {
       const data = localStorage.getItem(`${this.STORAGE_KEY}_${userId}`)
       const badges = data ? JSON.parse(data) : []
       
-      // Se non ci sono badge, crea alcuni badge di esempio
-      if (badges.length === 0) {
-        const defaultBadges = this.createDefaultBadges(userId)
-        this.saveUserBadges(userId, defaultBadges)
-        return defaultBadges
-      }
+      // Controlla se ci sono nuovi badge da sbloccare
+      await this.checkAndUnlockBadges(userId)
       
-      return badges
+      // Ricarica i badge dopo il controllo
+      const updatedData = localStorage.getItem(`${this.STORAGE_KEY}_${userId}`)
+      return updatedData ? JSON.parse(updatedData) : []
     } catch (error) {
       console.error('Errore nel caricamento dei badge:', error)
       return []
     }
   }
 
-  // Crea badge di default per nuovi utenti
-  private static createDefaultBadges(userId: string): UserBadge[] {
-    return [
-      {
-        id: '1',
-        challengeId: '1',
-        userId,
-        title: 'Badge "Primi passi"',
-        description: 'Il tuo primo passo nel mondo dell\'ospitalità digitale',
-        icon: '⭐',
-        earnedAt: new Date('2024-01-10'),
-        isVisible: true
-      },
-      {
-        id: '2',
-        challengeId: '3',
-        userId,
-        title: 'Badge "Ospite Felice"',
-        description: 'Hai dimostrato di saper rendere felici i tuoi ospiti',
-        icon: '🏆',
-        earnedAt: new Date('2024-01-15'),
-        isVisible: true
-      },
-      {
-        id: '3',
-        challengeId: '5',
-        userId,
-        title: 'Badge "Indipendente"',
-        description: 'Hai raggiunto l\'indipendenza come host digitale',
-        icon: '👑',
-        earnedAt: new Date('2024-01-20'),
-        isVisible: true
+  // Controlla e sblocca automaticamente i badge basati sui gruppi
+  static async checkAndUnlockBadges(userId: string): Promise<void> {
+    try {
+      console.log('🔍 Controllo badge da sbloccare per utente:', userId)
+      
+      // Ottieni le challenge completate dall'utente
+      const { ChallengeService } = await import('./challenges')
+      const userChallenges = await ChallengeService.getUserChallenges(userId)
+      const completedChallenges = userChallenges.filter(c => c.status === 'COMPLETED')
+      const completedChallengeIds = completedChallenges.map(c => c.id)
+      
+      console.log('✅ Challenge completate:', completedChallengeIds)
+      
+      // Ottieni i badge attuali dell'utente
+      const currentBadges = await this.getUserBadgesRaw(userId)
+      const currentBadgeIds = currentBadges.map(b => b.id)
+      
+      // Controlla ogni gruppo di badge
+      for (const [groupId, groupConfig] of Object.entries(this.BADGE_GROUPS)) {
+        // Se l'utente ha già questo badge, salta
+        if (currentBadgeIds.includes(groupId)) {
+          console.log('⏭️ Badge già posseduto:', groupConfig.title)
+          continue
+        }
+        
+        // Controlla se l'utente ha completato tutte le challenge richieste
+        const hasAllRequiredChallenges = groupConfig.requiredChallenges.every(challengeId => 
+          completedChallenges.some(c => c.id === challengeId)
+        )
+        
+        if (hasAllRequiredChallenges) {
+          console.log('🎉 Sblocco badge:', groupConfig.title)
+          await this.unlockBadge(userId, groupId, groupConfig)
+        } else {
+          const missingChallenges = groupConfig.requiredChallenges.filter(challengeId => 
+            !completedChallengeIds.includes(challengeId)
+          )
+          console.log('⏳ Badge non ancora sbloccabile:', groupConfig.title, 'Mancano:', missingChallenges)
+        }
       }
-    ]
+    } catch (error) {
+      console.error('❌ Errore nel controllo badge:', error)
+    }
+  }
+
+  // Ottieni badge senza controlli automatici
+  private static async getUserBadgesRaw(userId: string): Promise<UserBadge[]> {
+    try {
+      if (typeof window === 'undefined') return []
+      
+      const data = localStorage.getItem(`${this.STORAGE_KEY}_${userId}`)
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Errore nel caricamento dei badge:', error)
+      return []
+    }
+  }
+
+  // Sblocca un badge specifico
+  private static async unlockBadge(userId: string, badgeId: string, groupConfig: any): Promise<void> {
+    try {
+      const newBadge: UserBadge = {
+        id: badgeId,
+        challengeId: groupConfig.requiredChallenges[0], // Usa la prima challenge come riferimento
+        userId,
+        title: groupConfig.title,
+        description: groupConfig.description,
+        icon: groupConfig.icon,
+        earnedAt: new Date(),
+        isVisible: true,
+        rarity: groupConfig.rarity,
+        color: groupConfig.color
+      }
+
+      const currentBadges = await this.getUserBadgesRaw(userId)
+      const updatedBadges = [...currentBadges, newBadge]
+      
+      this.saveUserBadges(userId, updatedBadges)
+      
+      console.log('✅ Badge sbloccato:', newBadge.title)
+      
+      // Crea notifica per l'utente
+      await this.createBadgeNotification(userId, newBadge)
+    } catch (error) {
+      console.error('❌ Errore nello sblocco badge:', error)
+    }
+  }
+
+  // Crea notifica per il badge sbloccato
+  private static async createBadgeNotification(userId: string, badge: UserBadge): Promise<void> {
+    try {
+      const notification = {
+        id: `badge_notification_${Date.now()}`,
+        userId: userId,
+        challengeId: badge.challengeId,
+        type: 'BADGE_UNLOCKED',
+        title: `🎉 ${badge.title} Sbloccato!`,
+        message: `Hai sbloccato il badge "${badge.title}"! ${badge.description}`,
+        isRead: false,
+        createdAt: new Date()
+      }
+
+      const key = `user_notifications_${userId}`
+      const existing = localStorage.getItem(key)
+      const notifications = existing ? JSON.parse(existing) : []
+      notifications.push(notification)
+      localStorage.setItem(key, JSON.stringify(notifications))
+      
+      console.log('🔔 Notifica badge creata:', notification.title)
+    } catch (error) {
+      console.error('❌ Errore nella creazione notifica badge:', error)
+    }
   }
 
   // Salva i badge di un utente

@@ -29,29 +29,32 @@ interface BadgeShowcaseProps {
 
 // Definizione completa dei badge con design avanzato
 const BADGE_DEFINITIONS = {
-  'Primi passi': {
+  'primi-passi': {
     icon: Star,
     gradient: 'from-yellow-400 via-orange-500 to-red-500',
     glow: 'shadow-yellow-500/50',
-    rarity: 'common',
+    rarity: 'COMMON',
     emoji: '⭐',
-    description: 'Il tuo primo passo nel mondo dell\'ospitalità digitale'
+    description: 'Il tuo primo passo nel mondo dell\'ospitalità digitale',
+    color: 'bg-green-100 border-green-300 text-green-800'
   },
-  'Ospite Felice': {
+  'ospite-felice': {
     icon: Trophy,
     gradient: 'from-green-400 via-emerald-500 to-teal-500',
     glow: 'shadow-green-500/50',
-    rarity: 'uncommon',
+    rarity: 'UNCOMMON',
     emoji: '🏆',
-    description: 'Hai dimostrato di saper rendere felici i tuoi ospiti'
+    description: 'Hai dimostrato di saper rendere felici i tuoi ospiti',
+    color: 'bg-blue-100 border-blue-300 text-blue-800'
   },
-  'Indipendente': {
+  'indipendente': {
     icon: Crown,
     gradient: 'from-purple-400 via-violet-500 to-indigo-500',
     glow: 'shadow-purple-500/50',
-    rarity: 'rare',
+    rarity: 'RARE',
     emoji: '👑',
-    description: 'Hai raggiunto l\'indipendenza come host digitale'
+    description: 'Hai raggiunto l\'indipendenza nell\'ospitalità digitale',
+    color: 'bg-purple-100 border-purple-300 text-purple-800'
   },
   'Super Host': {
     icon: Award,
@@ -71,13 +74,12 @@ const BADGE_DEFINITIONS = {
   }
 }
 
-const getBadgeConfig = (badgeTitle: string) => {
-  const key = Object.keys(BADGE_DEFINITIONS).find(k => badgeTitle.includes(k))
-  return key ? BADGE_DEFINITIONS[key as keyof typeof BADGE_DEFINITIONS] : {
+const getBadgeConfig = (badgeId: string) => {
+  return BADGE_DEFINITIONS[badgeId as keyof typeof BADGE_DEFINITIONS] || {
     icon: Shield,
     gradient: 'from-gray-400 to-slate-500',
     glow: 'shadow-gray-500/50',
-    rarity: 'common',
+    rarity: 'COMMON',
     emoji: '🛡️',
     description: 'Badge speciale'
   }
@@ -85,11 +87,11 @@ const getBadgeConfig = (badgeTitle: string) => {
 
 const getRarityColor = (rarity: string) => {
   switch (rarity) {
-    case 'common': return 'text-gray-600'
-    case 'uncommon': return 'text-green-600'
-    case 'rare': return 'text-blue-600'
-    case 'epic': return 'text-purple-600'
-    case 'legendary': return 'text-yellow-600'
+    case 'COMMON': return 'text-gray-600'
+    case 'UNCOMMON': return 'text-green-600'
+    case 'RARE': return 'text-blue-600'
+    case 'EPIC': return 'text-purple-600'
+    case 'LEGENDARY': return 'text-yellow-600'
     default: return 'text-gray-600'
   }
 }
@@ -97,7 +99,7 @@ const getRarityColor = (rarity: string) => {
 // Componente BadgeCard semplificato e funzionale
 const BadgeCard = ({ badge, index }: { badge: UserBadge; index: number }) => {
   const [isVisible, setIsVisible] = useState(badge.isVisible)
-  const config = getBadgeConfig(badge.title)
+  const config = getBadgeConfig(badge.id)
   const IconComponent = config.icon
 
   const handleToggleVisibility = async () => {

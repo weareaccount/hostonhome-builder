@@ -591,15 +591,19 @@ export class VerificationService {
 
   private static async completeChallenge(userId: string, challengeId: string): Promise<void> {
     try {
+      console.log('🎯 Completamento challenge:', challengeId, 'per utente:', userId)
+      
       // Importa dinamicamente per evitare dipendenze circolari
       const { ChallengeService } = await import('./challenges')
       await ChallengeService.completeChallenge(userId, challengeId)
       
-      // Aggiungi badge automaticamente
+      // Controlla e sblocca badge automaticamente
       const { BadgeService } = await import('./badges')
-      await BadgeService.simulateBadgeEarned(userId, challengeId)
+      await BadgeService.checkAndUnlockBadges(userId)
+      
+      console.log('✅ Challenge completata e badge controllati')
     } catch (error) {
-      console.error('Errore nel completamento della challenge:', error)
+      console.error('❌ Errore nel completamento della challenge:', error)
     }
   }
 

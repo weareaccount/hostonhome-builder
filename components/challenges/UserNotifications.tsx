@@ -9,7 +9,7 @@ interface UserNotification {
   id: string
   userId: string
   challengeId: string
-  type: 'CHALLENGE_APPROVED' | 'CHALLENGE_REJECTED'
+  type: 'CHALLENGE_APPROVED' | 'CHALLENGE_REJECTED' | 'BADGE_UNLOCKED'
   title: string
   message: string
   isRead: boolean
@@ -88,6 +88,8 @@ export default function UserNotifications({ userId }: UserNotificationsProps) {
         return <CheckCircle className="w-5 h-5 text-green-600" />
       case 'CHALLENGE_REJECTED':
         return <XCircle className="w-5 h-5 text-red-600" />
+      case 'BADGE_UNLOCKED':
+        return <span className="text-2xl">🎉</span>
       default:
         return <AlertCircle className="w-5 h-5 text-blue-600" />
     }
@@ -99,6 +101,8 @@ export default function UserNotifications({ userId }: UserNotificationsProps) {
         return 'border-green-200 bg-green-50'
       case 'CHALLENGE_REJECTED':
         return 'border-red-200 bg-red-50'
+      case 'BADGE_UNLOCKED':
+        return 'border-yellow-200 bg-yellow-50'
       default:
         return 'border-blue-200 bg-blue-50'
     }
