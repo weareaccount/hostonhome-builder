@@ -29,52 +29,25 @@ export default function AdminVerificationsPage() {
     // Carica notifiche iniziali
     loadNotifications()
 
-    // Sincronizza con storage globale all'avvio
-    syncWithGlobalStorage()
-
-    // Polling per aggiornare le notifiche ogni 3 secondi
+    // Polling per aggiornare le notifiche ogni 5 secondi
     const interval = setInterval(() => {
       loadNotifications()
-      syncWithGlobalStorage()
-    }, 3000)
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [])
 
-  const syncWithGlobalStorage = async () => {
-    try {
-      console.log('🔄 Sincronizzazione automatica...')
-      
-      // Usa il nuovo metodo di sincronizzazione forzata
-      await VerificationService.forceSyncNotifications()
-      
-      // Ricarica le notifiche per aggiornare l'interfaccia
-      await loadNotifications()
-      
-      console.log('✅ Sincronizzazione automatica completata')
-    } catch (error) {
-      console.error('❌ Errore nella sincronizzazione automatica:', error)
-    }
-  }
-
   const loadNotifications = async () => {
     try {
       setLoading(true)
-      console.log('🔄 Caricamento notifiche admin...')
+      console.log('🔄 Caricamento notifiche admin da Supabase...')
       
-      // Prova prima il metodo globale
-      let data = await VerificationService.getGlobalNotificationsOnly()
-      console.log('📋 Notifiche dal server simulato:', data)
-      
-      // Se non ci sono notifiche globali, prova il metodo combinato
-      if (data.length === 0) {
-        console.log('🔄 Nessuna notifica globale, provo metodo combinato...')
-        data = await VerificationService.getAdminNotifications()
-        console.log('📋 Notifiche combinate:', data)
-      }
+      // Usa solo Supabase
+      const data = await VerificationService.getAdminNotifications()
+      console.log('📋 Notifiche da Supabase:', data.length)
       
       setNotifications(data)
-      console.log('✅ Notifiche caricate:', data.length)
+      console.log('✅ Notifiche caricate da Supabase:', data.length)
     } catch (error) {
       console.error('❌ Errore nel caricamento delle notifiche:', error)
     } finally {
@@ -82,186 +55,73 @@ export default function AdminVerificationsPage() {
     }
   }
 
-  const forceLoadGlobalNotifications = async () => {
+  const refreshNotifications = async () => {
     try {
       setLoading(true)
-      console.log('🔄 Forzando caricamento notifiche globali...')
+      console.log('🔄 Ricaricamento notifiche da Supabase...')
       
-      const data = await VerificationService.getGlobalNotificationsOnly()
-      console.log('📋 Notifiche globali forzate:', data)
-      
-      setNotifications(data)
-      
-      if (data.length > 0) {
-        alert(`✅ Trovate ${data.length} notifiche globali!`)
-      } else {
-        alert('❌ Nessuna notifica globale trovata')
-      }
-    } catch (error) {
-      console.error('❌ Errore nel caricamento forzato:', error)
-      alert('❌ Errore nel caricamento delle notifiche')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const showAllNotifications = async () => {
-    try {
-      setLoading(true)
-      console.log('🔄 Mostrando tutte le notifiche senza deduplicazione...')
-      
-      const allData = await VerificationService.getAdminNotifications()
-      console.log('📋 Tutte le notifiche:', allData)
-      
-      setNotifications(allData)
-      
-      alert(`📋 Mostrate ${allData.length} notifiche totali (con deduplicazione)`)
-    } catch (error) {
-      console.error('❌ Errore nel caricamento completo:', error)
-      alert('❌ Errore nel caricamento delle notifiche')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const forceSyncAllNotifications = async () => {
-    try {
-      setLoading(true)
-      console.log('🔄 Forzando sincronizzazione di tutte le notifiche...')
-      
-      await VerificationService.forceSyncAllNotifications()
-      
-      // Ricarica le notifiche dopo la sincronizzazione
       await loadNotifications()
       
-      alert('✅ Sincronizzazione forzata completata!\n\nTutte le notifiche locali sono state sincronizzate con il server simulato.')
+      alert('✅ Notifiche ricaricate da Supabase!')
     } catch (error) {
-      console.error('❌ Errore nella sincronizzazione forzata:', error)
-      alert('❌ Errore nella sincronizzazione forzata')
+      console.error('❌ Errore nel ricaricamento:', error)
+      alert('❌ Errore nel ricaricamento delle notifiche')
     } finally {
       setLoading(false)
     }
   }
 
   const debugNotifications = async () => {
-    console.log('🔍 DEBUG: Controllo completo sistema notifiche...')
-    
-    // Contatore globale
-    const globalCounter = VerificationService.getGlobalNotificationCount()
-    console.log('📊 Contatore globale notifiche:', globalCounter)
-    
-    // localStorage locale
-    const localData = localStorage.getItem('admin_notifications')
-    console.log('📦 localStorage locale:', localData)
-    
-    // sessionStorage condiviso
-    const sharedData = sessionStorage.getItem('shared_admin_notifications')
-    console.log('📦 sessionStorage condiviso:', sharedData)
-    
-    // storage globale simulato
-    const globalData = localStorage.getItem('global_admin_notifications')
-    console.log('📦 storage globale:', globalData)
-    
-    // Parsing e visualizzazione
-    if (localData) {
-      try {
-        const parsed = JSON.parse(localData)
-        console.log('📋 Notifiche localStorage:', parsed)
-      } catch (e) {
-        console.error('❌ Errore parsing localStorage:', e)
-      }
-    }
-    
-    if (sharedData) {
-      try {
-        const parsed = JSON.parse(sharedData)
-        console.log('📋 Notifiche sessionStorage:', parsed)
-      } catch (e) {
-        console.error('❌ Errore parsing sessionStorage:', e)
-      }
-    }
-    
-    if (globalData) {
-      try {
-        const parsed = JSON.parse(globalData)
-        console.log('📋 Notifiche storage globale:', parsed)
-      } catch (e) {
-        console.error('❌ Errore parsing storage globale:', e)
-      }
-    }
-    
-    // Mostra anche le notifiche combinate
-    const combined = await VerificationService.getAdminNotifications()
-    console.log('🔔 Notifiche combinate finali:', combined)
-    
-    // Conta le notifiche in ogni storage
-    let localCount = 0
-    let sharedCount = 0
-    let globalCount = 0
-    
-    if (localData) {
-      try {
-        localCount = JSON.parse(localData).length
-      } catch (e) {
-        console.error('❌ Errore parsing locale:', e)
-      }
-    }
-    
-    if (sharedData) {
-      try {
-        sharedCount = JSON.parse(sharedData).length
-      } catch (e) {
-        console.error('❌ Errore parsing condiviso:', e)
-      }
-    }
-    
-    if (globalData) {
-      try {
-        globalCount = JSON.parse(globalData).length
-      } catch (e) {
-        console.error('❌ Errore parsing globale:', e)
-      }
-    }
-    
-    // Forza sincronizzazione
-    await VerificationService.forceSyncNotifications()
-    console.log('🔄 Sincronizzazione forzata completata')
-    
-    // Mostra alert con i conteggi
-    alert(`🔍 DEBUG NOTIFICHE:
-    
-📊 Contatore globale: ${globalCounter}
-📦 Storage locale: ${localCount} notifiche
-📦 Storage condiviso: ${sharedCount} notifiche  
-📦 Storage globale: ${globalCount} notifiche
-📊 Totale: ${localCount + sharedCount + globalCount} notifiche
+    try {
+      console.log('🔍 DEBUG: Controllo sistema Supabase...')
+      
+      const notifications = await VerificationService.getAdminNotifications()
+      console.log('📋 Notifiche da Supabase:', notifications)
+      
+      const unreadCount = notifications.filter(n => !n.isRead).length
+      const pendingCount = notifications.length
+      
+      alert(`🔍 DEBUG SUPABASE:
+      
+📊 Notifiche totali: ${notifications.length}
+📊 Non lette: ${unreadCount}
+📊 In attesa: ${pendingCount}
 
-✅ Notifiche combinate: ${combined.length}`)
-  }
-
-  const clearAllNotifications = () => {
-    VerificationService.clearAllNotifications()
-    loadNotifications()
-    alert('🧹 Tutte le notifiche sono state pulite!')
-  }
-
-  const testGlobalNotifications = async () => {
-    console.log('🧪 Test notifiche globali...')
-    const globalNotifications = await VerificationService.getGlobalNotificationsOnly()
-    console.log('📋 Notifiche globali trovate:', globalNotifications)
-    
-    if (globalNotifications.length > 0) {
-      setNotifications(globalNotifications)
-      alert(`✅ Trovate ${globalNotifications.length} notifiche globali!`)
-    } else {
-      alert('❌ Nessuna notifica globale trovata')
+✅ Sistema Supabase funzionante!`)
+    } catch (error) {
+      console.error('❌ Errore nel debug:', error)
+      alert('❌ Errore nel debug delle notifiche')
     }
   }
 
   const createTestNotification = async () => {
-    await VerificationService.createTestNotification()
-    await loadNotifications()
-    alert('🧪 Notifica di test creata! Controlla se appare nella lista.')
+    try {
+      console.log('🧪 Creazione notifica di test...')
+      
+      // Crea una notifica di test direttamente in Supabase
+      const { NotificationService } = await import('@/lib/notifications')
+      
+      const testNotification = await NotificationService.createAdminNotification({
+        type: 'CHALLENGE_VERIFICATION',
+        userId: 'test-user-id',
+        challengeId: 'test-challenge',
+        verificationId: 'test-verification-id',
+        title: 'Test Notifica',
+        message: 'Questa è una notifica di test creata per verificare il sistema Supabase.',
+        photoUrl: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
+        isRead: false
+      })
+      
+      if (testNotification) {
+        await loadNotifications()
+        alert('🧪 Notifica di test creata in Supabase! Controlla se appare nella lista.')
+      } else {
+        alert('❌ Errore nella creazione della notifica di test')
+      }
+    } catch (error) {
+      console.error('❌ Errore nella creazione notifica test:', error)
+      alert('❌ Errore nella creazione della notifica di test')
+    }
   }
 
   const handleApprove = async (notification: AdminNotification) => {
@@ -398,39 +258,15 @@ export default function AdminVerificationsPage() {
                   size="sm"
                   className="text-xs"
                 >
-                  🔍 Debug
+                  🔍 Debug Supabase
                 </Button>
                 <Button 
-                  onClick={forceLoadGlobalNotifications}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs text-purple-600 hover:text-purple-700"
-                >
-                  🔄 Forza Caricamento
-                </Button>
-                <Button 
-                  onClick={showAllNotifications}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs text-orange-600 hover:text-orange-700"
-                >
-                  📋 Mostra Tutte
-                </Button>
-                <Button 
-                  onClick={forceSyncAllNotifications}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs text-indigo-600 hover:text-indigo-700"
-                >
-                  🔄 Sincronizza Tutto
-                </Button>
-                <Button 
-                  onClick={testGlobalNotifications}
+                  onClick={refreshNotifications}
                   variant="outline"
                   size="sm"
                   className="text-xs text-blue-600 hover:text-blue-700"
                 >
-                  🧪 Test Globale
+                  🔄 Ricarica
                 </Button>
                 <Button 
                   onClick={createTestNotification}
@@ -439,14 +275,6 @@ export default function AdminVerificationsPage() {
                   className="text-xs text-green-600 hover:text-green-700"
                 >
                   ➕ Test Notifica
-                </Button>
-                <Button 
-                  onClick={clearAllNotifications}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs text-red-600 hover:text-red-700"
-                >
-                  🧹 Pulisci
                 </Button>
               </div>
             </CardTitle>
@@ -468,20 +296,12 @@ export default function AdminVerificationsPage() {
                   <p className="text-sm text-gray-500">Prova a:</p>
                   <div className="flex justify-center space-x-2">
                     <Button 
-                      onClick={forceLoadGlobalNotifications}
+                      onClick={refreshNotifications}
                       variant="outline"
                       size="sm"
                       className="text-xs"
                     >
-                      🔄 Forza Caricamento
-                    </Button>
-                    <Button 
-                      onClick={forceSyncAllNotifications}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                    >
-                      🔄 Sincronizza Tutto
+                      🔄 Ricarica
                     </Button>
                     <Button 
                       onClick={createTestNotification}
