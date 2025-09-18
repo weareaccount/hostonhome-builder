@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase, supabaseAdmin } from './supabase'
 import type { AdminNotification, UserNotification } from '@/types'
 
 export class NotificationService {
@@ -13,7 +13,7 @@ export class NotificationService {
         return []
       }
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('admin_notifications')
         .select('*')
         .order('created_at', { ascending: false })
@@ -36,7 +36,7 @@ export class NotificationService {
     try {
       console.log('🔍 Recupero notifiche utente da Supabase:', userId)
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('user_notifications')
         .select('*')
         .eq('user_id', userId)
@@ -70,7 +70,8 @@ export class NotificationService {
         }
       }
       
-      const { data, error } = await supabase
+      // Usa supabaseAdmin per bypassare le politiche RLS
+      const { data, error } = await supabaseAdmin
         .from('admin_notifications')
         .insert([notification])
         .select()
@@ -94,7 +95,8 @@ export class NotificationService {
     try {
       console.log('🔔 Creazione notifica utente in Supabase...')
       
-      const { data, error } = await supabase
+      // Usa supabaseAdmin per bypassare le politiche RLS
+      const { data, error } = await supabaseAdmin
         .from('user_notifications')
         .insert([notification])
         .select()
@@ -118,7 +120,7 @@ export class NotificationService {
     try {
       console.log('📖 Marcatura notifica admin come letta:', notificationId)
       
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('admin_notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
@@ -141,7 +143,7 @@ export class NotificationService {
     try {
       console.log('📖 Marcatura notifica utente come letta:', notificationId)
       
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('user_notifications')
         .update({ is_read: true })
         .eq('id', notificationId)

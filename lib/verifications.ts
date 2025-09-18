@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase, supabaseAdmin } from './supabase'
 import { NotificationService } from './notifications'
 import type { ChallengeVerification, AdminNotification } from '@/types'
 
@@ -39,8 +39,8 @@ export class VerificationService {
 
       console.log('📝 Verifica creata:', verification)
 
-      // Salva la verifica in Supabase
-      const { data, error } = await supabase
+      // Salva la verifica in Supabase usando supabaseAdmin per bypassare RLS
+      const { data, error } = await supabaseAdmin
         .from('challenge_verifications')
         .insert([verification])
         .select()
@@ -78,7 +78,7 @@ export class VerificationService {
     try {
       console.log('🔍 Recupero verifiche utente da Supabase:', userId)
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('challenge_verifications')
         .select('*')
         .eq('user_id', userId)
@@ -102,7 +102,7 @@ export class VerificationService {
     try {
       console.log('🔍 Recupero tutte le verifiche da Supabase...')
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('challenge_verifications')
         .select('*')
         .order('submitted_at', { ascending: false })
@@ -128,8 +128,8 @@ export class VerificationService {
     try {
       console.log('✅ Approvazione verifica:', verificationId, 'da admin:', adminId)
 
-      // Aggiorna lo stato della verifica
-      const { data, error } = await supabase
+      // Aggiorna lo stato della verifica usando supabaseAdmin
+      const { data, error } = await supabaseAdmin
         .from('challenge_verifications')
         .update({
           status: 'APPROVED',
@@ -184,8 +184,8 @@ export class VerificationService {
     try {
       console.log('❌ Rifiuto verifica:', verificationId, 'da admin:', adminId, 'Motivo:', reason)
 
-      // Aggiorna lo stato della verifica
-      const { data, error } = await supabase
+      // Aggiorna lo stato della verifica usando supabaseAdmin
+      const { data, error } = await supabaseAdmin
         .from('challenge_verifications')
         .update({
           status: 'REJECTED',
