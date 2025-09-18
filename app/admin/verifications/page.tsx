@@ -128,8 +128,8 @@ export default function AdminVerificationsPage() {
     console.log('🔍 DEBUG: Controllo completo sistema notifiche...')
     
     // Contatore globale
-    const globalCount = VerificationService.getGlobalNotificationCount()
-    console.log('📊 Contatore globale notifiche:', globalCount)
+    const globalCounter = VerificationService.getGlobalNotificationCount()
+    console.log('📊 Contatore globale notifiche:', globalCounter)
     
     // localStorage locale
     const localData = localStorage.getItem('admin_notifications')
@@ -211,7 +211,7 @@ export default function AdminVerificationsPage() {
     // Mostra alert con i conteggi
     alert(`🔍 DEBUG NOTIFICHE:
     
-📊 Contatore globale: ${globalCount}
+📊 Contatore globale: ${globalCounter}
 📦 Storage locale: ${localCount} notifiche
 📦 Storage condiviso: ${sharedCount} notifiche  
 📦 Storage globale: ${globalCount} notifiche
