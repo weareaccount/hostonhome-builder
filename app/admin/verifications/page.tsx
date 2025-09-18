@@ -74,8 +74,32 @@ export default function AdminVerificationsPage() {
       }
       
       setNotifications(data)
+      console.log('✅ Notifiche caricate:', data.length)
     } catch (error) {
       console.error('❌ Errore nel caricamento delle notifiche:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const forceLoadGlobalNotifications = async () => {
+    try {
+      setLoading(true)
+      console.log('🔄 Forzando caricamento notifiche globali...')
+      
+      const data = await VerificationService.getGlobalNotificationsOnly()
+      console.log('📋 Notifiche globali forzate:', data)
+      
+      setNotifications(data)
+      
+      if (data.length > 0) {
+        alert(`✅ Trovate ${data.length} notifiche globali!`)
+      } else {
+        alert('❌ Nessuna notifica globale trovata')
+      }
+    } catch (error) {
+      console.error('❌ Errore nel caricamento forzato:', error)
+      alert('❌ Errore nel caricamento delle notifiche')
     } finally {
       setLoading(false)
     }
@@ -299,6 +323,14 @@ export default function AdminVerificationsPage() {
                   🔍 Debug
                 </Button>
                 <Button 
+                  onClick={forceLoadGlobalNotifications}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-purple-600 hover:text-purple-700"
+                >
+                  🔄 Forza Caricamento
+                </Button>
+                <Button 
                   onClick={testGlobalNotifications}
                   variant="outline"
                   size="sm"
@@ -337,7 +369,28 @@ export default function AdminVerificationsPage() {
                   <CheckCircle className="w-12 h-12 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Nessuna notifica</h3>
-                <p className="text-gray-600">Non ci sono verifiche in attesa di approvazione.</p>
+                <p className="text-gray-600 mb-4">Non ci sono verifiche in attesa di approvazione.</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">Prova a:</p>
+                  <div className="flex justify-center space-x-2">
+                    <Button 
+                      onClick={forceLoadGlobalNotifications}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      🔄 Forza Caricamento
+                    </Button>
+                    <Button 
+                      onClick={createTestNotification}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      ➕ Crea Test
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">

@@ -186,6 +186,46 @@ export class VerificationService {
     }
   }
 
+  // Metodo alternativo per ottenere notifiche solo dal server simulato
+  static async getGlobalNotificationsOnly(): Promise<AdminNotification[]> {
+    try {
+      if (typeof window === 'undefined') {
+        console.log('⚠️ Window undefined, ritorno array vuoto')
+        return []
+      }
+      
+      console.log('🌐 Recupero notifiche solo dal server simulato...')
+      
+      const globalData = localStorage.getItem(this.GLOBAL_NOTIFICATIONS_KEY)
+      console.log('📦 Dati storage globale:', globalData)
+      
+      if (!globalData) {
+        console.log('📭 Nessuna notifica nel server simulato')
+        return []
+      }
+      
+      const globalNotifications = JSON.parse(globalData)
+      console.log('📋 Notifiche dal server simulato:', globalNotifications.length)
+      
+      // Rimuovi i campi server-specifici
+      const cleanNotifications = globalNotifications.map((n: any) => {
+        const { serverId, syncedAt, uniqueTimestamp, hash, ...cleanNotification } = n
+        return cleanNotification
+      })
+      
+      // Ordina per data di creazione (più recenti prima)
+      const sortedNotifications = cleanNotifications.sort((a: AdminNotification, b: AdminNotification) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      
+      console.log('📋 Notifiche dal server simulato ordinate:', sortedNotifications)
+      return sortedNotifications
+    } catch (error) {
+      console.error('❌ Errore nel recupero delle notifiche globali:', error)
+      return []
+    }
+  }
+
   // Approva una verifica
   static async approveVerification(
     verificationId: string,
