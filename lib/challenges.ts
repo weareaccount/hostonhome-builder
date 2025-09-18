@@ -160,10 +160,17 @@ export class ChallengeService {
     try {
       // In produzione, questo dovrebbe fare una chiamata API
       const progressData = this.getLocalProgress(userId)
+      console.log('📊 Progress data loaded:', progressData)
       
       return Object.entries(this.CHALLENGE_DEFINITIONS).map(([type, definition], index) => {
         const challengeId = (index + 1).toString()
         const progress = progressData[challengeId] || { current: 0, target: definition.target.value, percentage: 0 }
+        
+        console.log(`🔍 Challenge ${challengeId} progress:`, progress)
+        console.log(`🔍 Challenge ${challengeId} status:`, progress.status)
+        
+        const calculatedStatus = this.calculateStatus(progress.current, definition.target.value, progress.status)
+        console.log(`🔍 Challenge ${challengeId} calculated status:`, calculatedStatus)
         
         return {
           id: challengeId,
@@ -289,6 +296,7 @@ export class ChallengeService {
       this.saveLocalProgress(userId, progressData)
       console.log(`✅ Challenge ${challengeId} status updated to: ${status}`)
       console.log(`📊 Progress data:`, updatedProgress)
+      console.log(`📊 All progress data:`, progressData)
       return true
     } catch (error) {
       console.error('Errore nell\'aggiornamento dello stato:', error)
