@@ -175,14 +175,23 @@ export default function ChallengeCard({
           const storageKey = `challenge_progress_${userId}`
           const progressData = JSON.parse(localStorage.getItem(storageKey) || '{}')
           
-          if (progressData[challenge.id]) {
-            progressData[challenge.id].status = 'PENDING_VERIFICATION'
-            progressData[challenge.id].lastUpdated = new Date().toISOString()
-            localStorage.setItem(storageKey, JSON.stringify(progressData))
-            console.log('✅ localStorage aggiornato per challenge:', challenge.id, 'stato: PENDING_VERIFICATION')
-          } else {
-            console.log('⚠️ Nessun progresso trovato nel localStorage per challenge:', challenge.id)
+          // Crea il progresso se non esiste
+          if (!progressData[challenge.id]) {
+            progressData[challenge.id] = {
+              current: 0,
+              target: challenge.target.value,
+              percentage: 0,
+              status: 'AVAILABLE'
+            }
+            console.log('📝 Creato nuovo progresso per challenge:', challenge.id)
           }
+          
+          // Aggiorna lo stato a PENDING_VERIFICATION
+          progressData[challenge.id].status = 'PENDING_VERIFICATION'
+          progressData[challenge.id].lastUpdated = new Date().toISOString()
+          localStorage.setItem(storageKey, JSON.stringify(progressData))
+          console.log('✅ localStorage aggiornato per challenge:', challenge.id, 'stato: PENDING_VERIFICATION')
+          console.log('📋 Progresso aggiornato:', progressData[challenge.id])
         } catch (error) {
           console.error('❌ Errore aggiornamento localStorage:', error)
         }
