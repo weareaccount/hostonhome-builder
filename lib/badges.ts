@@ -59,9 +59,17 @@ export class BadgeService {
     try {
       console.log('🔍 Controllo badge da sbloccare per utente:', userId)
       
-      // Ottieni le challenge completate dall'utente
-      const { ChallengeService } = await import('./challenges')
-      const userChallenges = await ChallengeService.getUserChallenges(userId)
+      // Ottieni le challenge completate dall'utente tramite API Supabase
+      console.log('📡 Chiamando API per badge da sbloccare...')
+      const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+      const data = await response.json()
+      
+      if (!data.success) {
+        console.error('❌ Errore API badge:', data.error)
+        return []
+      }
+      
+      const userChallenges = data.challenges
       const completedChallenges = userChallenges.filter(c => c.status === 'COMPLETED')
       const completedChallengeIds = completedChallenges.map(c => c.id)
       
