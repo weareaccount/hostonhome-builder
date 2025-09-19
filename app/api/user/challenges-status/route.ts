@@ -14,7 +14,11 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
-    
+
+    console.log('🚀 API challenges-status chiamata!')
+    console.log('🚀 URL:', request.url)
+    console.log('🚀 UserId:', userId)
+
     if (!userId) {
       return NextResponse.json({ 
         success: false, 
