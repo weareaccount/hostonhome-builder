@@ -35,8 +35,26 @@ export default function ChallengeStats({ userId }: ChallengeStatsProps) {
       
       setLoading(true)
       try {
-        const challengeStats = await ChallengeService.getChallengeStats(userId)
-        setStats(challengeStats)
+        // Usa l'API Supabase invece del localStorage
+        console.log('📊 Caricamento statistiche da API Supabase...')
+        const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+        const data = await response.json()
+        
+        if (data.success) {
+          const challenges = data.challenges
+          const stats = {
+            total: challenges.length,
+            completed: challenges.filter(c => c.status === 'COMPLETED').length,
+            inProgress: challenges.filter(c => c.status === 'IN_PROGRESS').length,
+            available: challenges.filter(c => c.status === 'AVAILABLE').length,
+            locked: challenges.filter(c => c.status === 'LOCKED').length,
+            completionRate: Math.round((challenges.filter(c => c.status === 'COMPLETED').length / challenges.length) * 100)
+          }
+          console.log('📊 Statistiche calcolate da API:', stats)
+          setStats(stats)
+        } else {
+          console.error('❌ Errore API statistiche:', data.error)
+        }
       } catch (error) {
         console.error('Errore nel caricamento delle statistiche:', error)
       } finally {
