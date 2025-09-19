@@ -94,9 +94,20 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
     
     document.addEventListener('visibilitychange', handleVisibilityChange)
     
+    // Ascolta eventi di aggiornamento verifica
+    const handleVerificationUpdate = (event: CustomEvent) => {
+      console.log('🔔 Evento verifica ricevuto:', event.detail)
+      const { challengeId, status } = event.detail
+      console.log('🔄 Aggiornamento challenge dopo approvazione:', challengeId, status)
+      loadChallenges()
+    }
+    
+    window.addEventListener('challengeVerificationUpdate', handleVerificationUpdate as EventListener)
+    
     return () => {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('challengeVerificationUpdate', handleVerificationUpdate as EventListener)
     }
   }, [userId])
 

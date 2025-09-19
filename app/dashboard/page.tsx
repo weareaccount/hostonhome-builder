@@ -1417,8 +1417,11 @@ Sei sicuro di voler procedere con la disdetta?`)) return
                 userId={user?.id || ''} 
                 onVerificationUpdate={(challengeId, status) => {
                   console.log('🔄 Aggiornamento verifica ricevuto:', { challengeId, status })
-                  // Forza il re-render delle challenge per aggiornare lo stato
-                  window.location.reload()
+                  // Trigger refresh delle challenge senza ricaricare la pagina
+                  const event = new CustomEvent('challengeVerificationUpdate', { 
+                    detail: { challengeId, status } 
+                  })
+                  window.dispatchEvent(event)
                 }}
               />
 
