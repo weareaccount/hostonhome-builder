@@ -40,11 +40,19 @@ export async function GET(request: Request) {
     }
 
     console.log('📋 Verifiche trovate:', verifications?.length || 0)
-    console.log('📋 Verifiche per FIRST_REVIEW:', verifications?.filter(v => v.challenge_id === 'FIRST_REVIEW'))
     console.log('📋 Tutte le verifiche:', verifications)
     console.log('📋 Verifiche PENDING:', verifications?.filter(v => v.status === 'PENDING'))
     console.log('📋 Verifiche APPROVED:', verifications?.filter(v => v.status === 'APPROVED'))
     console.log('📋 Verifiche REJECTED:', verifications?.filter(v => v.status === 'REJECTED'))
+    
+    // Log specifico per ogni challenge
+    for (const verification of verifications || []) {
+      console.log('🔍 Verifica trovata:', {
+        challenge_id: verification.challenge_id,
+        status: verification.status,
+        user_id: verification.user_id
+      })
+    }
 
     // Crea una mappa delle verifiche per challenge (dai priorità alle verifiche approvate/rifiutate)
     const verificationMap: Record<string, { status: string; reviewed_at: string }> = {}
@@ -104,6 +112,12 @@ export async function GET(request: Request) {
     // Aggiorna lo stato delle challenge basandosi SOLO sulle verifiche PENDING
     const updatedChallenges = allChallenges.map(challenge => {
       const verification = verificationMap[challenge.id]
+      
+      console.log('🔍 Controllo challenge:', {
+        id: challenge.id,
+        title: challenge.title,
+        verification: verification ? { status: verification.status } : 'Nessuna verifica'
+      })
       
       if (verification && verification.status === 'PENDING') {
         // SOLO per verifiche PENDING, aggiorna lo stato a PENDING_VERIFICATION
