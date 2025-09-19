@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { ChallengeService } from '@/lib/challenges'
+import type { ChallengeStatus } from '@/types'
 
 // Configurazione Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -95,41 +96,30 @@ export async function GET(request: Request) {
     console.log('📋 Mappa verifiche finale:', verificationMap)
     console.log('📋 Challenge con verifiche PENDING:', Object.keys(verificationMap).filter(key => verificationMap[key].status === 'PENDING'))
 
-    // Recupera tutte le definizioni delle challenge (non dal localStorage)
-    const allChallenges = ChallengeService.getAllChallengeDefinitions()
+    // Recupera le challenge personali dell'utente (dal localStorage)
+    const userChallenges = await ChallengeService.getUserChallenges(userId)
     
-    // Aggiorna lo stato delle challenge basandosi sulle verifiche
-    const updatedChallenges = allChallenges.map(challenge => {
+    console.log('📋 Challenge personali caricate:', userChallenges.length)
+    console.log('📋 Stati delle challenge personali:', userChallenges.map(c => ({ id: c.id, title: c.title, status: c.status })))
+    
+    // Aggiorna SOLO le challenge che hanno verifiche PENDING (non sovrascrivere APPROVED/REJECTED)
+    const updatedChallenges = userChallenges.map(challenge => {
       const verification = verificationMap[challenge.id]
       
-      if (verification) {
-        // Aggiorna lo stato della challenge basandosi sulla verifica
-        let newStatus: string
-        if (verification.status === 'APPROVED') {
-          newStatus = 'COMPLETED'
-        } else if (verification.status === 'REJECTED') {
-          newStatus = 'REJECTED'
-        } else if (verification.status === 'PENDING') {
-          newStatus = 'PENDING_VERIFICATION'
-        } else {
-          newStatus = challenge.status // Mantieni lo stato originale se non riconosciuto
-        }
-        
-        console.log('🔄 Challenge aggiornata:', challenge.title, 'da', challenge.status, 'a', newStatus, 'verifica:', verification.status)
+      if (verification && verification.status === 'PENDING') {
+        // SOLO per verifiche PENDING, aggiorna lo stato a PENDING_VERIFICATION
+        console.log('🔄 Challenge con verifica PENDING:', challenge.title, 'da', challenge.status, 'a PENDING_VERIFICATION')
         
         return {
           ...challenge,
-          status: newStatus,
-          completedAt: verification.status === 'APPROVED' ? verification.reviewed_at : undefined,
+          status: 'PENDING_VERIFICATION' as ChallengeStatus,
           progress: { current: 0, target: challenge.target.value, percentage: 0 }
         }
       }
       
-      return {
-        ...challenge,
-        status: 'AVAILABLE' as ChallengeStatus, // Mantieni AVAILABLE se non ci sono verifiche
-        progress: { current: 0, target: challenge.target.value, percentage: 0 }
-      }
+      // Per tutte le altre challenge, mantieni lo stato originale dal localStorage
+      console.log('✅ Challenge mantenuta con stato originale:', challenge.title, 'stato:', challenge.status)
+      return challenge
     })
 
     console.log('✅ Challenge aggiornate:', updatedChallenges.length)
