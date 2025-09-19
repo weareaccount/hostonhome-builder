@@ -42,7 +42,16 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
         // Usa direttamente l'API che legge dal database
         console.log('🔄 Caricamento challenge dal database...')
         console.log('📡 Chiamando API:', `/api/user/challenges-status?userId=${userId}`)
-        const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+        
+        // Aggiungi timeout per evitare errori Supabase
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 secondi timeout
+        
+        const response = await fetch(`/api/user/challenges-status?userId=${userId}`, {
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
         console.log('📡 Risposta API:', response.status, response.statusText)
         const data = await response.json()
         console.log('📡 Dati API ricevuti:', data)
@@ -65,8 +74,17 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
           setChallenges([])
         }
       } catch (error) {
-        console.error('Errore nel caricamento delle challenge:', error)
-        setChallenges([])
+        if (error.name === 'AbortError') {
+          console.error('⏰ Timeout caricamento challenge - Supabase non risponde')
+          console.log('🔄 Riprovo caricamento tra 3 secondi...')
+          setTimeout(() => {
+            console.log('🔄 Retry caricamento challenge...')
+            loadChallenges()
+          }, 3000)
+        } else {
+          console.error('Errore nel caricamento delle challenge:', error)
+          setChallenges([])
+        }
       } finally {
         setLoading(false)
       }
@@ -203,25 +221,55 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
       
       // Ricarica le challenge per aggiornare lo stato
       console.log('📡 Chiamando API challenges-status...')
-      const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
-      const data = await response.json()
       
-      console.log('📡 Risposta API:', data)
-      
-      if (data.success) {
-        console.log('✅ API success - Aggiornando state con', data.challenges.length, 'challenge')
-        setChallenges(data.challenges)
-        console.log('✅ Challenge aggiornate dopo verifica inviata')
+      try {
+        // Aggiungi timeout più lungo per evitare errori Supabase
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 secondi timeout
         
-        // Log per debug
-        const updatedChallenge = data.challenges.find(c => c.id === challengeId)
-        if (updatedChallenge) {
-          console.log('🎯 Challenge aggiornata:', updatedChallenge.title, 'Stato:', updatedChallenge.status)
+        const response = await fetch(`/api/user/challenges-status?userId=${userId}`, {
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
+        const data = await response.json()
+        
+        console.log('📡 Risposta API:', data)
+        
+        if (data.success) {
+          console.log('✅ API success - Aggiornando state con', data.challenges.length, 'challenge')
+          setChallenges(data.challenges)
+          console.log('✅ Challenge aggiornate dopo verifica inviata')
+          
+          // Log per debug
+          const updatedChallenge = data.challenges.find(c => c.id === challengeId)
+          if (updatedChallenge) {
+            console.log('🎯 Challenge aggiornata:', updatedChallenge.title, 'Stato:', updatedChallenge.status)
+          } else {
+            console.error('❌ Challenge non trovata nell\'aggiornamento:', challengeId)
+          }
         } else {
-          console.error('❌ Challenge non trovata nell\'aggiornamento:', challengeId)
+          console.error('❌ Errore nel caricamento challenge dopo verifica:', data.error)
         }
-      } else {
-        console.error('❌ Errore nel caricamento challenge dopo verifica:', data.error)
+      } catch (fetchError) {
+        if (fetchError.name === 'AbortError') {
+          console.error('⏰ Timeout API challenges-status - Supabase non risponde')
+          console.log('🔄 Riprovo tra 2 secondi...')
+          setTimeout(() => {
+            console.log('🔄 Retry chiamata API challenges-status...')
+            fetch(`/api/user/challenges-status?userId=${userId}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  console.log('✅ Retry success - Challenge aggiornate')
+                  setChallenges(data.challenges)
+                }
+              })
+              .catch(err => console.error('❌ Retry fallito:', err))
+          }, 2000)
+        } else {
+          console.error('❌ Errore fetch API challenges-status:', fetchError)
+        }
       }
     } catch (error) {
       console.error('❌ Errore nell\'aggiornamento dopo verifica:', error)
