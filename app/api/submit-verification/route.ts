@@ -65,6 +65,8 @@ export async function POST(request: NextRequest) {
       console.log('✅ Notifica admin creata')
     }
 
+    // Il localStorage verrà aggiornato dal frontend dopo la risposta
+
     return NextResponse.json({ 
       success: true, 
       verificationId: verification.id,

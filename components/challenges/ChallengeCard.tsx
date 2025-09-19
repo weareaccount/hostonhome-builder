@@ -169,6 +169,24 @@ export default function ChallengeCard({
       
       if (result.success) {
         console.log('✅ Verifica ricevuta da API:', result.verificationId)
+        
+        // Aggiorna il localStorage per questa challenge
+        try {
+          const storageKey = `challenge_progress_${userId}`
+          const progressData = JSON.parse(localStorage.getItem(storageKey) || '{}')
+          
+          if (progressData[challenge.id]) {
+            progressData[challenge.id].status = 'PENDING_VERIFICATION'
+            progressData[challenge.id].lastUpdated = new Date().toISOString()
+            localStorage.setItem(storageKey, JSON.stringify(progressData))
+            console.log('✅ localStorage aggiornato per challenge:', challenge.id, 'stato: PENDING_VERIFICATION')
+          } else {
+            console.log('⚠️ Nessun progresso trovato nel localStorage per challenge:', challenge.id)
+          }
+        } catch (error) {
+          console.error('❌ Errore aggiornamento localStorage:', error)
+        }
+        
         console.log('🔄 Chiamando callback onVerificationSubmitted per challenge:', challenge.id)
         
         // Notifica il componente padre per aggiornare lo stato
