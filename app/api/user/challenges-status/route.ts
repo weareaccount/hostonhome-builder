@@ -65,6 +65,20 @@ export async function GET(request: Request) {
     // Log specifico per challenge_id = "1"
     const challenge1Verifications = verifications?.filter(v => v.challenge_id === '1') || []
     console.log('🔍 Verifiche per challenge 1 (Prima Visita):', challenge1Verifications)
+    
+    // Log specifico per challenge_id = "6" (Indipendenza in crescita)
+    const challenge6Verifications = verifications?.filter(v => v.challenge_id === '6') || []
+    console.log('🔍 Verifiche per challenge 6 (Indipendenza in crescita):', challenge6Verifications)
+    
+    // Log di tutte le verifiche per debug
+    console.log('🔍 TUTTE LE VERIFICHE TROVATE:', verifications?.map(v => ({
+      id: v.id,
+      challenge_id: v.challenge_id,
+      status: v.status,
+      user_id: v.user_id,
+      created_at: v.created_at,
+      submitted_at: v.submitted_at
+    })))
 
     // Crea una mappa delle verifiche per challenge (dai priorità alle verifiche approvate/rifiutate)
     const verificationMap: Record<string, { status: string; reviewed_at: string }> = {}
