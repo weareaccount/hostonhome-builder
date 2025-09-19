@@ -231,6 +231,10 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
         })
       })
       
+      // NON chiamare l'API challenges-status per evitare di sovrascrivere l'aggiornamento immediato
+      console.log('🚫 Saltando chiamata API challenges-status per evitare sovrascrittura')
+      return
+      
       // Aspetta un momento per assicurarsi che il database sia aggiornato
       console.log('⏳ Aspetto 500ms per sincronizzazione database...')
       await new Promise(resolve => setTimeout(resolve, 500))

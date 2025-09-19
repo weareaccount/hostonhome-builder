@@ -73,7 +73,7 @@ export class BadgeService {
       const completedChallenges = userChallenges.filter(c => c.status === 'COMPLETED')
       const completedChallengeIds = completedChallenges.map(c => c.id)
       
-      console.log('✅ Challenge completate:', completedChallengeIds)
+      console.log('✅ Challenge completate per badge:', completedChallengeIds)
       
       // Ottieni i badge attuali dell'utente
       const currentBadges = await this.getUserBadgesRaw(userId)
