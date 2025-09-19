@@ -24,10 +24,19 @@ export default function SimplePhotoUploadModal({
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-      setUploadError(null)
+    try {
+      console.log('📸 Selezione file...')
+      const file = e.target.files?.[0]
+      if (file) {
+        console.log('📸 File selezionato:', file.name, file.size)
+        setSelectedFile(file)
+        setUploadError(null)
+      } else {
+        console.log('📸 Nessun file selezionato')
+      }
+    } catch (error) {
+      console.error('❌ Errore nella selezione file:', error)
+      setUploadError('Errore nella selezione del file')
     }
   }
 
@@ -60,13 +69,14 @@ export default function SimplePhotoUploadModal({
       
       alert('✅ Foto inviata con successo!')
       
-      // Reset form
+      // Reset form solo se l'upload è riuscito
       setSelectedFile(null)
       setDescription('')
       onClose()
     } catch (error) {
       console.error('❌ Errore durante l\'upload:', error)
       setUploadError('Errore durante l\'upload. Riprova.')
+      // NON chiudere il modal in caso di errore
     } finally {
       setIsUploading(false)
     }
@@ -86,7 +96,10 @@ export default function SimplePhotoUploadModal({
             </h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => {
+              console.log('📸 Chiusura modal...')
+              onClose()
+            }}
             className="text-gray-400 hover:text-gray-600"
           >
             <X className="w-5 h-5" />
@@ -128,7 +141,10 @@ export default function SimplePhotoUploadModal({
 
           <div className="flex space-x-3">
             <Button
-              onClick={onClose}
+              onClick={() => {
+                console.log('📸 Annullamento modal...')
+                onClose()
+              }}
               variant="outline"
               className="flex-1"
             >

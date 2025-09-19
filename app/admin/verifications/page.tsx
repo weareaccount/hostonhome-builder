@@ -15,7 +15,7 @@ import {
   Camera,
   AlertCircle
 } from 'lucide-react'
-import { VerificationService } from '@/lib/verification'
+// Le API routes gestiscono ora le chiamate a Supabase
 import type { AdminNotification } from '@/types'
 
 export default function AdminVerificationsPage() {
@@ -40,16 +40,36 @@ export default function AdminVerificationsPage() {
   const loadNotifications = async () => {
     try {
       setLoading(true)
-      console.log('🔄 Caricamento notifiche admin da Supabase...')
+      console.log('🔄 Caricamento notifiche admin tramite API...')
       
-      // Usa solo Supabase
-      const data = await VerificationService.getAdminNotifications()
-      console.log('📋 Notifiche da Supabase:', data.length)
+      // Usa la nuova API route semplificata per le verifiche
+      const response = await fetch('/api/admin-verifications-simple')
+      const data = await response.json()
       
-      setNotifications(data)
-      console.log('✅ Notifiche caricate da Supabase:', data.length)
+      if (data.success) {
+        console.log('📋 Verifiche da API:', data.count)
+        // Converti le verifiche in formato notifiche per compatibilità
+        const notifications = data.verifications.map((verification: any) => ({
+          id: verification.id, // Usa l'ID della verifica direttamente
+          type: 'CHALLENGE_VERIFICATION',
+          userId: verification.user_id,
+          challengeId: verification.challenge_id,
+          verificationId: verification.id,
+          title: 'Nuova verifica challenge',
+          message: 'Verifica in attesa di approvazione',
+          photoUrl: verification.photo_url,
+          isRead: false, // Sempre false per le verifiche in attesa
+          createdAt: verification.created_at
+        }))
+        setNotifications(notifications)
+        console.log('✅ Verifiche caricate tramite API:', data.count)
+      } else {
+        console.error('❌ Errore API:', data.error)
+        setNotifications([])
+      }
     } catch (error) {
       console.error('❌ Errore nel caricamento delle notifiche:', error)
+      setNotifications([])
     } finally {
       setLoading(false)
     }
@@ -75,7 +95,9 @@ export default function AdminVerificationsPage() {
     try {
       console.log('🔍 DEBUG: Controllo sistema Supabase...')
       
-      const notifications = await VerificationService.getAdminNotifications()
+      const response = await fetch('/api/admin/notifications')
+      const data = await response.json()
+      const notifications = data.success ? data.notifications : []
       console.log('📋 Notifiche da Supabase:', notifications)
       
       const unreadCount = notifications.filter(n => !n.isRead).length
@@ -128,21 +150,31 @@ export default function AdminVerificationsPage() {
     setProcessing(notification.id)
     try {
       console.log('✅ Approvazione verifica:', notification.verificationId)
+      console.log('🔍 Notification completa:', notification)
       
-      const success = await VerificationService.approveVerification(
-        notification.verificationId,
-        'admin-user-id' // In produzione userai l'ID dell'admin loggato
-      )
+      const response = await fetch('/api/admin-verifications-simple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'approve',
+          verificationId: notification.verificationId,
+          adminId: 'admin-matteo-venneri' // ID admin fisso per ora
+        })
+      })
+
+      const result = await response.json()
       
-      if (success) {
+      if (result.success) {
         alert('✅ Verifica approvata con successo!\n\nL\'utente è stato notificato e può riscuotere la ricompensa.')
         await loadNotifications()
         setShowModal(false)
         setSelectedNotification(null)
         console.log('✅ Verifica approvata e notifiche ricaricate')
       } else {
-        alert('❌ Errore nell\'approvazione della verifica')
-        console.log('❌ Errore nell\'approvazione')
+        alert(`❌ Errore nell'approvazione: ${result.error}`)
+        console.log('❌ Errore nell\'approvazione:', result.error)
       }
     } catch (error) {
       console.error('❌ Errore nell\'approvazione:', error)
@@ -157,21 +189,30 @@ export default function AdminVerificationsPage() {
     try {
       console.log('❌ Rifiuto verifica:', notification.verificationId, 'Motivo:', reason)
       
-      const success = await VerificationService.rejectVerification(
-        notification.verificationId,
-        'admin-user-id',
-        reason
-      )
+      const response = await fetch('/api/admin-verifications-simple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'reject',
+          verificationId: notification.verificationId,
+          adminId: 'admin-matteo-venneri',
+          reason: reason
+        })
+      })
+
+      const result = await response.json()
       
-      if (success) {
+      if (result.success) {
         alert('❌ Verifica rifiutata.\n\nL\'utente è stato notificato e può riprovare caricando una nuova foto.')
         await loadNotifications()
         setShowModal(false)
         setSelectedNotification(null)
         console.log('✅ Verifica rifiutata e notifiche ricaricate')
       } else {
-        alert('❌ Errore nel rifiuto della verifica')
-        console.log('❌ Errore nel rifiuto')
+        alert(`❌ Errore nel rifiuto: ${result.error}`)
+        console.log('❌ Errore nel rifiuto:', result.error)
       }
     } catch (error) {
       console.error('❌ Errore nel rifiuto:', error)
@@ -184,10 +225,7 @@ export default function AdminVerificationsPage() {
   const handleViewNotification = async (notification: AdminNotification) => {
     setSelectedNotification(notification)
     setShowModal(true)
-    
-    // Marca come letta
-    await VerificationService.markNotificationAsRead(notification.id)
-    await loadNotifications()
+    // Non facciamo più la marcatura come letta con l'API semplificata
   }
 
   const stats = {

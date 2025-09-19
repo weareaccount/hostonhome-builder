@@ -183,6 +183,15 @@ CREATE POLICY "Admins can update admin notifications" ON public.admin_notificati
 CREATE POLICY "System can insert admin notifications" ON public.admin_notifications
   FOR INSERT WITH CHECK (true);
 
+CREATE POLICY "Admins can delete admin notifications" ON public.admin_notifications
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM auth.users 
+      WHERE id = auth.uid() 
+      AND email IN ('admin@hostonhome.com', 'matteo@weareaccount.com')
+    )
+  );
+
 -- Politiche RLS per user_notifications
 ALTER TABLE public.user_notifications ENABLE ROW LEVEL SECURITY;
 
@@ -194,6 +203,15 @@ CREATE POLICY "Users can update own notifications" ON public.user_notifications
 
 CREATE POLICY "System can insert user notifications" ON public.user_notifications
   FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admins can delete user notifications" ON public.user_notifications
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM auth.users 
+      WHERE id = auth.uid() 
+      AND email IN ('admin@hostonhome.com', 'matteo@weareaccount.com')
+    )
+  );
 
 -- Funzione per ottenere i progetti di un utente
 CREATE OR REPLACE FUNCTION get_user_projects(user_uuid UUID)

@@ -39,17 +39,64 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
       
       setLoading(true)
       try {
-        const userChallenges = await ChallengeService.getUserChallenges(userId)
-        setChallenges(userChallenges)
+        // Usa direttamente l'API che legge dal database
+        console.log('🔄 Caricamento challenge dal database...')
+        const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+        const data = await response.json()
+        
+        if (data.success) {
+          console.log('✅ Challenge caricate con stato aggiornato:', data.count)
+          
+          // Log dettagliato per debug
+          const completedChallenges = data.challenges.filter(c => c.status === 'COMPLETED')
+          const rejectedChallenges = data.challenges.filter(c => c.status === 'REJECTED')
+          const pendingChallenges = data.challenges.filter(c => c.status === 'PENDING_VERIFICATION')
+          
+          console.log('🎯 Challenge completate:', completedChallenges.length, completedChallenges.map(c => c.title))
+          console.log('❌ Challenge rifiutate:', rejectedChallenges.length, rejectedChallenges.map(c => c.title))
+          console.log('⏳ Challenge in verifica:', pendingChallenges.length, pendingChallenges.map(c => c.title))
+          
+          setChallenges(data.challenges)
+        } else {
+          console.error('❌ Errore nel caricamento challenge:', data.error)
+          setChallenges([])
+        }
       } catch (error) {
         console.error('Errore nel caricamento delle challenge:', error)
+        setChallenges([])
       } finally {
         setLoading(false)
       }
     }
 
     loadChallenges()
+    
+    // Aggiornamento automatico ogni 10 secondi per verifiche in corso
+    const interval = setInterval(() => {
+      // Controlla se ci sono challenge in verifica
+      const hasPendingChallenges = challenges.some(c => c.status === 'PENDING_VERIFICATION')
+      if (hasPendingChallenges) {
+        console.log('🔄 Controllo aggiornamenti per challenge in verifica...')
+        loadChallenges()
+      }
+    }, 10000)
+    
+    // Aggiorna anche quando l'utente torna sulla pagina
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('👁️ Pagina visibile - aggiornamento challenge...')
+        loadChallenges()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [userId])
+
 
   // Statistiche delle challenge
   const stats = {
@@ -67,27 +114,46 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
 
   const handleStartChallenge = async (challengeId: string) => {
     try {
-      await ChallengeService.updateChallengeProgress(userId, challengeId, 1)
-      // Ricarica le challenge per aggiornare lo stato
-      const updatedChallenges = await ChallengeService.getUserChallenges(userId)
-      setChallenges(updatedChallenges)
+      console.log('🚀 Avvio challenge:', challengeId)
+      
+      // Aggiorna le challenge dal database invece che dal localStorage
+      const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setChallenges(data.challenges)
+        console.log('✅ Challenge aggiornate dopo avvio')
+      } else {
+        console.error('❌ Errore nel caricamento challenge dopo avvio:', data.error)
+      }
     } catch (error) {
-      console.error('Errore nell\'avvio della challenge:', error)
+      console.error('❌ Errore nell\'avvio della challenge:', error)
     }
   }
 
   const handleClaimReward = async (challengeId: string) => {
     try {
-      // Le ricompense possono essere riscosse solo dopo l'approvazione dell'admin
-      console.log('Riscuotendo ricompensa per challenge:', challengeId)
+      console.log('🎁 Riscuotendo ricompensa per challenge:', challengeId)
       
-      // Non completare automaticamente la challenge - deve essere già COMPLETED dall'admin
-      const updatedChallenges = await ChallengeService.getUserChallenges(userId)
-      setChallenges(updatedChallenges)
+      // Aggiorna le challenge dal database invece che dal localStorage
+      const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+      const data = await response.json()
       
-      onChallengeComplete?.(challengeId)
+      if (data.success) {
+        setChallenges(data.challenges)
+        console.log('✅ Challenge aggiornate dopo riscossione ricompensa')
+        
+        // Mostra messaggio di successo
+        alert('🎉 Ricompensa riscossa con successo!')
+        
+        onChallengeComplete?.(challengeId)
+      } else {
+        console.error('❌ Errore nel caricamento challenge dopo riscossione:', data.error)
+        alert('❌ Errore nel riscuotere la ricompensa. Riprova.')
+      }
     } catch (error) {
-      console.error('Errore nel riscuotere la ricompensa:', error)
+      console.error('❌ Errore nel riscuotere la ricompensa:', error)
+      alert('❌ Errore nel riscuotere la ricompensa. Riprova.')
     }
   }
 
@@ -111,6 +177,43 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
     }
   }
 
+  const handleVerificationSubmitted = async (challengeId: string) => {
+    try {
+      console.log('🔄 CALLBACK RICEVUTO - Aggiornamento challenge dopo verifica inviata:', challengeId)
+      console.log('🔄 UserId:', userId)
+      console.log('🔄 Callback handleVerificationSubmitted chiamato correttamente!')
+      
+      // Aspetta un momento per assicurarsi che il database sia aggiornato
+      console.log('⏳ Aspetto 500ms per sincronizzazione database...')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Ricarica le challenge per aggiornare lo stato
+      console.log('📡 Chiamando API challenges-status...')
+      const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+      const data = await response.json()
+      
+      console.log('📡 Risposta API:', data)
+      
+      if (data.success) {
+        console.log('✅ API success - Aggiornando state con', data.challenges.length, 'challenge')
+        setChallenges(data.challenges)
+        console.log('✅ Challenge aggiornate dopo verifica inviata')
+        
+        // Log per debug
+        const updatedChallenge = data.challenges.find(c => c.id === challengeId)
+        if (updatedChallenge) {
+          console.log('🎯 Challenge aggiornata:', updatedChallenge.title, 'Stato:', updatedChallenge.status)
+        } else {
+          console.error('❌ Challenge non trovata nell\'aggiornamento:', challengeId)
+        }
+      } else {
+        console.error('❌ Errore nel caricamento challenge dopo verifica:', data.error)
+      }
+    } catch (error) {
+      console.error('❌ Errore nell\'aggiornamento dopo verifica:', error)
+    }
+  }
+
   return (
     <Card className="border-0 shadow-md">
       <CardHeader>
@@ -124,14 +227,40 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
               <p className="text-sm text-gray-600 font-normal">Fai crescere la SEO del tuo sito</p>
             </div>
           </CardTitle>
-          <Button
-            variant="outline"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center space-x-2"
-          >
-            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            <span>{isExpanded ? 'Chiudi' : 'Apri'}</span>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                console.log('🔄 Aggiornamento manuale challenge...')
+                setLoading(true)
+                try {
+                  const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+                  const data = await response.json()
+                  if (data.success) {
+                    setChallenges(data.challenges)
+                    console.log('✅ Challenge aggiornate manualmente')
+                  }
+                } catch (error) {
+                  console.error('❌ Errore aggiornamento manuale:', error)
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              className="flex items-center space-x-1"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Aggiorna</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center space-x-2"
+            >
+              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              <span>{isExpanded ? 'Chiudi' : 'Apri'}</span>
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -213,10 +342,9 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
                           onStart={handleStartChallenge}
                           onClaim={handleClaimReward}
                           onShare={handleShareChallenge}
-                          onVerificationSubmitted={async (challengeId) => {
-                            console.log('Verifica inviata per challenge:', challengeId)
-                            // Ricarica le challenge per aggiornare lo stato
-                            await loadChallenges()
+                          onVerificationSubmitted={(challengeId) => {
+                            console.log('🔗 Callback passato al ChallengeCard per challenge:', challengeId)
+                            handleVerificationSubmitted(challengeId)
                           }}
                         />
                       </motion.div>

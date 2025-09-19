@@ -14,7 +14,7 @@ import {
   BarChart3,
   Activity
 } from 'lucide-react'
-import { VerificationService } from '@/lib/verification'
+import NotificationDebugger from '@/components/debug/NotificationDebugger'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -32,20 +32,38 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       setLoading(true)
-      const notificationStats = await VerificationService.getNotificationStats()
       
-      // Calcola utenti reali dalle verifiche
-      const notifications = await VerificationService.getAdminNotifications()
-      const uniqueUsers = new Set(notifications.map(n => n.userId)).size
+      // Usa l'API route per le statistiche
+      const response = await fetch('/api/admin/notifications/stats')
+      const data = await response.json()
       
-      setStats({
-        totalUsers: uniqueUsers || 0, // Dati reali dalle verifiche
-        totalNotifications: notificationStats.total,
-        unreadNotifications: notificationStats.unread,
-        pendingVerifications: notificationStats.pending
-      })
+      if (data.success) {
+        const { stats } = data
+        setStats({
+          totalUsers: stats.verificationStats.total || 0,
+          totalNotifications: stats.adminNotifications,
+          unreadNotifications: stats.unreadAdmin,
+          pendingVerifications: stats.verificationStats.pending
+        })
+      } else {
+        console.error('Errore nel caricamento delle statistiche:', data.error)
+        // Fallback con valori di default
+        setStats({
+          totalUsers: 0,
+          totalNotifications: 0,
+          unreadNotifications: 0,
+          pendingVerifications: 0
+        })
+      }
     } catch (error) {
       console.error('Errore nel caricamento delle statistiche:', error)
+      // Fallback con valori di default
+      setStats({
+        totalUsers: 0,
+        totalNotifications: 0,
+        unreadNotifications: 0,
+        pendingVerifications: 0
+      })
     } finally {
       setLoading(false)
     }
@@ -277,6 +295,11 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Debug Section */}
+      <div className="mt-8">
+        <NotificationDebugger />
       </div>
     </div>
   )

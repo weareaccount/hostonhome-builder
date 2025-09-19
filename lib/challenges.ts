@@ -155,6 +155,29 @@ export class ChallengeService {
     }
   }
 
+  // Ottieni solo le definizioni delle challenge (senza progresso)
+  static getAllChallengeDefinitions(): Challenge[] {
+    return Object.entries(this.CHALLENGE_DEFINITIONS).map(([type, definition], index) => {
+      const challengeId = (index + 1).toString()
+      
+      return {
+        id: challengeId,
+        type: type as ChallengeType,
+        title: definition.title,
+        description: definition.description,
+        icon: definition.icon,
+        reward: definition.reward,
+        target: definition.target,
+        status: 'AVAILABLE' as ChallengeStatus,
+        progress: {
+          current: 0,
+          target: definition.target.value,
+          percentage: 0
+        }
+      }
+    })
+  }
+
   // Ottieni tutte le challenge per un utente
   static async getUserChallenges(userId: string): Promise<Challenge[]> {
     try {

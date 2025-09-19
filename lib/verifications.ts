@@ -263,4 +263,25 @@ export class VerificationService {
   static async removeNotification(notificationId: string): Promise<boolean> {
     return await NotificationService.removeAdminNotification(notificationId)
   }
+
+  // Ottieni le statistiche delle notifiche
+  static async getNotificationStats(): Promise<{ total: number; unread: number; pending: number }> {
+    try {
+      console.log('📊 Recupero statistiche notifiche...')
+      
+      const notifications = await NotificationService.getAdminNotifications()
+      
+      const stats = {
+        total: notifications.length,
+        unread: notifications.filter(n => !n.isRead).length,
+        pending: notifications.length // Tutte le notifiche sono considerate "pending" finché non vengono lette
+      }
+      
+      console.log('✅ Statistiche notifiche:', stats)
+      return stats
+    } catch (error) {
+      console.error('❌ Errore nel recupero statistiche notifiche:', error)
+      return { total: 0, unread: 0, pending: 0 }
+    }
+  }
 }

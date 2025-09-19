@@ -166,7 +166,7 @@ export class NotificationService {
     try {
       console.log('🗑️ Rimozione notifica admin:', notificationId)
       
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('admin_notifications')
         .delete()
         .eq('id', notificationId)
@@ -189,7 +189,7 @@ export class NotificationService {
     try {
       console.log('🗑️ Rimozione notifica utente:', notificationId)
       
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('user_notifications')
         .delete()
         .eq('id', notificationId)
@@ -210,7 +210,7 @@ export class NotificationService {
   // Ottieni il conteggio delle notifiche non lette per admin
   static async getAdminUnreadCount(): Promise<number> {
     try {
-      const { count, error } = await supabase
+      const { count, error } = await supabaseAdmin
         .from('admin_notifications')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false)
@@ -230,7 +230,7 @@ export class NotificationService {
   // Ottieni il conteggio delle notifiche non lette per utente
   static async getUserUnreadCount(userId: string): Promise<number> {
     try {
-      const { count, error } = await supabase
+      const { count, error } = await supabaseAdmin
         .from('user_notifications')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)

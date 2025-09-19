@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Bell, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
-import { NotificationService } from '@/lib/notifications'
+// Le API routes gestiscono ora le chiamate a Supabase
 
 interface UserNotification {
   id: string
   userId: string
   challengeId: string
-  type: 'CHALLENGE_APPROVED' | 'CHALLENGE_REJECTED' | 'BADGE_UNLOCKED'
+  type: 'CHALLENGE_APPROVED' | 'CHALLENGE_REJECTED' | 'BADGE_UNLOCKED' | 'VERIFICATION_APPROVED' | 'VERIFICATION_REJECTED'
   title: string
   message: string
   isRead: boolean
@@ -19,35 +19,63 @@ interface UserNotification {
 
 interface UserNotificationsProps {
   userId: string
+  onVerificationUpdate?: (challengeId: string, status: 'APPROVED' | 'REJECTED') => void
 }
 
-export default function UserNotifications({ userId }: UserNotificationsProps) {
+export default function UserNotifications({ userId, onVerificationUpdate }: UserNotificationsProps) {
   const [notifications, setNotifications] = useState<UserNotification[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadNotifications()
     
-    // Polling per aggiornare le notifiche ogni 5 secondi
+    // Aggiornamento automatico ogni 5 secondi per vedere notifiche di approvazione/rifiuto
     const interval = setInterval(() => {
+      console.log('🔄 Controllo notifiche utente...')
       loadNotifications()
     }, 5000)
-
+    
     return () => clearInterval(interval)
   }, [userId])
 
   const loadNotifications = async () => {
     try {
       setLoading(true)
-      console.log('🔍 Caricamento notifiche utente da Supabase:', userId)
+      console.log('🔍 Caricamento notifiche utente tramite API:', userId)
       
-      // Usa il nuovo servizio Supabase
-      const userNotifications = await NotificationService.getUserNotifications(userId)
+      // Usa l'API route invece di chiamare direttamente Supabase
+      const response = await fetch(`/api/user/notifications?userId=${userId}`)
+      const data = await response.json()
       
-      console.log('✅ Notifiche utente recuperate da Supabase:', userNotifications.length)
-      setNotifications(userNotifications)
+      if (data.success) {
+        console.log('✅ Notifiche utente recuperate tramite API:', data.count)
+        
+        // Controlla se ci sono nuove notifiche di verifica
+        const newNotifications = data.notifications.filter((notification: UserNotification) => 
+          notification.type === 'VERIFICATION_APPROVED' || notification.type === 'VERIFICATION_REJECTED'
+        )
+        
+        // Se ci sono nuove notifiche di verifica, aggiorna lo stato della challenge
+        if (newNotifications.length > 0) {
+          newNotifications.forEach(async (notification: UserNotification) => {
+            const status = notification.type === 'VERIFICATION_APPROVED' ? 'COMPLETED' : 'REJECTED'
+            
+            // Notifica il componente padre per il refresh - il database è già aggiornato
+            console.log('🔔 Notifica verifica ricevuta:', notification.challengeId, status)
+            if (onVerificationUpdate) {
+              onVerificationUpdate(notification.challengeId, status === 'COMPLETED' ? 'APPROVED' : 'REJECTED')
+            }
+          })
+        }
+        
+        setNotifications(data.notifications)
+      } else {
+        console.error('❌ Errore API:', data.error)
+        setNotifications([])
+      }
     } catch (error) {
       console.error('❌ Errore nel caricamento delle notifiche utente:', error)
+      setNotifications([])
     } finally {
       setLoading(false)
     }
@@ -57,14 +85,25 @@ export default function UserNotifications({ userId }: UserNotificationsProps) {
     try {
       console.log('📖 Marcatura notifica come letta:', notificationId)
       
-      // Usa il nuovo servizio Supabase
-      const success = await NotificationService.markUserNotificationAsRead(notificationId)
+      // Usa l'API route invece di chiamare direttamente Supabase
+      const response = await fetch('/api/user/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'markAsRead',
+          notificationId: notificationId
+        })
+      })
+
+      const result = await response.json()
       
-      if (success) {
+      if (result.success) {
         console.log('✅ Notifica marcata come letta')
         await loadNotifications()
       } else {
-        console.error('❌ Errore nella marcatura della notifica')
+        console.error('❌ Errore nella marcatura della notifica:', result.error)
       }
     } catch (error) {
       console.error('❌ Errore nel marcare come letta:', error)
@@ -146,6 +185,18 @@ export default function UserNotifications({ userId }: UserNotificationsProps) {
               </span>
             )}
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              console.log('🔄 Aggiornamento manuale notifiche...')
+              loadNotifications()
+            }}
+            className="flex items-center space-x-1"
+          >
+            <Bell className="w-4 h-4" />
+            <span>Aggiorna</span>
+          </Button>
           {notifications.length > 0 && (
             <Button 
               onClick={clearAllNotifications}

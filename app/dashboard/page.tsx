@@ -1413,7 +1413,15 @@ Sei sicuro di voler procedere con la disdetta?`)) return
               </Card>
 
               {/* User Notifications */}
-              <UserNotifications userId={user?.id || ''} />
+              <UserNotifications 
+                userId={user?.id || ''} 
+                onVerificationUpdate={(challengeId, status) => {
+                  console.log('🔄 Aggiornamento verifica ricevuto:', { challengeId, status })
+                  // Forza il re-render delle challenge per aggiornare lo stato
+                  window.location.reload()
+                }}
+              />
+
 
               {/* Challenge Section */}
               <ChallengeSection 

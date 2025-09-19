@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import type { Challenge, ChallengeStatus } from '@/types'
 import SimplePhotoUploadModal from './SimplePhotoUploadModal'
-import { VerificationService } from '@/lib/verification'
+// Le API routes gestiscono ora le chiamate a Supabase
 import { ChallengeService } from '@/lib/challenges'
 
 interface ChallengeCardProps {
@@ -119,13 +119,25 @@ export default function ChallengeCard({
 }: ChallengeCardProps) {
   const [showUploadModal, setShowUploadModal] = useState(false)
   
+  // Log quando il modal si apre
+  React.useEffect(() => {
+    if (showUploadModal) {
+      console.log('📱 Modal upload foto aperto per challenge:', challenge.id)
+    }
+  }, [showUploadModal, challenge.id])
+  
+  // Log per debug del callback
+  React.useEffect(() => {
+    console.log('🔧 ChallengeCard montato - callback onVerificationSubmitted:', !!onVerificationSubmitted)
+  }, [onVerificationSubmitted])
+  
   const isLocked = challenge.status === 'LOCKED'
   const isCompleted = challenge.status === 'COMPLETED'
   const isInProgress = challenge.status === 'IN_PROGRESS'
   const isPendingVerification = challenge.status === 'PENDING_VERIFICATION'
   const isRejected = challenge.status === 'REJECTED'
   const isAvailable = challenge.status === 'AVAILABLE'
-  const hasReachedTarget = challenge.progress.current >= challenge.progress.target
+  const hasReachedTarget = challenge.progress?.current >= challenge.progress?.target
   const canVerifyWithPhoto = isAvailable && !isCompleted && !isPendingVerification && !isRejected
 
   const handlePhotoUpload = async (photoUrl: string, description: string) => {
@@ -134,26 +146,49 @@ export default function ChallengeCard({
       console.log('📸 PhotoUrl length:', photoUrl?.length || 0)
       console.log('📸 Description:', description)
       
-      // Prima imposta lo stato su PENDING_VERIFICATION
-      console.log('🔄 Aggiornamento stato challenge a PENDING_VERIFICATION...')
-      await ChallengeService.updateChallengeStatus(userId, challenge.id, 'PENDING_VERIFICATION')
-      console.log('🔄 Stato challenge aggiornato a PENDING_VERIFICATION')
+      // Invia la verifica tramite API
+      console.log('📤 Invio verifica tramite API...')
       
-      // Poi invia la verifica
-      console.log('📤 Invio verifica a Supabase...')
-      const verification = await VerificationService.submitVerification(
-        challenge.id,
-        userId,
-        photoUrl,
-        description
-      )
+      const response = await fetch('/api/submit-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          challengeId: challenge.id,
+          photoUrl: photoUrl,
+          description: description
+        })
+      })
+
+      console.log('📡 Risposta API submit-verification:', response.status, response.statusText)
       
-      if (verification) {
-        console.log('✅ Verifica ricevuta da Supabase:', verification.id)
-        onVerificationSubmitted?.(challenge.id)
-        console.log('✅ Verifica richiesta e inviata con successo:', verification.id)
+      const result = await response.json()
+      console.log('📡 Risultato API submit-verification:', result)
+      
+      if (result.success) {
+        console.log('✅ Verifica ricevuta da API:', result.verificationId)
+        console.log('🔄 Chiamando callback onVerificationSubmitted per challenge:', challenge.id)
+        
+        // Notifica il componente padre per aggiornare lo stato
+        if (onVerificationSubmitted) {
+          onVerificationSubmitted(challenge.id)
+          console.log('✅ Callback onVerificationSubmitted chiamato')
+        } else {
+          console.error('❌ Callback onVerificationSubmitted non definito!')
+        }
+        
+        alert('✅ Verifica inviata con successo! La challenge è ora in attesa di verifica.')
+        console.log('✅ Verifica richiesta e inviata con successo:', result.verificationId)
+        
+        // Chiudi il modal
+        setShowUploadModal(false)
+        
+        // NON ricaricare la pagina - il componente padre si occuperà dell'aggiornamento
       } else {
-        console.error('❌ Verifica non inviata correttamente - verification è null')
+        console.error('❌ Verifica non inviata correttamente:', result.error)
+        alert(`❌ Errore nell'invio della verifica: ${result.error}`)
       }
     } catch (error) {
       console.error('❌ Errore nell\'invio della verifica:', error)
@@ -213,7 +248,7 @@ export default function ChallengeCard({
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">Progresso</span>
                 <span className="text-sm text-gray-600">
-                  {challenge.progress.current} / {challenge.progress.target} {challenge.target.unit}
+                  {challenge.progress?.current || 0} / {challenge.progress?.target || challenge.target.value} {challenge.target.unit}
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -223,7 +258,7 @@ export default function ChallengeCard({
                     isInProgress ? 'bg-orange-500' : 'bg-blue-500'
                   }`}
                   initial={{ width: 0 }}
-                  animate={{ width: `${challenge.progress.percentage}%` }}
+                  animate={{ width: `${challenge.progress?.percentage || 0}%` }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                 />
               </div>
@@ -260,7 +295,7 @@ export default function ChallengeCard({
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Riscuoti Ricompensa
+                  {challenge.completedAt ? 'Ricompensa Riscossa' : 'Riscuoti Ricompensa'}
                 </Button>
                 <Button 
                   variant="outline"
@@ -295,7 +330,10 @@ export default function ChallengeCard({
             ) : canVerifyWithPhoto ? (
               <>
                 <Button 
-                  onClick={() => setShowUploadModal(true)}
+                  onClick={() => {
+                    console.log('🖱️ CLICK - Pulsante "Verifica con Foto" cliccato per challenge:', challenge.id)
+                    setShowUploadModal(true)
+                  }}
                   className={`flex-1 ${hasReachedTarget ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
                 >
                   <Camera className="w-4 h-4 mr-2" />
