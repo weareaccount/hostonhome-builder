@@ -101,35 +101,23 @@ export async function GET(request: Request) {
     
     console.log('📋 Challenge caricate:', allChallenges.length)
     
-    // Aggiorna lo stato delle challenge basandosi SOLO sulle verifiche del database
+    // Aggiorna lo stato delle challenge basandosi SOLO sulle verifiche PENDING
     const updatedChallenges = allChallenges.map(challenge => {
       const verification = verificationMap[challenge.id]
       
-      if (verification) {
-        // Aggiorna lo stato basandosi sulla verifica nel database
-        let newStatus: string
-        if (verification.status === 'APPROVED') {
-          newStatus = 'COMPLETED'
-        } else if (verification.status === 'REJECTED') {
-          newStatus = 'REJECTED'
-        } else if (verification.status === 'PENDING') {
-          newStatus = 'PENDING_VERIFICATION'
-        } else {
-          newStatus = 'AVAILABLE'
-        }
-        
-        console.log('🔄 Challenge aggiornata da database:', challenge.title, 'stato:', newStatus, 'verifica:', verification.status)
+      if (verification && verification.status === 'PENDING') {
+        // SOLO per verifiche PENDING, aggiorna lo stato a PENDING_VERIFICATION
+        console.log('🔄 Challenge con verifica PENDING:', challenge.title, 'stato: PENDING_VERIFICATION')
         
         return {
           ...challenge,
-          status: newStatus as ChallengeStatus,
-          completedAt: verification.status === 'APPROVED' ? verification.reviewed_at : undefined,
+          status: 'PENDING_VERIFICATION' as ChallengeStatus,
           progress: { current: 0, target: challenge.target.value, percentage: 0 }
         }
       }
       
-      // Se non ci sono verifiche, la challenge è AVAILABLE
-      console.log('✅ Challenge senza verifiche:', challenge.title, 'stato: AVAILABLE')
+      // Per tutte le altre challenge (incluso APPROVED/REJECTED), mostra come AVAILABLE
+      console.log('✅ Challenge disponibile:', challenge.title, 'stato: AVAILABLE')
       return {
         ...challenge,
         status: 'AVAILABLE' as ChallengeStatus,
