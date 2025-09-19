@@ -23,11 +23,12 @@ export async function GET(request: Request) {
     }
 
     console.log('🔍 Recupero stato challenge per utente:', userId)
+    console.log('🔍 TIMESTAMP API chiamata:', new Date().toISOString())
 
     // Recupera tutte le verifiche dell'utente
     const { data: verifications, error } = await supabase
       .from('challenge_verifications')
-      .select('challenge_id, status, reviewed_at')
+      .select('id, challenge_id, status, reviewed_at, user_id, created_at, submitted_at')
       .eq('user_id', userId)
       .order('submitted_at', { ascending: false })
 
@@ -52,7 +53,8 @@ export async function GET(request: Request) {
         status: verification.status,
         user_id: verification.user_id,
         id: verification.id,
-        created_at: verification.created_at
+        created_at: verification.created_at,
+        submitted_at: verification.submitted_at
       })
     }
     
