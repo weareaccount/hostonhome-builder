@@ -127,12 +127,15 @@ export async function GET(request: Request) {
       
       return {
         ...challenge,
+        status: 'AVAILABLE' as ChallengeStatus, // Mantieni AVAILABLE se non ci sono verifiche
         progress: { current: 0, target: challenge.target.value, percentage: 0 }
       }
     })
 
     console.log('✅ Challenge aggiornate:', updatedChallenges.length)
-    console.log('📋 Challenge con stato PENDING_VERIFICATION:', updatedChallenges.filter(c => c.status === 'PENDING_VERIFICATION'))
+    console.log('📋 Challenge con stato AVAILABLE:', updatedChallenges.filter(c => c.status === 'AVAILABLE').length)
+    console.log('📋 Challenge con stato PENDING_VERIFICATION:', updatedChallenges.filter(c => c.status === 'PENDING_VERIFICATION').length)
+    console.log('📋 Challenge con stato COMPLETED:', updatedChallenges.filter(c => c.status === 'COMPLETED').length)
 
     return NextResponse.json({ 
       success: true, 
