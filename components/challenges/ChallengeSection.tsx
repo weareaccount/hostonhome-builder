@@ -215,11 +215,27 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
       console.log('🔄 UserId:', userId)
       console.log('🔄 Callback handleVerificationSubmitted chiamato correttamente!')
       
+      // AGGIORNAMENTO IMMEDIATO DELL'UI (senza aspettare Supabase)
+      console.log('⚡ Aggiornamento immediato UI per challenge:', challengeId)
+      setChallenges(prevChallenges => {
+        return prevChallenges.map(challenge => {
+          if (challenge.id === challengeId) {
+            console.log('🎯 Aggiornando challenge immediatamente:', challenge.title, 'da AVAILABLE a PENDING_VERIFICATION')
+            return {
+              ...challenge,
+              status: 'PENDING_VERIFICATION' as ChallengeStatus,
+              progress: { current: 0, target: challenge.target.value, percentage: 0 }
+            }
+          }
+          return challenge
+        })
+      })
+      
       // Aspetta un momento per assicurarsi che il database sia aggiornato
       console.log('⏳ Aspetto 500ms per sincronizzazione database...')
       await new Promise(resolve => setTimeout(resolve, 500))
       
-      // Ricarica le challenge per aggiornare lo stato
+      // Ricarica le challenge per aggiornare lo stato (con fallback)
       console.log('📡 Chiamando API challenges-status...')
       
       try {
