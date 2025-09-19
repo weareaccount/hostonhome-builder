@@ -170,31 +170,7 @@ export default function ChallengeCard({
       if (result.success) {
         console.log('✅ Verifica ricevuta da API:', result.verificationId)
         
-        // Aggiorna il localStorage per questa challenge
-        try {
-          const storageKey = `challenge_progress_${userId}`
-          const progressData = JSON.parse(localStorage.getItem(storageKey) || '{}')
-          
-          // Crea il progresso se non esiste
-          if (!progressData[challenge.id]) {
-            progressData[challenge.id] = {
-              current: 0,
-              target: challenge.target.value,
-              percentage: 0,
-              status: 'AVAILABLE'
-            }
-            console.log('📝 Creato nuovo progresso per challenge:', challenge.id)
-          }
-          
-          // Aggiorna lo stato a PENDING_VERIFICATION
-          progressData[challenge.id].status = 'PENDING_VERIFICATION'
-          progressData[challenge.id].lastUpdated = new Date().toISOString()
-          localStorage.setItem(storageKey, JSON.stringify(progressData))
-          console.log('✅ localStorage aggiornato per challenge:', challenge.id, 'stato: PENDING_VERIFICATION')
-          console.log('📋 Progresso aggiornato:', progressData[challenge.id])
-        } catch (error) {
-          console.error('❌ Errore aggiornamento localStorage:', error)
-        }
+        // Il database Supabase è già stato aggiornato dall'API
         
         console.log('🔄 Chiamando callback onVerificationSubmitted per challenge:', challenge.id)
         
