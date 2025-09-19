@@ -41,8 +41,11 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
       try {
         // Usa direttamente l'API che legge dal database
         console.log('🔄 Caricamento challenge dal database...')
+        console.log('📡 Chiamando API:', `/api/user/challenges-status?userId=${userId}`)
         const response = await fetch(`/api/user/challenges-status?userId=${userId}`)
+        console.log('📡 Risposta API:', response.status, response.statusText)
         const data = await response.json()
+        console.log('📡 Dati API ricevuti:', data)
         
         if (data.success) {
           console.log('✅ Challenge caricate con stato aggiornato:', data.count)
