@@ -157,7 +157,7 @@ export default function PreviewPage() {
           onSectionUnpublish={() => {}} // Disabilitato in anteprima
           onSectionReorder={() => {}} // Disabilitato in anteprima
           className="min-h-screen"
-          deviceType="mobile"
+          deviceType="desktop"
           readOnly={true} // Modalità anteprima - solo visualizzazione
         />
       </div>

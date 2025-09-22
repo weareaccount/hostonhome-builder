@@ -19,6 +19,8 @@ import NotificationDebugger from '@/components/debug/NotificationDebugger'
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalUsers: 0,
+    totalProjects: 0,
+    activeUsers: 0,
     totalNotifications: 0,
     unreadNotifications: 0,
     pendingVerifications: 0
@@ -33,23 +35,36 @@ export default function AdminDashboard() {
     try {
       setLoading(true)
       
-      // Usa l'API route per le statistiche
-      const response = await fetch('/api/admin/notifications/stats')
-      const data = await response.json()
+      // Carica statistiche utenti e progetti direttamente da Supabase
+      const usersResponse = await fetch('/api/admin/users')
+      const usersData = await usersResponse.json()
       
-      if (data.success) {
-        const { stats } = data
+      // Carica statistiche notifiche
+      const notificationsResponse = await fetch('/api/admin/notifications/stats')
+      const notificationsData = await notificationsResponse.json()
+      
+      if (usersData.success) {
         setStats({
-          totalUsers: stats.verificationStats.total || 0,
-          totalNotifications: stats.adminNotifications,
-          unreadNotifications: stats.unreadAdmin,
-          pendingVerifications: stats.verificationStats.pending
+          totalUsers: usersData.totalUsers || 0,
+          totalProjects: usersData.totalProjects || 0,
+          activeUsers: usersData.activeUsers || 0,
+          totalNotifications: notificationsData.success ? notificationsData.stats.adminNotifications || 0 : 0,
+          unreadNotifications: notificationsData.success ? notificationsData.stats.unreadAdmin || 0 : 0,
+          pendingVerifications: notificationsData.success ? notificationsData.stats.verificationStats.pending || 0 : 0
+        })
+        
+        console.log('📊 Statistiche caricate:', {
+          totalUsers: usersData.totalUsers,
+          totalProjects: usersData.totalProjects,
+          activeUsers: usersData.activeUsers
         })
       } else {
-        console.error('Errore nel caricamento delle statistiche:', data.error)
+        console.error('Errore nel caricamento delle statistiche utenti:', usersData.error)
         // Fallback con valori di default
         setStats({
           totalUsers: 0,
+          totalProjects: 0,
+          activeUsers: 0,
           totalNotifications: 0,
           unreadNotifications: 0,
           pendingVerifications: 0
@@ -60,6 +75,8 @@ export default function AdminDashboard() {
       // Fallback con valori di default
       setStats({
         totalUsers: 0,
+        totalProjects: 0,
+        activeUsers: 0,
         totalNotifications: 0,
         unreadNotifications: 0,
         pendingVerifications: 0
@@ -129,6 +146,7 @@ export default function AdminDashboard() {
               <div>
                 <div className="text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
                 <div className="text-sm text-gray-600">Utenti Totali</div>
+                <div className="text-xs text-green-600">{stats.activeUsers} attivi</div>
               </div>
             </div>
           </CardContent>
@@ -137,12 +155,13 @@ export default function AdminDashboard() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <Bell className="w-6 h-6 text-orange-600" />
+              <div className="p-3 bg-green-100 rounded-lg">
+                <BarChart3 className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{stats.unreadNotifications}</div>
-                <div className="text-sm text-gray-600">Notifiche Non Lette</div>
+                <div className="text-2xl font-bold text-gray-900">{stats.totalProjects}</div>
+                <div className="text-sm text-gray-600">Progetti Creati</div>
+                <div className="text-xs text-blue-600">Siti pubblicati</div>
               </div>
             </div>
           </CardContent>
@@ -157,6 +176,7 @@ export default function AdminDashboard() {
               <div>
                 <div className="text-2xl font-bold text-gray-900">{stats.pendingVerifications}</div>
                 <div className="text-sm text-gray-600">Verifiche in Attesa</div>
+                <div className="text-xs text-orange-600">Da esaminare</div>
               </div>
             </div>
           </CardContent>
@@ -165,12 +185,13 @@ export default function AdminDashboard() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Bell className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{stats.totalNotifications}</div>
-                <div className="text-sm text-gray-600">Verifiche Totali</div>
+                <div className="text-2xl font-bold text-gray-900">{stats.unreadNotifications}</div>
+                <div className="text-sm text-gray-600">Notifiche Non Lette</div>
+                <div className="text-xs text-red-600">Richiedono attenzione</div>
               </div>
             </div>
           </CardContent>

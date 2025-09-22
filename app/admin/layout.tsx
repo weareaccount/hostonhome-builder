@@ -13,7 +13,6 @@ import {
   ChevronRight,
   Shield,
   BarChart3,
-  FileText,
   HelpCircle
 } from 'lucide-react'
 
@@ -50,12 +49,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/stats',
       icon: BarChart3,
       description: 'Analisi e report'
-    },
-    {
-      name: 'Contenuti',
-      href: '/admin/content',
-      icon: FileText,
-      description: 'Gestione contenuti'
     },
     {
       name: 'Impostazioni',

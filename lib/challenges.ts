@@ -425,7 +425,7 @@ export class ChallengeService {
         description: 'Completa le challenge intermedie per sbloccare questo badge',
         icon: '🏆',
         rarity: 'UNCOMMON',
-        requiredChallenges: ['3', '4', '5', '6'], // Prima recensione, WhatsApp Contact, Foto che parlano, Indipendenza in crescita
+        requiredChallenges: ['5', '6', '7', '8'], // Foto che parlano, Indipendenza in crescita, Super Condivisione, Ospite del mondo
         isUnlocked: false,
         progress: { completed: 0, total: 4, percentage: 0 }
       },
@@ -435,9 +435,9 @@ export class ChallengeService {
         description: 'Completa le challenge avanzate per sbloccare questo badge',
         icon: '👑',
         rarity: 'RARE',
-        requiredChallenges: ['7', '8', '9', '10'], // Super Condivisione, Ospite del mondo, Top Host del mese, Super Host Indipendente
+        requiredChallenges: ['9', '10'], // Top Host del mese, Super Host Indipendente
         isUnlocked: false,
-        progress: { completed: 0, total: 4, percentage: 0 }
+        progress: { completed: 0, total: 2, percentage: 0 }
       }
     }
   }

@@ -11,15 +11,8 @@ import {
   Shield,
   Bell,
   Globe,
-  Database,
-  Mail,
   Key,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Server,
-  Cloud
+  AlertTriangle
 } from 'lucide-react'
 
 interface SystemSettings {
@@ -52,28 +45,28 @@ interface SystemSettings {
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>({
     general: {
-      siteName: 'HostOnHome Builder',
-      siteDescription: 'Piattaforma per creare siti web per host',
+      siteName: '',
+      siteDescription: '',
       maintenanceMode: false,
       allowRegistrations: true
     },
     notifications: {
-      emailNotifications: true,
-      pushNotifications: true,
-      adminAlerts: true,
-      userAlerts: true
+      emailNotifications: false,
+      pushNotifications: false,
+      adminAlerts: false,
+      userAlerts: false
     },
     security: {
       twoFactorAuth: false,
-      sessionTimeout: 30,
-      maxLoginAttempts: 5,
-      passwordMinLength: 8
+      sessionTimeout: 0,
+      maxLoginAttempts: 0,
+      passwordMinLength: 0
     },
     integrations: {
-      stripeEnabled: true,
-      emailService: 'SendGrid',
-      analyticsEnabled: true,
-      backupEnabled: true
+      stripeEnabled: false,
+      emailService: '',
+      analyticsEnabled: false,
+      backupEnabled: false
     }
   })
   
@@ -118,14 +111,7 @@ export default function AdminSettingsPage() {
     }
   }
 
-  const systemStatus = {
-    database: 'online',
-    email: 'online',
-    storage: 'online',
-    analytics: 'online',
-    lastBackup: new Date(Date.now() - 86400000),
-    uptime: '99.9%'
-  }
+  // Rimossa sezione systemStatus con dati mock
 
   return (
     <div className="space-y-6">
@@ -161,90 +147,7 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      {/* System Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-3">
-            <Server className="w-5 h-5 text-green-600" />
-            <span>Stato Sistema</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Servizi</h4>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Database</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-green-600">Online</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Email Service</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-green-600">Online</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Storage</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-green-600">Online</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Analytics</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-green-600">Online</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Statistiche</h4>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Uptime</span>
-                  <span className="text-sm font-medium">{systemStatus.uptime}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Ultimo Backup</span>
-                  <span className="text-sm font-medium">
-                    {systemStatus.lastBackup.toLocaleDateString('it-IT')}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Versione</span>
-                  <span className="text-sm font-medium">v2.1.0</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Azioni</h4>
-              <div className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full">
-                  <Cloud className="w-4 h-4 mr-2" />
-                  Backup Manuale
-                </Button>
-                <Button variant="outline" size="sm" className="w-full">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Riavvia Servizi
-                </Button>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Database className="w-4 h-4 mr-2" />
-                  Ottimizza DB
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* System Status rimosso - conteneva dati mock */}
 
       {/* Settings Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -268,6 +171,7 @@ export default function AdminSettingsPage() {
                   ...prev,
                   general: { ...prev.general, siteName: e.target.value }
                 }))}
+                placeholder="Non impostato"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -282,6 +186,7 @@ export default function AdminSettingsPage() {
                   ...prev,
                   general: { ...prev.general, siteDescription: e.target.value }
                 }))}
+                placeholder="Non impostato"
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
               />
@@ -354,11 +259,12 @@ export default function AdminSettingsPage() {
               </label>
               <input
                 type="number"
-                value={settings.security.sessionTimeout}
+                value={settings.security.sessionTimeout || ''}
                 onChange={(e) => setSettings(prev => ({
                   ...prev,
-                  security: { ...prev.security, sessionTimeout: parseInt(e.target.value) }
+                  security: { ...prev.security, sessionTimeout: parseInt(e.target.value) || 0 }
                 }))}
+                placeholder="Non impostato"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -369,11 +275,12 @@ export default function AdminSettingsPage() {
               </label>
               <input
                 type="number"
-                value={settings.security.maxLoginAttempts}
+                value={settings.security.maxLoginAttempts || ''}
                 onChange={(e) => setSettings(prev => ({
                   ...prev,
-                  security: { ...prev.security, maxLoginAttempts: parseInt(e.target.value) }
+                  security: { ...prev.security, maxLoginAttempts: parseInt(e.target.value) || 0 }
                 }))}
+                placeholder="Non impostato"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -384,11 +291,12 @@ export default function AdminSettingsPage() {
               </label>
               <input
                 type="number"
-                value={settings.security.passwordMinLength}
+                value={settings.security.passwordMinLength || ''}
                 onChange={(e) => setSettings(prev => ({
                   ...prev,
-                  security: { ...prev.security, passwordMinLength: parseInt(e.target.value) }
+                  security: { ...prev.security, passwordMinLength: parseInt(e.target.value) || 0 }
                 }))}
+                placeholder="Non impostato"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -507,6 +415,7 @@ export default function AdminSettingsPage() {
                 }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="">Non impostato</option>
                 <option value="SendGrid">SendGrid</option>
                 <option value="Mailgun">Mailgun</option>
                 <option value="AWS SES">AWS SES</option>

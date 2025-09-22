@@ -20,6 +20,17 @@ import {
   Trash2
 } from 'lucide-react'
 
+interface Project {
+  id: string
+  name: string
+  slug: string
+  sections: any[]
+  theme: any
+  layout_type: string
+  created_at: string
+  updated_at: string
+}
+
 interface User {
   id: string
   name: string
@@ -32,6 +43,7 @@ interface User {
   challengesCompleted: number
   badgesEarned: number
   sitesCreated: number
+  projects: Project[]
 }
 
 export default function AdminUsersPage() {
@@ -40,6 +52,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all')
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'premium' | 'admin'>('all')
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadUsers()
@@ -48,45 +61,41 @@ export default function AdminUsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true)
-      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Ottieni dati reali dalle verifiche
-      const { VerificationService } = await import('@/lib/verification')
-      const notifications = await VerificationService.getAdminNotifications()
+      // Usa l'API admin per ottenere utenti con progetti
+      const response = await fetch('/api/admin/users')
+      const data = await response.json()
       
-      // Genera utenti reali dalle verifiche
-      const userMap = new Map<string, User>()
-      
-      notifications.forEach(notification => {
-        if (!userMap.has(notification.userId)) {
-          const isActive = Math.random() > 0.2 // 80% utenti attivi
-          const hasCompleted = notification.isRead
-          
-          userMap.set(notification.userId, {
-            id: notification.userId,
-            name: `Utente ${notification.userId.slice(0, 8)}`,
-            email: `user${notification.userId.slice(0, 8)}@hostonhome.com`,
+      if (data.success) {
+        if (data.users && data.users.length > 0) {
+          const usersWithProjects = data.users.map((userData: any) => ({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
             phone: Math.random() > 0.5 ? `+39 ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 9000) + 1000}` : undefined,
-            status: isActive ? 'active' : 'inactive',
-            role: Math.random() > 0.7 ? 'premium' : 'user',
-            joinedAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000), // Ultimi 90 giorni
-            lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Ultimi 7 giorni
-            challengesCompleted: hasCompleted ? 1 : 0,
-            badgesEarned: hasCompleted ? 1 : 0,
-            sitesCreated: Math.floor(Math.random() * 3)
-          })
+            status: userData.status,
+            role: userData.role,
+            joinedAt: new Date(userData.joinedAt),
+            lastActive: new Date(userData.lastActive),
+            challengesCompleted: userData.completedChallenges,
+            badgesEarned: Math.floor(userData.completedChallenges / 4), // Ogni 4 challenge = 1 badge
+            sitesCreated: userData.projectsCount,
+            projects: userData.projects || []
+          }))
+          
+          setUsers(usersWithProjects)
         } else {
-          // Aggiorna statistiche utente esistente
-          const user = userMap.get(notification.userId)!
-          user.challengesCompleted += notification.isRead ? 1 : 0
-          user.badgesEarned += notification.isRead ? 1 : 0
+          // Nessun utente trovato
+          console.log('ℹ️ Nessun utente trovato nel database:', data.message)
+          setUsers([])
         }
-      })
-      
-      const realUsers = Array.from(userMap.values())
-      setUsers(realUsers)
+      } else {
+        console.error('Errore nel caricamento degli utenti:', data.error)
+        setUsers([])
+      }
     } catch (error) {
       console.error('Errore nel caricamento degli utenti:', error)
+      setUsers([])
     } finally {
       setLoading(false)
     }
@@ -126,6 +135,20 @@ export default function AdminUsersPage() {
       case 'user': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const toggleUserExpansion = (userId: string) => {
+    const newExpanded = new Set(expandedUsers)
+    if (newExpanded.has(userId)) {
+      newExpanded.delete(userId)
+    } else {
+      newExpanded.add(userId)
+    }
+    setExpandedUsers(newExpanded)
+  }
+
+  const openProjectPreview = (projectSlug: string) => {
+    window.open(`/dashboard/sites/${projectSlug}/preview`, '_blank')
   }
 
   const stats = {
@@ -264,8 +287,15 @@ export default function AdminUsersPage() {
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12">
               <Users className="w-24 h-24 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Nessun utente trovato</h3>
-              <p className="text-gray-600">Prova a modificare i filtri di ricerca.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {users.length === 0 ? 'Nessun utente registrato' : 'Nessun utente trovato'}
+              </h3>
+              <p className="text-gray-600">
+                {users.length === 0 
+                  ? 'Non ci sono ancora utenti registrati nel sistema. Gli utenti appariranno qui una volta che inizieranno a utilizzare la piattaforma.'
+                  : 'Prova a modificare i filtri di ricerca.'
+                }
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -328,7 +358,11 @@ export default function AdminUsersPage() {
                       </div>
                       
                       <div className="flex items-center space-x-1">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => toggleUserExpansion(user.id)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="outline" size="sm">
@@ -340,6 +374,67 @@ export default function AdminUsersPage() {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Sezione progetti espandibile */}
+                  {expandedUsers.has(user.id) && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 pt-4 border-t border-gray-200"
+                    >
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                          Progetti dell'utente ({user.projects.length})
+                        </h4>
+                      </div>
+                      
+                      {user.projects.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500">
+                          <p className="text-sm">Nessun progetto creato</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {user.projects.map((project) => (
+                            <div key={project.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                              <div className="flex items-center justify-between mb-2">
+                                <h5 className="font-medium text-gray-900 truncate">{project.name}</h5>
+                                <span className="text-xs text-gray-500">{project.sections.length} sezioni</span>
+                              </div>
+                              
+                              <div className="text-xs text-gray-600 mb-3">
+                                <p>Slug: {project.slug}</p>
+                                <p>Tema: {project.theme?.accent || 'N/A'}</p>
+                                <p>Layout: {project.layout_type || 'N/A'}</p>
+                                <p>Creato: {new Date(project.created_at).toLocaleDateString('it-IT')}</p>
+                              </div>
+                              
+                              <div className="flex space-x-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => openProjectPreview(project.slug)}
+                                  className="flex-1"
+                                >
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  Anteprima
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => window.open(`/dashboard/sites/${project.slug}/builder`, '_blank')}
+                                  className="flex-1"
+                                >
+                                  <Edit className="w-3 h-3 mr-1" />
+                                  Modifica
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
                 </motion.div>
               ))}
             </div>
