@@ -104,12 +104,10 @@ export async function GET(request: Request) {
             reviewed_at: verification.reviewed_at
           }
         }
-        // Se la verifica corrente è APPROVED/REJECTED e quella nuova è PENDING, sostituisci (nuova verifica)
+        // Se la verifica corrente è APPROVED/REJECTED e quella nuova è PENDING, NON sostituire (mantieni APPROVED/REJECTED)
         else if ((currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && newStatus === 'PENDING') {
-          verificationMap[challengeId] = {
-            status: verification.status,
-            reviewed_at: verification.reviewed_at
-          }
+          // Mantieni la verifica APPROVED/REJECTED esistente
+          console.log('🔒 Mantenendo verifica APPROVED/REJECTED per challenge', challengeId, 'ignorando PENDING')
         }
         // Se entrambe sono APPROVED/REJECTED, prendi la più recente
         else if ((currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && 
