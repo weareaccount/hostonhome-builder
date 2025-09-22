@@ -130,6 +130,12 @@ export async function GET(request: Request) {
 
     console.log('📋 Mappa verifiche finale:', verificationMap)
     console.log('📋 Challenge con verifiche PENDING:', Object.keys(verificationMap).filter(key => verificationMap[key].status === 'PENDING'))
+    console.log('📋 Challenge con verifiche APPROVED:', Object.keys(verificationMap).filter(key => verificationMap[key].status === 'APPROVED'))
+    console.log('📋 Challenge con verifiche REJECTED:', Object.keys(verificationMap).filter(key => verificationMap[key].status === 'REJECTED'))
+    
+    // Debug specifico per challenge 3
+    console.log('🔍 DEBUG Challenge 3 - Verifica nella mappa:', verificationMap['3'])
+    console.log('🔍 DEBUG Challenge 3 - Tutte le verifiche per challenge 3:', verifications?.filter(v => v.challenge_id === '3'))
 
     // Recupera tutte le definizioni delle challenge
     const allChallenges = ChallengeService.getAllChallengeDefinitions()
