@@ -135,7 +135,7 @@ export async function GET(request: Request) {
     
     console.log('📋 Challenge caricate:', allChallenges.length)
     
-    // Aggiorna lo stato delle challenge basandosi SOLO sulle verifiche PENDING
+    // Aggiorna lo stato delle challenge basandosi sulle verifiche
     const updatedChallenges = allChallenges.map(challenge => {
       const verification = verificationMap[challenge.id]
       
@@ -145,19 +145,53 @@ export async function GET(request: Request) {
         verification: verification ? { status: verification.status } : 'Nessuna verifica'
       })
       
-      if (verification && verification.status === 'PENDING') {
-        // SOLO per verifiche PENDING, aggiorna lo stato a PENDING_VERIFICATION
-        console.log('🔄 Challenge con verifica PENDING:', challenge.title, 'stato: PENDING_VERIFICATION')
-        
-        return {
-          ...challenge,
-          status: 'PENDING_VERIFICATION' as ChallengeStatus,
-          progress: { current: 0, target: challenge.target.value, percentage: 0 }
+      if (verification) {
+        switch (verification.status) {
+          case 'PENDING':
+            // Verifica in attesa di approvazione
+            console.log('🔄 Challenge con verifica PENDING:', challenge.title, 'stato: PENDING_VERIFICATION')
+            return {
+              ...challenge,
+              status: 'PENDING_VERIFICATION' as ChallengeStatus,
+              progress: { current: 0, target: challenge.target.value, percentage: 0 }
+            }
+          
+          case 'APPROVED':
+            // Verifica approvata dall'admin - challenge completata
+            console.log('✅ Challenge con verifica APPROVED:', challenge.title, 'stato: COMPLETED')
+            return {
+              ...challenge,
+              status: 'COMPLETED' as ChallengeStatus,
+              progress: { 
+                current: challenge.target.value, 
+                target: challenge.target.value, 
+                percentage: 100 
+              },
+              completedAt: verification.reviewed_at
+            }
+          
+          case 'REJECTED':
+            // Verifica rifiutata dall'admin - può riprovare
+            console.log('❌ Challenge con verifica REJECTED:', challenge.title, 'stato: REJECTED')
+            return {
+              ...challenge,
+              status: 'REJECTED' as ChallengeStatus,
+              progress: { current: 0, target: challenge.target.value, percentage: 0 }
+            }
+          
+          default:
+            // Stato sconosciuto, mostra come disponibile
+            console.log('❓ Challenge con stato verifica sconosciuto:', verification.status, 'stato: AVAILABLE')
+            return {
+              ...challenge,
+              status: 'AVAILABLE' as ChallengeStatus,
+              progress: { current: 0, target: challenge.target.value, percentage: 0 }
+            }
         }
       }
       
-      // Per tutte le altre challenge (incluso APPROVED/REJECTED), mostra come AVAILABLE
-      console.log('✅ Challenge disponibile:', challenge.title, 'stato: AVAILABLE')
+      // Nessuna verifica presente - challenge disponibile
+      console.log('✅ Challenge senza verifica:', challenge.title, 'stato: AVAILABLE')
       return {
         ...challenge,
         status: 'AVAILABLE' as ChallengeStatus,
@@ -169,6 +203,7 @@ export async function GET(request: Request) {
     console.log('📋 Challenge con stato AVAILABLE:', updatedChallenges.filter(c => c.status === 'AVAILABLE').length)
     console.log('📋 Challenge con stato PENDING_VERIFICATION:', updatedChallenges.filter(c => c.status === 'PENDING_VERIFICATION').length)
     console.log('📋 Challenge con stato COMPLETED:', updatedChallenges.filter(c => c.status === 'COMPLETED').length)
+    console.log('📋 Challenge con stato REJECTED:', updatedChallenges.filter(c => c.status === 'REJECTED').length)
 
     return NextResponse.json({ 
       success: true, 
