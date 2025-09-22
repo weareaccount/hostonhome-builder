@@ -28,6 +28,7 @@ export async function GET(request: Request) {
 
     console.log('🔍 Recupero stato challenge per utente:', userId)
     console.log('🔍 TIMESTAMP API chiamata:', new Date().toISOString())
+    console.log('🔍 DEBUG: Versione API AGGIORNATA - Build:', new Date().toISOString())
 
     // Recupera tutte le verifiche dell'utente
     const { data: verifications, error } = await supabase
