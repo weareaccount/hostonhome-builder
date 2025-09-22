@@ -28,8 +28,6 @@ export function BannerShowcase({ banners, unlockedBanners, nextBannerToUnlock }:
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">🏆 I Tuoi Banner</h2>
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {banners.map((banner) => (
           <div
@@ -108,24 +106,6 @@ export function BannerShowcase({ banners, unlockedBanners, nextBannerToUnlock }:
             )}
           </div>
         ))}
-      </div>
-
-      {/* Riepilogo */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <div className="flex justify-between items-center">
-          <div>
-            <h4 className="font-semibold text-gray-900">Riepilogo Banner</h4>
-            <p className="text-sm text-gray-600">
-              {unlockedBanners.length} di {banners.length} banner sbloccati
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-gray-900">
-              {Math.round((unlockedBanners.length / banners.length) * 100)}%
-            </div>
-            <div className="text-xs text-gray-500">Completamento</div>
-          </div>
-        </div>
       </div>
     </div>
   )
