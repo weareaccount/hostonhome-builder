@@ -208,10 +208,23 @@ export async function GET(request: Request) {
     console.log('📋 Challenge con stato COMPLETED:', updatedChallenges.filter(c => c.status === 'COMPLETED').length)
     console.log('📋 Challenge con stato REJECTED:', updatedChallenges.filter(c => c.status === 'REJECTED').length)
 
+    // Calcola lo stato dei banner
+    const banners = ChallengeService.calculateBannerStatus(updatedChallenges)
+    const unlockedBanners = ChallengeService.getUnlockedBanners(updatedChallenges)
+    const nextBanner = ChallengeService.getNextBannerToUnlock(updatedChallenges)
+
+    console.log('🏆 Banner sbloccati:', unlockedBanners.length)
+    console.log('🎯 Prossimo banner:', nextBanner?.title || 'Nessuno')
+
     return NextResponse.json({ 
       success: true, 
       challenges: updatedChallenges,
-      count: updatedChallenges.length
+      count: updatedChallenges.length,
+      banners: {
+        all: banners,
+        unlocked: unlockedBanners,
+        nextToUnlock: nextBanner
+      }
     })
 
   } catch (error) {

@@ -299,6 +299,25 @@ export interface UserBadge {
   color?: string;
 }
 
+// Sistema di sblocco banner
+export type BannerType = 'PRIMI_PASSI' | 'OSPITE_FELICE' | 'INDIPENDENTE';
+
+export interface Banner {
+  id: BannerType;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: 'COMMON' | 'UNCOMMON' | 'RARE';
+  requiredChallenges: string[]; // Array di challenge IDs
+  unlockedAt?: Date;
+  isUnlocked: boolean;
+  progress: {
+    completed: number;
+    total: number;
+    percentage: number;
+  };
+}
+
 // Sistema di verifica foto
 export interface ChallengeVerification {
   id: string;

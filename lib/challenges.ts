@@ -1,4 +1,4 @@
-import type { Challenge, ChallengeProgress, ChallengeStatus, ChallengeType } from '@/types'
+import type { Challenge, ChallengeProgress, ChallengeStatus, ChallengeType, Banner, BannerType } from '@/types'
 
 export class ChallengeService {
   private static readonly STORAGE_KEY = 'challenge_progress'
@@ -404,5 +404,80 @@ export class ChallengeService {
       locked: challenges.filter(c => c.status === 'LOCKED').length,
       completionRate: Math.round((challenges.filter(c => c.status === 'COMPLETED').length / challenges.length) * 100)
     }
+  }
+
+  // Sistema di sblocco banner
+  static getBannerDefinitions(): Record<BannerType, Banner> {
+    return {
+      PRIMI_PASSI: {
+        id: 'PRIMI_PASSI',
+        title: 'Badge "Primi passi"',
+        description: 'Completa le prime 4 challenge per sbloccare questo badge',
+        icon: '⭐',
+        rarity: 'COMMON',
+        requiredChallenges: ['1', '2', '3', '4'], // Condividi sito, Prima visita, Prima recensione, WhatsApp Contact
+        isUnlocked: false,
+        progress: { completed: 0, total: 4, percentage: 0 }
+      },
+      OSPITE_FELICE: {
+        id: 'OSPITE_FELICE',
+        title: 'Badge "Ospite Felice"',
+        description: 'Completa le challenge intermedie per sbloccare questo badge',
+        icon: '🏆',
+        rarity: 'UNCOMMON',
+        requiredChallenges: ['3', '4', '5', '6'], // Prima recensione, WhatsApp Contact, Foto che parlano, Indipendenza in crescita
+        isUnlocked: false,
+        progress: { completed: 0, total: 4, percentage: 0 }
+      },
+      INDIPENDENTE: {
+        id: 'INDIPENDENTE',
+        title: 'Badge "Indipendente"',
+        description: 'Completa le challenge avanzate per sbloccare questo badge',
+        icon: '👑',
+        rarity: 'RARE',
+        requiredChallenges: ['7', '8', '9', '10'], // Super Condivisione, Ospite del mondo, Top Host del mese, Super Host Indipendente
+        isUnlocked: false,
+        progress: { completed: 0, total: 4, percentage: 0 }
+      }
+    }
+  }
+
+  // Calcola lo stato dei banner basandosi sulle challenge completate
+  static calculateBannerStatus(challenges: Challenge[]): Banner[] {
+    const bannerDefinitions = this.getBannerDefinitions()
+    const completedChallengeIds = challenges
+      .filter(c => c.status === 'COMPLETED')
+      .map(c => c.id)
+
+    return Object.values(bannerDefinitions).map(banner => {
+      const completedRequired = banner.requiredChallenges.filter(id => 
+        completedChallengeIds.includes(id)
+      ).length
+
+      const isUnlocked = completedRequired === banner.requiredChallenges.length
+      const percentage = Math.round((completedRequired / banner.requiredChallenges.length) * 100)
+
+      return {
+        ...banner,
+        isUnlocked,
+        unlockedAt: isUnlocked ? new Date() : undefined,
+        progress: {
+          completed: completedRequired,
+          total: banner.requiredChallenges.length,
+          percentage
+        }
+      }
+    })
+  }
+
+  // Ottieni solo i banner sbloccati
+  static getUnlockedBanners(challenges: Challenge[]): Banner[] {
+    return this.calculateBannerStatus(challenges).filter(banner => banner.isUnlocked)
+  }
+
+  // Ottieni il prossimo banner da sbloccare
+  static getNextBannerToUnlock(challenges: Challenge[]): Banner | null {
+    const banners = this.calculateBannerStatus(challenges)
+    return banners.find(banner => !banner.isUnlocked && banner.progress.completed > 0) || null
   }
 }
