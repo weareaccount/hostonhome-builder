@@ -130,12 +130,14 @@ export async function GET(request: Request) {
     console.log('📋 Mappa verifiche finale:', verificationMap)
     console.log('📋 Challenge con verifiche PENDING:', Object.keys(verificationMap).filter(key => verificationMap[key].status === 'PENDING'))
 
-    // Recupera tutte le definizioni delle challenge (ignora localStorage completamente)
+    // Recupera tutte le definizioni delle challenge
     const allChallenges = ChallengeService.getAllChallengeDefinitions()
     
     console.log('📋 Challenge caricate:', allChallenges.length)
+    console.log('📋 Verifiche trovate:', Object.keys(verificationMap).length)
+    console.log('📋 Verifiche APPROVED:', Object.keys(verificationMap).filter(key => verificationMap[key].status === 'APPROVED'))
     
-    // Aggiorna lo stato delle challenge basandosi sulle verifiche
+    // Aggiorna lo stato delle challenge basandosi SOLO sulle verifiche esistenti
     const updatedChallenges = allChallenges.map(challenge => {
       const verification = verificationMap[challenge.id]
       
@@ -157,7 +159,7 @@ export async function GET(request: Request) {
             }
           
           case 'APPROVED':
-            // Verifica approvata dall'admin - challenge completata
+            // Verifica approvata dall'admin - SOLO questa challenge è completata
             console.log('✅ Challenge con verifica APPROVED:', challenge.title, 'stato: COMPLETED')
             return {
               ...challenge,
