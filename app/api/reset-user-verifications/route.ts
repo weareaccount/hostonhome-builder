@@ -6,8 +6,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-export const dynamic = 'force-dynamic'
-
 export async function POST(request: Request) {
   try {
     const { userId } = await request.json()
@@ -19,7 +17,7 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    console.log('🚨 RESET VERIFICHE per utente:', userId)
+    console.log('🔄 Reset verifiche per utente:', userId)
 
     // Elimina tutte le verifiche dell'utente
     const { error } = await supabase
@@ -28,25 +26,24 @@ export async function POST(request: Request) {
       .eq('user_id', userId)
 
     if (error) {
-      console.error('❌ Errore eliminazione verifiche:', error)
+      console.error('❌ Errore nel reset verifiche:', error)
       return NextResponse.json({ 
         success: false, 
-        error: 'Errore nell\'eliminazione delle verifiche: ' + error.message
+        error: 'Errore nel reset verifiche' 
       }, { status: 500 })
     }
 
-    console.log('✅ Verifiche eliminate per utente:', userId)
-
+    console.log('✅ Verifiche resetate per utente:', userId)
     return NextResponse.json({ 
       success: true, 
-      message: 'Verifiche eliminate con successo'
+      message: `Verifiche resetate per utente ${userId}` 
     })
 
   } catch (error) {
     console.error('❌ Errore API reset-user-verifications:', error)
     return NextResponse.json({ 
       success: false, 
-      error: 'Errore interno del server: ' + (error instanceof Error ? error.message : 'Unknown error')
+      error: 'Errore interno del server' 
     }, { status: 500 })
   }
 }
