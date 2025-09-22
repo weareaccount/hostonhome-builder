@@ -16,9 +16,8 @@ import {
   Share2
 } from 'lucide-react'
 import ChallengeCard from './ChallengeCard'
-import { BannerShowcase } from './BannerShowcase'
 import { ChallengeService } from '@/lib/challenges'
-import type { Challenge, ChallengeStatus, Banner } from '@/types'
+import type { Challenge, ChallengeStatus } from '@/types'
 
 interface ChallengeSectionProps {
   userId: string
@@ -29,9 +28,6 @@ interface ChallengeSectionProps {
 
 export default function ChallengeSection({ userId, onChallengeComplete }: ChallengeSectionProps) {
   const [challenges, setChallenges] = useState<Challenge[]>([])
-  const [banners, setBanners] = useState<Banner[]>([])
-  const [unlockedBanners, setUnlockedBanners] = useState<Banner[]>([])
-  const [nextBannerToUnlock, setNextBannerToUnlock] = useState<Banner | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
   const [filter, setFilter] = useState<'ALL' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED'>('ALL')
   const [loading, setLoading] = useState(true)
@@ -73,14 +69,6 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
           console.log('⏳ Challenge in verifica:', pendingChallenges.length, pendingChallenges.map(c => c.title))
           
           setChallenges(data.challenges)
-          
-          // Aggiorna anche i banner se presenti
-          if (data.banners) {
-            console.log('🏆 Banner ricevuti:', data.banners)
-            setBanners(data.banners.all || [])
-            setUnlockedBanners(data.banners.unlocked || [])
-            setNextBannerToUnlock(data.banners.nextToUnlock || null)
-          }
         } else {
           console.error('❌ Errore nel caricamento challenge:', data.error)
           setChallenges([])
@@ -413,17 +401,6 @@ export default function ChallengeSection({ userId, onChallengeComplete }: Challe
                   </Button>
                 ))}
               </div>
-
-              {/* Banner Showcase */}
-              {banners.length > 0 && (
-                <div className="mb-8">
-                  <BannerShowcase 
-                    banners={banners}
-                    unlockedBanners={unlockedBanners}
-                    nextBannerToUnlock={nextBannerToUnlock}
-                  />
-                </div>
-              )}
 
               {/* Lista Challenge */}
               {loading ? (

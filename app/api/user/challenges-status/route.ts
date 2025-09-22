@@ -81,46 +81,45 @@ export async function GET(request: Request) {
       submitted_at: v.submitted_at
     })))
 
-    // Crea una mappa delle verifiche per challenge (dai priorità alle verifiche approvate/rifiutate)
+    // Crea una mappa delle verifiche per challenge dando priorità a APPROVED/REJECTED
     const verificationMap: Record<string, { status: string; reviewed_at: string }> = {}
+    
+    // Prima passa: inserisci tutte le verifiche
     for (const verification of verifications || []) {
       const challengeId = verification.challenge_id
       
-      // Se non abbiamo ancora una verifica per questa challenge
       if (!verificationMap[challengeId]) {
         verificationMap[challengeId] = {
           status: verification.status,
           reviewed_at: verification.reviewed_at
         }
-      } else {
-        // Se abbiamo già una verifica, dai priorità alle verifiche approvate/rifiutate
-        const currentStatus = verificationMap[challengeId].status
-        const newStatus = verification.status
+      }
+    }
+    
+    // Seconda passa: dai priorità alle verifiche APPROVED/REJECTED
+    for (const verification of verifications || []) {
+      const challengeId = verification.challenge_id
+      const currentStatus = verificationMap[challengeId].status
+      const newStatus = verification.status
+      
+      // Se la verifica corrente è PENDING e ne troviamo una APPROVED/REJECTED, sostituisci
+      if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
+        console.log('🔄 Sostituendo PENDING con', newStatus, 'per challenge', challengeId)
+        verificationMap[challengeId] = {
+          status: verification.status,
+          reviewed_at: verification.reviewed_at
+        }
+      }
+      // Se entrambe sono APPROVED/REJECTED, prendi la più recente
+      else if ((currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && 
+               (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
+        const currentReviewedAt = verificationMap[challengeId].reviewed_at
+        const newReviewedAt = verification.reviewed_at
         
-        // Se la verifica corrente è PENDING e quella nuova è APPROVED/REJECTED, sostituisci
-        if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
+        if (newReviewedAt && currentReviewedAt && new Date(newReviewedAt) > new Date(currentReviewedAt)) {
           verificationMap[challengeId] = {
             status: verification.status,
             reviewed_at: verification.reviewed_at
-          }
-        }
-        // Se la verifica corrente è APPROVED/REJECTED e quella nuova è PENDING, NON sostituire (mantieni APPROVED/REJECTED)
-        else if ((currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && newStatus === 'PENDING') {
-          // Mantieni la verifica APPROVED/REJECTED esistente
-          console.log('🔒 Mantenendo verifica APPROVED/REJECTED per challenge', challengeId, 'ignorando PENDING')
-        }
-        // Se entrambe sono APPROVED/REJECTED, prendi la più recente
-        else if ((currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && 
-                 (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
-          // Prendi quella con reviewed_at più recente
-          const currentReviewedAt = verificationMap[challengeId].reviewed_at
-          const newReviewedAt = verification.reviewed_at
-          
-          if (newReviewedAt && currentReviewedAt && new Date(newReviewedAt) > new Date(currentReviewedAt)) {
-            verificationMap[challengeId] = {
-              status: verification.status,
-              reviewed_at: verification.reviewed_at
-            }
           }
         }
       }
