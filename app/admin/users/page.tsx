@@ -159,7 +159,8 @@ export default function AdminUsersPage() {
   }
 
   const openProjectPreview = (projectSlug: string) => {
-    window.open(`/dashboard/sites/${projectSlug}/preview`, '_blank')
+    console.log('🔍 Admin: Apertura anteprima per slug:', projectSlug);
+    window.open(`/admin/preview/${projectSlug}`, '_blank')
   }
 
   const refreshUsers = async () => {
