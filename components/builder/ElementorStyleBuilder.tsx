@@ -64,12 +64,33 @@ interface ElementorStyleBuilderProps {
 }
 
 // Modal di conferma pubblicazione
-const PublishModal = ({ isOpen, onClose, onConfirm, siteName }: {
+const PublishModal = ({ isOpen, onClose, onConfirm, siteName, sections }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   siteName: string;
+  sections: Section[];
 }) => {
+  const [domainInputs, setDomainInputs] = useState([
+    { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
+    { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: '' },
+    { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: '' }
+  ]);
+
+  // Trova la sezione DOMAIN_NAME e carica i valori esistenti
+  useEffect(() => {
+    const domainSection = sections.find(s => s.type === 'DOMAIN_NAME');
+    if (domainSection && domainSection.props.domainInputs) {
+      setDomainInputs(domainSection.props.domainInputs);
+    }
+  }, [sections]);
+
+  const handleDomainChange = (domainId: string, value: string) => {
+    setDomainInputs(prev => prev.map(input => 
+      input.id === domainId ? { ...input, value } : input
+    ));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -91,6 +112,30 @@ const PublishModal = ({ isOpen, onClose, onConfirm, siteName }: {
             <p className="text-sm text-green-800">
               <strong>✅ Richiesta inviata!</strong> La tua richiesta è stata mandata agli amministratori. 
               Entro 4 giorni il sito sarà pubblicato e verrai aggiornato per email quando il sito è terminato.
+            </p>
+          </div>
+
+          {/* Campi domini */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-blue-800 mb-3">🌐 Domini proposti:</h3>
+            <div className="space-y-2">
+              {domainInputs.map((input) => (
+                <div key={input.id} className="relative">
+                  <input
+                    type="text"
+                    placeholder={input.placeholder}
+                    value={input.value}
+                    onChange={(e) => handleDomainChange(input.id, e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <span className="text-blue-400 text-xs">🌐</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-blue-600 mt-2 italic">
+              I domini verranno verificati e ti contatteremo per confermare la disponibilità.
             </p>
           </div>
           
@@ -137,7 +182,8 @@ const BuilderHeader = ({
   onDeviceChange,
   saving,
   showThemePanel,
-  setShowThemePanel
+  setShowThemePanel,
+  sections
 }: {
   layoutType: LayoutType;
   theme: { accent: ThemeAccent; font: ThemeFont };
@@ -149,6 +195,7 @@ const BuilderHeader = ({
   saving: boolean;
   showThemePanel: boolean;
   setShowThemePanel: (show: boolean) => void;
+  sections: Section[];
 }) => {
   const [showPublishModal, setShowPublishModal] = useState(false);
   return (
@@ -338,6 +385,7 @@ const BuilderHeader = ({
           onPublish();
         }}
         siteName="Il tuo sito"
+        sections={sections}
       />
     </div>
   );
@@ -1111,6 +1159,7 @@ export function ElementorStyleBuilder({
         saving={saving}
         showThemePanel={showThemePanel}
         setShowThemePanel={setShowThemePanel}
+        sections={sections}
       />
 
       {/* Navigazione mobile (segment control) */}
