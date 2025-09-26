@@ -45,6 +45,13 @@ export default function AdminPreviewPage() {
         console.log('🔍 Admin: Risultato ricerca progetto:', foundProject);
         
         if (foundProject) {
+          console.log('🔍 DEBUG - Struttura progetto:', {
+            id: foundProject.id,
+            name: foundProject.name,
+            theme: foundProject.theme,
+            layout_type: foundProject.layout_type,
+            sections: foundProject.sections
+          });
           setProject(foundProject);
           console.log('✅ Progetto caricato per anteprima admin:', foundProject.name);
         } else {
@@ -115,16 +122,16 @@ export default function AdminPreviewPage() {
     );
   }
 
-  // Crea un sito mock dal progetto
+  // Crea un sito mock dal progetto con fallback per tema mancante
   const mockSite = {
     id: project.id,
     name: project.name,
     slug: project.slug,
     subdomain: `${project.slug}.tuodominio.it`,
-    layoutType: project.layout_type as LayoutType,
+    layoutType: (project.layout_type as LayoutType) || 'ELEGANTE',
     theme: {
-      accent: project.theme.accent as ThemeAccent,
-      font: project.theme.font as ThemeFont
+      accent: (project.theme?.accent as ThemeAccent) || 'BLUE',
+      font: (project.theme?.font as ThemeFont) || 'INTER'
     },
     isPublished: true,
     plan: 'PLUS',
@@ -135,7 +142,7 @@ export default function AdminPreviewPage() {
         isHome: true,
         seoTitle: `${project.name} - Home`,
         seoDesc: `Sito web professionale per ${project.name}`,
-        sections: project.sections as Section[]
+        sections: (project.sections as Section[]) || []
       }
     ]
   };
