@@ -20,11 +20,11 @@ export default function AdminPreviewPage() {
       console.log('🔍 DEBUG AdminPreviewPage:', {
         slug: params.slug,
         isAdmin,
-        adminSession: localStorage.getItem('admin_session')
+        adminSession: typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null
       });
       
-      // Controllo admin più permissivo per anteprima
-      const adminSession = localStorage.getItem('admin_session');
+      // Controllo admin più permissivo per anteprima (solo client-side)
+      const adminSession = typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null;
       const isAdminSession = adminSession && adminSession.includes('admin@hostonhome.it');
       
       console.log('🔍 DEBUG AdminPreviewPage - Controlli:', {
@@ -71,8 +71,8 @@ export default function AdminPreviewPage() {
     );
   }
 
-  // Controllo admin più permissivo
-  const adminSession = localStorage.getItem('admin_session');
+  // Controllo admin più permissivo (solo client-side)
+  const adminSession = typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null;
   const isAdminSession = adminSession && adminSession.includes('admin@hostonhome.it');
   
   if (!isAdmin && !isAdminSession) {
