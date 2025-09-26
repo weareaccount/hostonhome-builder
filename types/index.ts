@@ -131,6 +131,23 @@ export interface Section {
   props: SectionProps;
 }
 
+// Project definition
+export interface Project {
+  id: string;
+  user_id: string;
+  name: string;
+  slug: string;
+  sections: Section[];
+  theme: {
+    accent: ThemeAccent;
+    font: ThemeFont;
+  };
+  layout_type: LayoutType;
+  domain_names?: Array<{id: string, placeholder: string, value: string}>;
+  created_at: string;
+  updated_at: string;
+}
+
 // Page definition
 export interface Page {
   id: string;

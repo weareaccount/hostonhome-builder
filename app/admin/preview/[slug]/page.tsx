@@ -222,17 +222,31 @@ export default function AdminPreviewPage() {
     ]
   };
 
-  // Trova la sezione DOMAIN_NAME per mostrare i domini
-  const domainSection = mockSite.pages[0].sections.find(s => s.type === 'DOMAIN_NAME');
-  const domainInputs = domainSection?.props?.domainInputs || [];
-  
-  // Debug: log dei domini trovati
-  console.log('🔍 DEBUG Admin Preview - Domini:', {
-    domainSection,
-    domainInputs,
-    sectionsCount: mockSite.pages[0].sections.length,
-    allSections: mockSite.pages[0].sections.map(s => ({ type: s.type, hasProps: !!s.props }))
-  });
+         // Trova la sezione DOMAIN_NAME per mostrare i domini
+         const domainSection = mockSite.pages[0].sections.find(s => s.type === 'DOMAIN_NAME');
+         let domainInputs = domainSection?.props?.domainInputs || [];
+
+         // Se non ci sono domini nella sezione, prova a caricarli dal campo domain_names
+         if (domainInputs.length === 0 && project) {
+           try {
+             console.log('🔍 Admin Preview - Caricamento domini dal campo domain_names...');
+             const domainNames = await ProjectService.getDomainNames(project.id);
+             if (domainNames.length > 0) {
+               domainInputs = domainNames;
+               console.log('✅ Admin Preview - Domini caricati dal campo domain_names:', domainNames);
+             }
+           } catch (error) {
+             console.error('❌ Admin Preview - Errore nel caricamento domini:', error);
+           }
+         }
+
+         // Debug: log dei domini trovati
+         console.log('🔍 DEBUG Admin Preview - Domini:', {
+           domainSection,
+           domainInputs,
+           sectionsCount: mockSite.pages[0].sections.length,
+           allSections: mockSite.pages[0].sections.map(s => ({ type: s.type, hasProps: !!s.props }))
+         });
 
   return (
     <div className="min-h-screen bg-white">

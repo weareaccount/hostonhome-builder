@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
   sections JSONB DEFAULT '[]'::jsonb,
   theme JSONB DEFAULT '{"accent": "BLUE", "font": "INTER"}'::jsonb,
   layout_type TEXT DEFAULT 'ELEGANTE',
+  domain_names JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

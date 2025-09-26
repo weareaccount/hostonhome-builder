@@ -1125,19 +1125,17 @@ export function ElementorStyleBuilder({
     
     if (updatedSection?.type === 'DOMAIN_NAME' && updatedSection.props.domainInputs && projectId) {
       try {
-        console.log('💾 Salvataggio automatico domini nel database...', {
+        console.log('💾 Salvataggio automatico domini con nuovo approccio...', {
           projectId,
           domainInputs: updatedSection.props.domainInputs,
           sectionId,
-          allSections: updatedSections.length,
-          sectionsToSave: updatedSections.map(s => ({ id: s.id, type: s.type, hasProps: !!s.props }))
+          allSections: updatedSections.length
         });
         
-        const result = await ProjectService.updateProject(projectId, {
-          sections: updatedSections
-        });
+        // Salva domini separatamente nel campo domain_names
+        await ProjectService.saveDomainNames(projectId, updatedSection.props.domainInputs);
         
-        console.log('✅ Domini salvati automaticamente nel database con ID:', projectId, 'Risultato:', result);
+        console.log('✅ Domini salvati automaticamente con nuovo approccio');
       } catch (error) {
         console.error('❌ Errore nel salvataggio automatico domini:', error);
         console.error('❌ Dettagli errore:', {

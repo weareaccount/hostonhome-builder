@@ -326,6 +326,85 @@ export class ProjectService {
     }
   }
 
+  // Salva domini separatamente
+  static async saveDomainNames(projectId: string, domainNames: Array<{id: string, placeholder: string, value: string}>): Promise<void> {
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      try {
+        console.log('💾 Salvataggio domini separato:', {
+          projectId,
+          domainNames,
+          domainNamesStringified: JSON.stringify(domainNames, null, 2)
+        });
+
+        const { error } = await supabase
+          .from('projects')
+          .update({
+            domain_names: domainNames,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', projectId);
+
+        if (error) {
+          console.error('❌ Errore nel salvataggio domini:', error);
+          throw error;
+        }
+
+        console.log('✅ Domini salvati separatamente con successo');
+      } catch (error) {
+        console.error('❌ Errore durante il salvataggio domini:', error);
+        throw error;
+      }
+    } else {
+      console.log('🔍 Supabase non configurato, salvo domini localmente');
+      const projects = this.getLocalProjects();
+      const projectIndex = projects.findIndex(p => p.id === projectId);
+      
+      if (projectIndex !== -1) {
+        projects[projectIndex].domain_names = domainNames;
+        this.saveLocalProjects(projects);
+        console.log('✅ Domini salvati localmente');
+      }
+    }
+  }
+
+  // Carica domini separatamente
+  static async getDomainNames(projectId: string): Promise<Array<{id: string, placeholder: string, value: string}>> {
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      try {
+        console.log('🔍 Caricamento domini separato per progetto:', projectId);
+
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('domain_names')
+          .eq('id', projectId)
+          .single();
+
+        if (error) {
+          console.error('❌ Errore nel caricamento domini:', error);
+          return [];
+        }
+
+        const domainNames = project?.domain_names || [];
+        console.log('✅ Domini caricati separatamente:', domainNames);
+        return domainNames;
+      } catch (error) {
+        console.error('❌ Errore durante il caricamento domini:', error);
+        return [];
+      }
+    } else {
+      console.log('🔍 Supabase non configurato, carico domini localmente');
+      const projects = this.getLocalProjects();
+      const project = projects.find(p => p.id === projectId);
+      const domainNames = project?.domain_names || [];
+      console.log('✅ Domini caricati localmente:', domainNames);
+      return domainNames;
+    }
+  }
+
   // Aggiorna un progetto
   static async updateProject(projectId: string, data: UpdateProjectData): Promise<Project> {
     const hasSupabase = this.checkSupabaseConfig();
