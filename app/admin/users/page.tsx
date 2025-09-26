@@ -17,7 +17,8 @@ import {
   Clock,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  RefreshCw
 } from 'lucide-react'
 
 interface Project {
@@ -53,9 +54,18 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all')
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'premium' | 'admin'>('all')
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set())
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
 
   useEffect(() => {
+    // Carica utenti iniziali
     loadUsers()
+
+    // Polling per aggiornare gli utenti ogni 10 secondi
+    const interval = setInterval(() => {
+      loadUsers()
+    }, 10000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const loadUsers = async () => {
@@ -98,6 +108,7 @@ export default function AdminUsersPage() {
       setUsers([])
     } finally {
       setLoading(false)
+      setLastRefresh(new Date())
     }
   }
 
@@ -149,6 +160,16 @@ export default function AdminUsersPage() {
 
   const openProjectPreview = (projectSlug: string) => {
     window.open(`/dashboard/sites/${projectSlug}/preview`, '_blank')
+  }
+
+  const refreshUsers = async () => {
+    try {
+      console.log('🔄 Ricaricamento utenti da Supabase...')
+      await loadUsers()
+      console.log('✅ Utenti ricaricati con successo!')
+    } catch (error) {
+      console.error('❌ Errore nel ricaricamento degli utenti:', error)
+    }
   }
 
   const stats = {
@@ -271,11 +292,26 @@ export default function AdminUsersPage() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Users className="w-5 h-5 text-blue-600" />
-              <span>Lista Utenti ({filteredUsers.length})</span>
+              <div>
+                <span>Lista Utenti ({filteredUsers.length})</span>
+                <div className="text-xs text-gray-500">
+                  Ultimo aggiornamento: {lastRefresh.toLocaleTimeString('it-IT')}
+                </div>
+              </div>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Esporta CSV
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={refreshUsers}
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Aggiorna</span>
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                Esporta CSV
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
