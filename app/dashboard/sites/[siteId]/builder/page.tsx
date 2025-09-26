@@ -292,6 +292,27 @@ export default function BuilderPage() {
                        console.log('✅ Sezione DOMAIN_NAME creata con domini caricati');
                      } else {
                        console.log('⚠️ Nessun dominio trovato nel campo domain_names');
+                       
+                       // Crea una sezione DOMAIN_NAME vuota per permettere all'utente di inserire domini
+                       const domainSection = {
+                         id: 'domain-name-section',
+                         type: 'DOMAIN_NAME' as const,
+                         props: {
+                           title: 'Scegli il tuo dominio',
+                           subtitle: 'Inserisci 3 domini possibili per il tuo sito',
+                           domainInputs: [
+                             { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
+                             { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: '' },
+                             { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: '' }
+                           ],
+                           contactEmail: 'hostonhome@gmail.com',
+                           isActive: true,
+                           order: sectionsToLoad.length
+                         }
+                       };
+                       
+                       sectionsToLoad.push(domainSection);
+                       console.log('✅ Sezione DOMAIN_NAME vuota creata per inserimento domini');
                      }
                    } catch (error) {
                      console.error('❌ Errore nel caricamento domini separati:', error);

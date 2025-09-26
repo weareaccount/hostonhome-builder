@@ -2408,6 +2408,25 @@ const SectionComponent = ({
       console.error('❌ onSectionUpdate non è una funzione:', onSectionUpdate);
     }
 
+    // Salvataggio diretto nel database tramite ProjectService
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/builder/')) {
+      const pathParts = window.location.pathname.split('/');
+      const siteIdIndex = pathParts.findIndex(part => part === 'sites');
+      if (siteIdIndex !== -1 && pathParts[siteIdIndex + 1]) {
+        const projectId = pathParts[siteIdIndex + 1];
+        console.log('💾 Salvataggio diretto domini nel database con projectId:', projectId);
+        
+        // Importa ProjectService dinamicamente
+        import('@/lib/projects').then(({ ProjectService }) => {
+          ProjectService.saveDomainNames(projectId, updatedProps.domainInputs).then(() => {
+            console.log('✅ Domini salvati direttamente nel database');
+          }).catch(error => {
+            console.error('❌ Errore nel salvataggio diretto domini:', error);
+          });
+        });
+      }
+    }
+
     // Salvataggio forzato dopo 1 secondo per assicurarsi che venga salvato
     setTimeout(() => {
       console.log('💾 Salvataggio forzato domini dopo 1 secondo...');
