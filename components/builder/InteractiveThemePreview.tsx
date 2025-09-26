@@ -2360,16 +2360,33 @@ const SectionComponent = ({
 
           // Aggiorna i valori quando cambiano le props
           useEffect(() => {
-            setDomainValues({
+            console.log('🔍 DEBUG DOMAIN_NAME - Props cambiate:', {
+              sectionProps,
+              domainInputs: sectionProps.domainInputs,
+              sectionId: section.id
+            });
+            
+            const newValues = {
               domain1: sectionProps.domainInputs?.[0]?.value || '',
               domain2: sectionProps.domainInputs?.[1]?.value || '',
               domain3: sectionProps.domainInputs?.[2]?.value || ''
-            });
-          }, [sectionProps.domainInputs]);
+            };
+            
+            console.log('🔍 DEBUG DOMAIN_NAME - Nuovi valori:', newValues);
+            setDomainValues(newValues);
+          }, [sectionProps.domainInputs, section.id]);
 
           const handleDomainChange = (domainId: string, value: string) => {
             const newValues = { ...domainValues, [domainId]: value };
             setDomainValues(newValues);
+            
+            console.log('🔍 DEBUG DOMAIN_NAME - Cambio dominio:', {
+              domainId,
+              value,
+              newValues,
+              sectionId: section.id
+            });
+            
             // Aggiorna la sezione con i nuovi valori
             onSectionUpdate(section.id, {
               ...sectionProps,
