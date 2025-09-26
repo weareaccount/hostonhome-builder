@@ -228,16 +228,16 @@ export default function AdminPreviewPage() {
 
          // Se non ci sono domini nella sezione, prova a caricarli dal campo domain_names
          if (domainInputs.length === 0 && project) {
-           try {
-             console.log('🔍 Admin Preview - Caricamento domini dal campo domain_names...');
-             const domainNames = await ProjectService.getDomainNames(project.id);
+           console.log('🔍 Admin Preview - Caricamento domini dal campo domain_names...');
+           ProjectService.getDomainNames(project.id).then(domainNames => {
              if (domainNames.length > 0) {
-               domainInputs = domainNames;
                console.log('✅ Admin Preview - Domini caricati dal campo domain_names:', domainNames);
+               // Aggiorna l'array domainInputs per il rendering
+               domainInputs = domainNames;
              }
-           } catch (error) {
+           }).catch(error => {
              console.error('❌ Admin Preview - Errore nel caricamento domini:', error);
-           }
+           });
          }
 
          // Debug: log dei domini trovati
