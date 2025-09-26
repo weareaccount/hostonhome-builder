@@ -13,6 +13,7 @@ export default function AdminPreviewPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [adminChecked, setAdminChecked] = useState(false);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -39,6 +40,12 @@ export default function AdminPreviewPage() {
         isAdminSession,
         adminSession
       });
+      
+      // Aspetta che il controllo admin sia completato
+      if (!adminChecked) {
+        setAdminChecked(true);
+        return;
+      }
       
       if (!isAdmin && !isAdminSession) {
         console.log('❌ Accesso negato: non è admin');
@@ -85,7 +92,7 @@ export default function AdminPreviewPage() {
     };
 
     loadProject();
-  }, [isAdmin, params.slug]);
+  }, [isAdmin, params.slug, adminChecked]);
 
   if (loading) {
     return (

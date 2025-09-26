@@ -239,13 +239,20 @@ export class ProjectService {
         .from('projects')
         .select('*')
         .eq('slug', slug)
-        .single();
+        .maybeSingle(); // Usa maybeSingle invece di single per evitare errore 406
 
       const { data: project, error } = await Promise.race([supabasePromise, timeoutPromise]) as any;
 
       if (error) {
         console.warn('⚠️ Errore nel recupero progetto per slug da Supabase:', error);
         console.log('⚠️ Fallback a progetti locali...');
+        console.log('🔍 Progetto locale trovato per slug:', localProject?.slug || 'null');
+        return localProject || null;
+      }
+      
+      // Se non trovato su Supabase, usa il fallback locale
+      if (!project) {
+        console.log('⚠️ Progetto non trovato su Supabase, uso fallback locale');
         console.log('🔍 Progetto locale trovato per slug:', localProject?.slug || 'null');
         return localProject || null;
       }
