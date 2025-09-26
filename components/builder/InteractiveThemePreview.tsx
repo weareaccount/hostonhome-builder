@@ -2351,65 +2351,87 @@ const SectionComponent = ({
         );
 
       case 'DOMAIN_NAME':
-        return (
-          <section className={cn(layoutStyle.section, "bg-gradient-to-br from-blue-50 to-indigo-100")}>
-            <div className={deviceType === 'mobile' ? 'px-4' : deviceType === 'tablet' ? 'px-6' : layoutStyle.container}>
-              <div className="text-center mb-8">
-                <h2 className={cn(layoutStyle.sectionTitle, deviceType === 'mobile' ? 'text-2xl' : '')}>
-                  {sectionProps.title || 'Scegli il tuo dominio'}
-                </h2>
-                <p className={cn("text-gray-600 mt-4", deviceType === 'mobile' ? 'text-sm' : 'text-base')}>
-                  {sectionProps.subtitle || 'Inserisci 3 domini possibili per il tuo sito'}
-                </p>
-              </div>
-              
-              <div className={cn(
-                "max-w-2xl mx-auto space-y-4",
-                deviceType === 'mobile' ? 'px-4' : 'px-0'
-              )}>
-                {(sectionProps.domainInputs || [
-                  { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
-                  { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: '' },
-                  { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: '' }
-                ]).map((input: any, index: number) => (
-                  <div key={input.id} className="relative">
-                    <input
-                      type="text"
-                      placeholder={input.placeholder}
-                      value={input.value}
-                      className={cn(
-                        "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200",
-                        deviceType === 'mobile' ? 'text-base' : 'text-lg'
-                      )}
-                      readOnly={readOnly}
-                    />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <span className="text-gray-400 text-sm">🌐</span>
-                    </div>
-                  </div>
-                ))}
+        {
+          const [domainValues, setDomainValues] = useState({
+            domain1: sectionProps.domainInputs?.[0]?.value || '',
+            domain2: sectionProps.domainInputs?.[1]?.value || '',
+            domain3: sectionProps.domainInputs?.[2]?.value || ''
+          });
+
+          const handleDomainChange = (domainId: string, value: string) => {
+            setDomainValues(prev => ({ ...prev, [domainId]: value }));
+            // Aggiorna la sezione con i nuovi valori
+            onSectionUpdate(section.id, {
+              ...sectionProps,
+              domainInputs: [
+                { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: domainId === 'domain1' ? value : domainValues.domain1 },
+                { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: domainId === 'domain2' ? value : domainValues.domain2 },
+                { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: domainId === 'domain3' ? value : domainValues.domain3 }
+              ]
+            });
+          };
+
+          return (
+            <section className={cn(layoutStyle.section, "bg-gradient-to-br from-blue-50 to-indigo-100")}>
+              <div className={deviceType === 'mobile' ? 'px-4' : deviceType === 'tablet' ? 'px-6' : layoutStyle.container}>
+                <div className="text-center mb-8">
+                  <h2 className={cn(layoutStyle.sectionTitle, deviceType === 'mobile' ? 'text-2xl' : '')}>
+                    {sectionProps.title || 'Scegli il tuo dominio'}
+                  </h2>
+                  <p className={cn("text-gray-600 mt-4", deviceType === 'mobile' ? 'text-sm' : 'text-base')}>
+                    {sectionProps.subtitle || 'Inserisci 3 domini possibili per il tuo sito'}
+                  </p>
+                </div>
                 
-                <div className="text-center mt-6">
+                <div className={cn(
+                  "max-w-2xl mx-auto space-y-4",
+                  deviceType === 'mobile' ? 'px-4' : 'px-0'
+                )}>
+                  {[
+                    { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: domainValues.domain1 },
+                    { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: domainValues.domain2 },
+                    { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: domainValues.domain3 }
+                  ].map((input, index) => (
+                    <div key={input.id} className="relative">
+                      <input
+                        type="text"
+                        placeholder={input.placeholder}
+                        value={input.value}
+                        onChange={(e) => handleDomainChange(input.id, e.target.value)}
+                        className={cn(
+                          "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200",
+                          deviceType === 'mobile' ? 'text-base' : 'text-lg'
+                        )}
+                        readOnly={readOnly}
+                      />
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <span className="text-gray-400 text-sm">🌐</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="text-center mt-6">
+                    <p className="text-sm text-gray-500">
+                      I domini verranno verificati e ti contatteremo per confermare la disponibilità
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="text-center mt-8">
                   <p className="text-sm text-gray-500">
-                    I domini verranno verificati e ti contatteremo per confermare la disponibilità
+                    Per assistenza, contatta{' '}
+                    <a 
+                      href={`mailto:${sectionProps.contactEmail || 'hostonhome@gmail.com'}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {sectionProps.contactEmail || 'hostonhome@gmail.com'}
+                    </a>
                   </p>
                 </div>
               </div>
-              
-              <div className="text-center mt-8">
-                <p className="text-sm text-gray-500">
-                  Per assistenza, contatta{' '}
-                  <a 
-                    href={`mailto:${sectionProps.contactEmail || 'hostonhome@gmail.com'}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {sectionProps.contactEmail || 'hostonhome@gmail.com'}
-                  </a>
-                </p>
-              </div>
-            </div>
-          </section>
-        );
+            </section>
+          );
+        }
 
       case 'PHOTO_GALLERY':
         {
