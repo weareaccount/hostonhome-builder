@@ -219,40 +219,42 @@ export class ProjectService {
     console.log('🔍 ProjectService.getProjectBySlug chiamato con slug:', slug);
     const hasSupabase = this.checkSupabaseConfig();
     
-    if (hasSupabase) {
-      try {
-        console.log('🔍 Cercando progetto per slug su Supabase...');
-        const { data: project, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('slug', slug)
-          .single();
+    // Prima carica i progetti locali per feedback immediato
+    const localProjects = this.getLocalProjects();
+    const localProject = localProjects.find(p => p.slug === slug);
+    
+    if (!hasSupabase) {
+      console.log('🔍 Supabase non configurato, uso progetti locali');
+      console.log('🔍 Progetto locale trovato per slug (no supabase):', localProject?.slug || 'null');
+      return localProject || null;
+    }
+    
+    // Poi prova a sincronizzare con Supabase (con timeout ridotto)
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout Supabase')), 3000) // 3 secondi
+      );
+      
+      const supabasePromise = supabase
+        .from('projects')
+        .select('*')
+        .eq('slug', slug)
+        .single();
 
-        if (error) {
-          console.warn('⚠️ Errore nel recupero progetto per slug da Supabase:', error);
-          console.log('⚠️ Fallback a progetti locali...');
-          // Fallback locale
-          const projects = this.getLocalProjects();
-          const localProject = projects.find(p => p.slug === slug);
-          console.log('🔍 Progetto locale trovato per slug:', localProject?.slug || 'null');
-          return localProject || null;
-        }
-        
-        console.log('✅ Progetto trovato per slug su Supabase:', project?.slug);
-        return project;
-      } catch (error) {
-        console.warn('⚠️ Fallback a progetti locali per slug:', slug, 'errore:', error);
-        const projects = this.getLocalProjects();
-        const localProject = projects.find(p => p.slug === slug);
-        console.log('🔍 Progetto locale trovato per slug (catch):', localProject?.slug || 'null');
+      const { data: project, error } = await Promise.race([supabasePromise, timeoutPromise]) as any;
+
+      if (error) {
+        console.warn('⚠️ Errore nel recupero progetto per slug da Supabase:', error);
+        console.log('⚠️ Fallback a progetti locali...');
+        console.log('🔍 Progetto locale trovato per slug:', localProject?.slug || 'null');
         return localProject || null;
       }
-    } else {
-      // Fallback locale
-      console.log('🔍 Supabase non configurato, uso progetti locali');
-      const projects = this.getLocalProjects();
-      const localProject = projects.find(p => p.slug === slug);
-      console.log('🔍 Progetto locale trovato per slug (no supabase):', localProject?.slug || 'null');
+      
+      console.log('✅ Progetto trovato per slug su Supabase:', project?.slug);
+      return project;
+    } catch (error) {
+      console.warn('⚠️ Fallback a progetti locali per slug:', slug, 'errore:', error);
+      console.log('🔍 Progetto locale trovato per slug (catch):', localProject?.slug || 'null');
       return localProject || null;
     }
   }
@@ -376,25 +378,4 @@ export class ProjectService {
     }
   }
 
-  // Ottiene un progetto per slug
-  static async getProjectBySlug(slug: string): Promise<Project | null> {
-    const hasSupabase = this.checkSupabaseConfig()
-    if (hasSupabase) {
-      try {
-        const { data: project, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('slug', slug)
-          .single()
-        if (error) throw error
-        return project
-      } catch (error) {
-        console.warn('⚠️ Recupero per slug da Supabase fallito, provo locale:', error)
-        const local = this.getLocalProjects().find(p => p.slug === slug) || null
-        return local
-      }
-    }
-    // Fallback locale
-    return this.getLocalProjects().find(p => p.slug === slug) || null
-  }
 }

@@ -56,9 +56,22 @@ export default function AdminPreviewPage() {
           console.log('✅ Progetto caricato per anteprima admin:', foundProject.name);
         } else {
           console.log('❌ Progetto non trovato per anteprima admin:', params.slug);
+          // Mostra un messaggio di errore più user-friendly
+          console.warn('⚠️ Il progetto potrebbe non esistere o essere stato eliminato');
         }
       } catch (error) {
-        console.error('Errore nel caricamento del progetto:', error);
+        console.error('❌ Errore critico nel caricamento del progetto:', error);
+        // In caso di errore critico, prova a caricare i progetti locali
+        try {
+          const localProjects = ProjectService.getLocalProjects();
+          const localProject = localProjects.find(p => p.slug === params.slug);
+          if (localProject) {
+            console.log('🔄 Fallback a progetto locale:', localProject.name);
+            setProject(localProject);
+          }
+        } catch (localError) {
+          console.error('❌ Errore anche nel fallback locale:', localError);
+        }
       } finally {
         setLoading(false);
       }
@@ -73,6 +86,36 @@ export default function AdminPreviewPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Caricamento anteprima...</p>
+          <p className="text-sm text-gray-500 mt-2">Slug: {params.slug}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <h2 className="font-bold text-lg mb-2">Progetto non trovato</h2>
+            <p className="text-sm">
+              Il progetto con slug <code className="bg-red-200 px-1 rounded">{params.slug}</code> non è stato trovato.
+            </p>
+          </div>
+          <div className="space-y-2 text-sm text-gray-600">
+            <p>Possibili cause:</p>
+            <ul className="list-disc list-inside space-y-1 text-left">
+              <li>Il progetto è stato eliminato</li>
+              <li>Lo slug non è corretto</li>
+              <li>Problemi di connessione al database</li>
+            </ul>
+          </div>
+          <button 
+            onClick={() => window.location.href = '/admin/users'}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Torna alla Dashboard Admin
+          </button>
         </div>
       </div>
     );
