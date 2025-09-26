@@ -2376,40 +2376,49 @@ const SectionComponent = ({
             setDomainValues(newValues);
           }, [sectionProps.domainInputs, section.id]);
 
-          const handleDomainChange = (domainId: string, value: string) => {
-            const newValues = { ...domainValues, [domainId]: value };
-            setDomainValues(newValues);
-            
-            console.log('🔍 DEBUG DOMAIN_NAME - Cambio dominio:', {
-              domainId,
-              value,
-              newValues,
-              sectionId: section.id
-            });
-            
-            // Aggiorna la sezione con i nuovi valori
-            onSectionUpdate(section.id, {
-              ...sectionProps,
-              domainInputs: [
-                { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: newValues.domain1 },
-                { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: newValues.domain2 },
-                { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: newValues.domain3 }
-              ]
-            });
-            
-            // Salvataggio forzato dopo 1 secondo per assicurarsi che venga salvato
-            setTimeout(() => {
-              console.log('💾 Salvataggio forzato domini dopo 1 secondo...');
-              onSectionUpdate(section.id, {
-                ...sectionProps,
-                domainInputs: [
-                  { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: newValues.domain1 },
-                  { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: newValues.domain2 },
-                  { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: newValues.domain3 }
-                ]
-              });
-            }, 1000);
-          };
+  const handleDomainChange = (domainId: string, value: string) => {
+    const newValues = { ...domainValues, [domainId]: value };
+    setDomainValues(newValues);
+
+    console.log('🔍 DEBUG DOMAIN_NAME - Cambio dominio:', {
+      domainId,
+      value,
+      newValues,
+      sectionId: section.id,
+      sectionProps,
+      onSectionUpdate: typeof onSectionUpdate
+    });
+
+    // Aggiorna la sezione con i nuovi valori
+    const updatedProps = {
+      ...sectionProps,
+      domainInputs: [
+        { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: newValues.domain1 },
+        { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: newValues.domain2 },
+        { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: newValues.domain3 }
+      ]
+    };
+
+    console.log('🔍 DEBUG DOMAIN_NAME - Props aggiornate:', updatedProps);
+
+    if (typeof onSectionUpdate === 'function') {
+      onSectionUpdate(section.id, updatedProps);
+      console.log('✅ onSectionUpdate chiamato con successo');
+    } else {
+      console.error('❌ onSectionUpdate non è una funzione:', onSectionUpdate);
+    }
+
+    // Salvataggio forzato dopo 1 secondo per assicurarsi che venga salvato
+    setTimeout(() => {
+      console.log('💾 Salvataggio forzato domini dopo 1 secondo...');
+      if (typeof onSectionUpdate === 'function') {
+        onSectionUpdate(section.id, updatedProps);
+        console.log('✅ Salvataggio forzato completato');
+      } else {
+        console.error('❌ onSectionUpdate non disponibile per salvataggio forzato');
+      }
+    }, 1000);
+  };
 
           return (
             <section className={cn(layoutStyle.section, "bg-gradient-to-br from-blue-50 to-indigo-100")}>

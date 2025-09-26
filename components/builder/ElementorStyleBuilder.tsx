@@ -1095,12 +1095,22 @@ export function ElementorStyleBuilder({
       sectionId,
       props,
       projectId,
-      sectionsCount: sections.length
+      sectionsCount: sections.length,
+      propsType: typeof props,
+      propsKeys: Object.keys(props || {}),
+      domainInputs: props?.domainInputs
     });
     
     const updatedSections = sections.map(section =>
       section.id === sectionId ? { ...section, props: { ...section.props, ...props } } : section
     );
+    
+    console.log('🔍 DEBUG handleSectionUpdate - Sezioni aggiornate:', {
+      originalCount: sections.length,
+      updatedCount: updatedSections.length,
+      updatedSection: updatedSections.find(s => s.id === sectionId)
+    });
+    
     onSectionsChange(updatedSections);
     
     // Salva automaticamente nel database se è una sezione DOMAIN_NAME
@@ -1109,7 +1119,8 @@ export function ElementorStyleBuilder({
       type: updatedSection?.type,
       hasDomainInputs: !!updatedSection?.props?.domainInputs,
       domainInputs: updatedSection?.props?.domainInputs,
-      projectId
+      projectId,
+      projectIdType: typeof projectId
     });
     
     if (updatedSection?.type === 'DOMAIN_NAME' && updatedSection.props.domainInputs && projectId) {
@@ -1118,20 +1129,39 @@ export function ElementorStyleBuilder({
           projectId,
           domainInputs: updatedSection.props.domainInputs,
           sectionId,
-          allSections: updatedSections.length
+          allSections: updatedSections.length,
+          sectionsToSave: updatedSections.map(s => ({ id: s.id, type: s.type, hasProps: !!s.props }))
         });
         
-        await ProjectService.updateProject(projectId, {
+        const result = await ProjectService.updateProject(projectId, {
           sections: updatedSections
         });
-        console.log('✅ Domini salvati automaticamente nel database con ID:', projectId);
+        
+        console.log('✅ Domini salvati automaticamente nel database con ID:', projectId, 'Risultato:', result);
       } catch (error) {
         console.error('❌ Errore nel salvataggio automatico domini:', error);
+        console.error('❌ Dettagli errore:', {
+          message: error instanceof Error ? error.message : 'Errore sconosciuto',
+          stack: error instanceof Error ? error.stack : undefined,
+          projectId,
+          sectionsCount: updatedSections.length
+        });
       }
     } else if (updatedSection?.type === 'DOMAIN_NAME' && !projectId) {
-      console.warn('⚠️ Impossibile salvare domini: projectId non disponibile');
+      console.warn('⚠️ Impossibile salvare domini: projectId non disponibile', { projectId });
     } else if (updatedSection?.type === 'DOMAIN_NAME' && !updatedSection.props.domainInputs) {
-      console.warn('⚠️ Impossibile salvare domini: domainInputs non presenti');
+      console.warn('⚠️ Impossibile salvare domini: domainInputs non presenti', { 
+        hasProps: !!updatedSection.props,
+        propsKeys: Object.keys(updatedSection.props || {}),
+        domainInputs: updatedSection.props?.domainInputs
+      });
+    } else {
+      console.log('ℹ️ Sezione non DOMAIN_NAME o condizioni non soddisfatte:', {
+        type: updatedSection?.type,
+        isDomainName: updatedSection?.type === 'DOMAIN_NAME',
+        hasDomainInputs: !!updatedSection?.props?.domainInputs,
+        hasProjectId: !!projectId
+      });
     }
   };
 
