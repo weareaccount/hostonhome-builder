@@ -65,53 +65,12 @@ interface ElementorStyleBuilderProps {
 }
 
 // Modal di conferma pubblicazione
-const PublishModal = ({ isOpen, onClose, onConfirm, siteName, sections, onSectionUpdate, projectId }: {
+const PublishModal = ({ isOpen, onClose, onConfirm, siteName }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   siteName: string;
-  sections: Section[];
-  onSectionUpdate: (sectionId: string, props: any) => void;
-  projectId?: string;
 }) => {
-  const [domainInputs, setDomainInputs] = useState([
-    { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
-    { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: '' },
-    { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: '' }
-  ]);
-
-  // Carica i domini esistenti dalla sezione DOMAIN_NAME
-  useEffect(() => {
-    const domainSection = sections.find(s => s.type === 'DOMAIN_NAME');
-    if (domainSection && domainSection.props.domainInputs) {
-      console.log('🔍 DEBUG PublishModal - Caricamento domini esistenti:', domainSection.props.domainInputs);
-      setDomainInputs(domainSection.props.domainInputs);
-    }
-  }, [sections]);
-
-  const handleDomainChange = (domainId: string, value: string) => {
-    const newInputs = domainInputs.map(input => 
-      input.id === domainId ? { ...input, value } : input
-    );
-    setDomainInputs(newInputs);
-    
-    console.log('🔍 DEBUG PublishModal - Cambio dominio:', {
-      domainId,
-      value,
-      newInputs
-    });
-    
-    // Salva immediatamente nella sezione DOMAIN_NAME
-    const domainSection = sections.find(s => s.type === 'DOMAIN_NAME');
-    if (domainSection) {
-      console.log('💾 Salvataggio domini dal modal nella sezione DOMAIN_NAME...', newInputs);
-      onSectionUpdate(domainSection.id, {
-        ...domainSection.props,
-        domainInputs: newInputs
-      });
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -140,20 +99,36 @@ const PublishModal = ({ isOpen, onClose, onConfirm, siteName, sections, onSectio
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-blue-800 mb-3">🌐 Domini proposti:</h3>
             <div className="space-y-2">
-              {domainInputs.map((input) => (
-                <div key={input.id} className="relative">
-                  <input
-                    type="text"
-                    placeholder={input.placeholder}
-                    value={input.value}
-                    onChange={(e) => handleDomainChange(input.id, e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  />
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <span className="text-blue-400 text-xs">🌐</span>
-                  </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="es. ilmiobnb.it"
+                  className="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                  <span className="text-blue-400 text-xs">🌐</span>
                 </div>
-              ))}
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="es. ilmiobnb.com"
+                  className="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                  <span className="text-blue-400 text-xs">🌐</span>
+                </div>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="es. ilmiobnb.eu"
+                  className="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                  <span className="text-blue-400 text-xs">🌐</span>
+                </div>
+              </div>
             </div>
             <p className="text-xs text-blue-600 mt-2 italic">
               I domini verranno verificati e ti contatteremo per confermare la disponibilità.
@@ -408,9 +383,6 @@ const BuilderHeader = ({
           alert('✅ Richiesta di pubblicazione inviata con successo! Gli amministratori riceveranno la tua richiesta e ti contatteranno entro 4 giorni.');
         }}
         siteName="Il tuo sito"
-        sections={sections}
-        onSectionUpdate={handleSectionUpdate}
-        projectId={projectId}
       />
     </div>
   );
