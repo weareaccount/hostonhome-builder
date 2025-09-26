@@ -1091,6 +1091,13 @@ export function ElementorStyleBuilder({
   };
 
   const handleSectionUpdate = async (sectionId: string, props: any) => {
+    console.log('🔍 DEBUG handleSectionUpdate chiamato:', {
+      sectionId,
+      props,
+      projectId,
+      sectionsCount: sections.length
+    });
+    
     const updatedSections = sections.map(section =>
       section.id === sectionId ? { ...section, props: { ...section.props, ...props } } : section
     );
@@ -1098,12 +1105,20 @@ export function ElementorStyleBuilder({
     
     // Salva automaticamente nel database se è una sezione DOMAIN_NAME
     const updatedSection = updatedSections.find(s => s.id === sectionId);
+    console.log('🔍 DEBUG updatedSection trovata:', {
+      type: updatedSection?.type,
+      hasDomainInputs: !!updatedSection?.props?.domainInputs,
+      domainInputs: updatedSection?.props?.domainInputs,
+      projectId
+    });
+    
     if (updatedSection?.type === 'DOMAIN_NAME' && updatedSection.props.domainInputs && projectId) {
       try {
         console.log('💾 Salvataggio automatico domini nel database...', {
           projectId,
           domainInputs: updatedSection.props.domainInputs,
-          sectionId
+          sectionId,
+          allSections: updatedSections.length
         });
         
         await ProjectService.updateProject(projectId, {
@@ -1115,6 +1130,8 @@ export function ElementorStyleBuilder({
       }
     } else if (updatedSection?.type === 'DOMAIN_NAME' && !projectId) {
       console.warn('⚠️ Impossibile salvare domini: projectId non disponibile');
+    } else if (updatedSection?.type === 'DOMAIN_NAME' && !updatedSection.props.domainInputs) {
+      console.warn('⚠️ Impossibile salvare domini: domainInputs non presenti');
     }
   };
 

@@ -184,6 +184,9 @@ export default function BuilderPage() {
             layoutType: project.layout_type
           });
           
+          // Debug specifico per projectId
+          console.log('🔍 DEBUG - projectId che verrà passato al builder:', project.id);
+          
           setRealProject(project);
           
           // Converte il progetto nel formato Site
