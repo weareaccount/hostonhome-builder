@@ -248,6 +248,23 @@ export default function BuilderPage() {
           }
           
           console.log('📋 Impostando sezioni finali:', sectionsToLoad.length, sectionsToLoad);
+          
+          // Debug specifico per sezioni DOMAIN_NAME
+          const domainSections = sectionsToLoad.filter(s => s.type === 'DOMAIN_NAME');
+          if (domainSections.length > 0) {
+            console.log('🔍 DEBUG - Sezioni DOMAIN_NAME trovate:', domainSections);
+            domainSections.forEach((section, index) => {
+              console.log(`🔍 DEBUG - Sezione DOMAIN_NAME ${index + 1}:`, {
+                id: section.id,
+                type: section.type,
+                props: section.props,
+                domainInputs: section.props?.domainInputs
+              });
+            });
+          } else {
+            console.log('⚠️ DEBUG - Nessuna sezione DOMAIN_NAME trovata nelle sezioni caricate');
+          }
+          
           setSections(sectionsToLoad);
           console.log('✅ Builder inizializzato con', sectionsToLoad.length, 'sezioni');
         } else {

@@ -65,12 +65,13 @@ interface ElementorStyleBuilderProps {
 }
 
 // Modal di conferma pubblicazione
-const PublishModal = ({ isOpen, onClose, onConfirm, siteName, sections }: {
+const PublishModal = ({ isOpen, onClose, onConfirm, siteName, sections, onSectionUpdate }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   siteName: string;
   sections: Section[];
+  onSectionUpdate: (sectionId: string, props: any) => void;
 }) => {
   const [domainInputs, setDomainInputs] = useState([
     { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
@@ -87,9 +88,20 @@ const PublishModal = ({ isOpen, onClose, onConfirm, siteName, sections }: {
   }, [sections]);
 
   const handleDomainChange = (domainId: string, value: string) => {
-    setDomainInputs(prev => prev.map(input => 
+    const newInputs = domainInputs.map(input => 
       input.id === domainId ? { ...input, value } : input
-    ));
+    );
+    setDomainInputs(newInputs);
+    
+    // Salva automaticamente nella sezione DOMAIN_NAME
+    const domainSection = sections.find(s => s.type === 'DOMAIN_NAME');
+    if (domainSection) {
+      console.log('💾 Salvataggio domini dal modal nella sezione DOMAIN_NAME...', newInputs);
+      onSectionUpdate(domainSection.id, {
+        ...domainSection.props,
+        domainInputs: newInputs
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -389,6 +401,7 @@ const BuilderHeader = ({
         }}
         siteName="Il tuo sito"
         sections={sections}
+        onSectionUpdate={handleSectionUpdate}
       />
     </div>
   );
