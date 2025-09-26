@@ -2,7 +2,7 @@
 export type LayoutType = 'ELEGANTE';
 export type ThemeAccent = 'BLUE' | 'GREEN' | 'RED' | 'AMBER' | 'VIOLET';
 export type ThemeFont = 'INTER' | 'POPPINS' | 'MONTSERRAT' | 'WORKSANS' | 'DMSANS';
-export type SectionType = 'HERO' | 'ABOUT' | 'SERVICES' | 'GALLERY' | 'TESTIMONIALS' | 'CONTACT' | 'PHOTO_GALLERY' | 'AMENITIES' | 'GET_YOUR_GUIDE';
+export type SectionType = 'HERO' | 'ABOUT' | 'SERVICES' | 'GALLERY' | 'TESTIMONIALS' | 'CONTACT' | 'PHOTO_GALLERY' | 'AMENITIES' | 'GET_YOUR_GUIDE' | 'DOMAIN_NAME';
 export type PlanType = 'BASE' | 'PLUS' | 'PRO';
 export type UserRole = 'OWNER' | 'EDITOR';
 
@@ -101,6 +101,20 @@ export interface ContactSectionProps extends BaseSectionProps {
   showContactForm: boolean;
 }
 
+export interface DomainNameSectionProps extends BaseSectionProps {
+  title: string;
+  subtitle: string;
+  domainOptions: Array<{
+    id: string;
+    name: string;
+    description: string;
+    price?: string;
+    isRecommended?: boolean;
+  }>;
+  selectedDomain?: string;
+  contactEmail: string;
+}
+
 export type SectionProps = 
   | HeroSectionProps 
   | AboutSectionProps 
@@ -110,7 +124,8 @@ export type SectionProps =
   | AmenitiesSectionProps
   | GetYourGuideSectionProps
   | TestimonialsSectionProps 
-  | ContactSectionProps;
+  | ContactSectionProps
+  | DomainNameSectionProps;
 
 // Section definition
 export interface Section {

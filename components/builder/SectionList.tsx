@@ -38,9 +38,9 @@ export const SectionList: React.FC<SectionListProps> = ({
     if (!layoutType) return availableSections;
     
     const layoutSections: Record<string, SectionType[]> = {
-      'ELEGANTE': ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT'],
-      'MEDIO': ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT'],
-      'ESSENZIALE': ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT']
+      'ELEGANTE': ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT', 'DOMAIN_NAME'],
+      'MEDIO': ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT', 'DOMAIN_NAME'],
+      'ESSENZIALE': ['HERO', 'ABOUT', 'SERVICES', 'GALLERY', 'TESTIMONIALS', 'CONTACT', 'DOMAIN_NAME']
     };
     
     return layoutSections[layoutType] || availableSections;
@@ -61,6 +61,7 @@ export const SectionList: React.FC<SectionListProps> = ({
       case 'GALLERY': return '🖼️';
       case 'TESTIMONIALS': return '💬';
       case 'CONTACT': return '📞';
+      case 'DOMAIN_NAME': return '🌐';
       default: return '📄';
     }
   };
@@ -73,6 +74,7 @@ export const SectionList: React.FC<SectionListProps> = ({
       case 'GALLERY': return 'bg-orange-500/10 text-orange-600 border-orange-200';
       case 'TESTIMONIALS': return 'bg-pink-500/10 text-pink-600 border-pink-200';
       case 'CONTACT': return 'bg-red-500/10 text-red-600 border-red-200';
+      case 'DOMAIN_NAME': return 'bg-indigo-500/10 text-indigo-600 border-indigo-200';
       default: return 'bg-gray-500/10 text-gray-600 border-gray-200';
     }
   };

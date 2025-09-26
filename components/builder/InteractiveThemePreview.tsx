@@ -2350,6 +2350,77 @@ const SectionComponent = ({
           </section>
         );
 
+      case 'DOMAIN_NAME':
+        return (
+          <section className={cn(layoutStyle.section, "bg-gradient-to-br from-blue-50 to-indigo-100")}>
+            <div className={deviceType === 'mobile' ? 'px-4' : deviceType === 'tablet' ? 'px-6' : layoutStyle.container}>
+              <div className="text-center mb-8">
+                <h2 className={cn(layoutStyle.sectionTitle, deviceType === 'mobile' ? 'text-2xl' : '')}>
+                  {sectionProps.title || 'Scegli il tuo dominio'}
+                </h2>
+                <p className={cn("text-gray-600 mt-4", deviceType === 'mobile' ? 'text-sm' : 'text-base')}>
+                  {sectionProps.subtitle || 'Personalizza il tuo sito con un dominio unico'}
+                </p>
+              </div>
+              
+              <div className={cn(
+                "grid gap-6",
+                deviceType === 'mobile' ? 'grid-cols-1' : deviceType === 'tablet' ? 'grid-cols-2' : 'grid-cols-3'
+              )}>
+                {(sectionProps.domainOptions || [
+                  { id: 'option1', name: 'ilmiobnb.it', description: 'Dominio personalizzato .it', price: '€15/anno', isRecommended: true },
+                  { id: 'option2', name: 'ilmiobnb.com', description: 'Dominio internazionale .com', price: '€12/anno' },
+                  { id: 'option3', name: 'ilmiobnb.eu', description: 'Dominio europeo .eu', price: '€10/anno' }
+                ]).map((option: any, index: number) => (
+                  <div
+                    key={option.id}
+                    className={cn(
+                      "bg-white rounded-xl p-6 shadow-lg border-2 transition-all duration-200 hover:shadow-xl",
+                      option.isRecommended ? "border-orange-500 ring-2 ring-orange-200" : "border-gray-200 hover:border-blue-300"
+                    )}
+                  >
+                    {option.isRecommended && (
+                      <div className="bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full inline-block mb-4">
+                        Consigliato
+                      </div>
+                    )}
+                    
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{option.name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{option.description}</p>
+                    
+                    {option.price && (
+                      <div className="text-2xl font-bold text-blue-600 mb-4">{option.price}</div>
+                    )}
+                    
+                    <button
+                      className={cn(
+                        "w-full py-3 px-4 rounded-lg font-semibold transition-colors",
+                        option.isRecommended
+                          ? "bg-orange-500 hover:bg-orange-600 text-white"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                      )}
+                    >
+                      Seleziona
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="text-center mt-8">
+                <p className="text-sm text-gray-500">
+                  Per assistenza, contatta{' '}
+                  <a 
+                    href={`mailto:${sectionProps.contactEmail || 'hostonhome@gmail.com'}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {sectionProps.contactEmail || 'hostonhome@gmail.com'}
+                  </a>
+                </p>
+              </div>
+            </div>
+          </section>
+        );
+
       case 'PHOTO_GALLERY':
         {
           const photos = (sectionProps.photos || []) as Array<{url?: string; alt?: string}>;

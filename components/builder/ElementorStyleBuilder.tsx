@@ -31,7 +31,9 @@ import {
   Target,
   FileText,
   Image as ImageIcon,
-  Trash2
+  Trash2,
+  Upload,
+  AlertTriangle
 } from 'lucide-react';
 
 // Costanti per font e colori
@@ -61,6 +63,62 @@ interface ElementorStyleBuilderProps {
   className?: string;
 }
 
+// Modal di conferma pubblicazione
+const PublishModal = ({ isOpen, onClose, onConfirm, siteName }: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  siteName: string;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-orange-100 p-2 rounded-full">
+            <AlertTriangle className="w-6 h-6 text-orange-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Conferma Pubblicazione</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Stai per pubblicare il sito <strong>"{siteName}"</strong>.
+          </p>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-sm text-yellow-800">
+              <strong>⚠️ Importante:</strong> Dopo la pubblicazione non sarà più possibile modificare il sito. 
+              Per eventuali modifiche, contatta il supporto all'indirizzo{' '}
+              <a href="mailto:hostonhome@gmail.com" className="text-blue-600 hover:underline">
+                hostonhome@gmail.com
+              </a>
+            </p>
+          </div>
+          
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Annulla
+            </Button>
+            <Button
+              onClick={onConfirm}
+              className="flex-1 bg-orange-600 hover:bg-orange-700"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Pubblica
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Header semplificato e pulito
 const BuilderHeader = ({ 
   layoutType, 
@@ -85,6 +143,7 @@ const BuilderHeader = ({
   showThemePanel: boolean;
   setShowThemePanel: (show: boolean) => void;
 }) => {
+  const [showPublishModal, setShowPublishModal] = useState(false);
   return (
     <div className="h-auto bg-white border-b border-gray-200 px-3 sm:px-6 shadow-sm">
       {/* Mobile Layout */}
@@ -191,6 +250,16 @@ const BuilderHeader = ({
             <Save className="w-4 h-4 mr-2" />
             Salva Progetto
           </Button>
+
+          {/* PULSANTE PUBBLICA */}
+          <Button
+            onClick={() => setShowPublishModal(true)}
+            className="inline-flex bg-orange-600 hover:bg-orange-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+            size="sm"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Pubblica
+          </Button>
         </div>
       </div>
 
@@ -229,8 +298,8 @@ const BuilderHeader = ({
                 </div>
               </div>
               
-              {/* Pulsante Salva */}
-              <div className="flex justify-center pt-4 border-t border-gray-200">
+              {/* Pulsanti Salva e Pubblica */}
+              <div className="flex justify-center gap-3 pt-4 border-t border-gray-200">
                 <Button 
                   onClick={onSave}
                   className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
@@ -239,11 +308,30 @@ const BuilderHeader = ({
                   <Save className="w-4 h-4" />
                   Salva
                 </Button>
+                <Button 
+                  onClick={() => setShowPublishModal(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
+                  size="sm"
+                >
+                  <Upload className="w-4 h-4" />
+                  Pubblica
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Modal di conferma pubblicazione */}
+      <PublishModal
+        isOpen={showPublishModal}
+        onClose={() => setShowPublishModal(false)}
+        onConfirm={() => {
+          setShowPublishModal(false);
+          onPublish();
+        }}
+        siteName="Il tuo sito"
+      />
     </div>
   );
 };
@@ -269,6 +357,7 @@ const WidgetLibrary = ({ onAddSection, onSectionsChange, availableSections, maxS
     { type: 'GALLERY', name: 'Galleria', icon: '🖼️', description: 'Raccolta immagini' },
     { type: 'TESTIMONIALS', name: 'Recensioni', icon: '💬', description: 'Feedback clienti' },
     { type: 'CONTACT', name: 'Contatti', icon: '📞', description: 'Dati di contatto' },
+    { type: 'DOMAIN_NAME', name: 'Nome del Dominio', icon: '🌐', description: 'Scegli il tuo dominio personalizzato' },
     // Widget premium - sempre visibili, bloccati su BASE
     { type: 'PHOTO_GALLERY', name: 'Galleria Foto', icon: '📷', description: 'Griglia fotografica' },
     { type: 'AMENITIES', name: 'Dotazioni', icon: '🧰', description: 'Lista dotazioni/servizi' },
