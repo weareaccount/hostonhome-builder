@@ -1010,13 +1010,12 @@ function getDefaultPropsForSection(type: SectionType) {
     case 'DOMAIN_NAME':
       return {
         title: 'Scegli il tuo dominio',
-        subtitle: 'Personalizza il tuo sito con un dominio unico',
-        domainOptions: [
-          { id: 'option1', name: 'ilmiobnb.it', description: 'Dominio personalizzato .it', price: '€15/anno', isRecommended: true },
-          { id: 'option2', name: 'ilmiobnb.com', description: 'Dominio internazionale .com', price: '€12/anno' },
-          { id: 'option3', name: 'ilmiobnb.eu', description: 'Dominio europeo .eu', price: '€10/anno' }
+        subtitle: 'Inserisci 3 domini possibili per il tuo sito',
+        domainInputs: [
+          { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
+          { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: '' },
+          { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: '' }
         ],
-        selectedDomain: '',
         contactEmail: 'hostonhome@gmail.com',
         isActive: true,
         order: 0,

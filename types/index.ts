@@ -104,14 +104,11 @@ export interface ContactSectionProps extends BaseSectionProps {
 export interface DomainNameSectionProps extends BaseSectionProps {
   title: string;
   subtitle: string;
-  domainOptions: Array<{
+  domainInputs: Array<{
     id: string;
-    name: string;
-    description: string;
-    price?: string;
-    isRecommended?: boolean;
+    placeholder: string;
+    value: string;
   }>;
-  selectedDomain?: string;
   contactEmail: string;
 }
 

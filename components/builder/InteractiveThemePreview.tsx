@@ -2359,51 +2359,41 @@ const SectionComponent = ({
                   {sectionProps.title || 'Scegli il tuo dominio'}
                 </h2>
                 <p className={cn("text-gray-600 mt-4", deviceType === 'mobile' ? 'text-sm' : 'text-base')}>
-                  {sectionProps.subtitle || 'Personalizza il tuo sito con un dominio unico'}
+                  {sectionProps.subtitle || 'Inserisci 3 domini possibili per il tuo sito'}
                 </p>
               </div>
               
               <div className={cn(
-                "grid gap-6",
-                deviceType === 'mobile' ? 'grid-cols-1' : deviceType === 'tablet' ? 'grid-cols-2' : 'grid-cols-3'
+                "max-w-2xl mx-auto space-y-4",
+                deviceType === 'mobile' ? 'px-4' : 'px-0'
               )}>
-                {(sectionProps.domainOptions || [
-                  { id: 'option1', name: 'ilmiobnb.it', description: 'Dominio personalizzato .it', price: '€15/anno', isRecommended: true },
-                  { id: 'option2', name: 'ilmiobnb.com', description: 'Dominio internazionale .com', price: '€12/anno' },
-                  { id: 'option3', name: 'ilmiobnb.eu', description: 'Dominio europeo .eu', price: '€10/anno' }
-                ]).map((option: any, index: number) => (
-                  <div
-                    key={option.id}
-                    className={cn(
-                      "bg-white rounded-xl p-6 shadow-lg border-2 transition-all duration-200 hover:shadow-xl",
-                      option.isRecommended ? "border-orange-500 ring-2 ring-orange-200" : "border-gray-200 hover:border-blue-300"
-                    )}
-                  >
-                    {option.isRecommended && (
-                      <div className="bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full inline-block mb-4">
-                        Consigliato
-                      </div>
-                    )}
-                    
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{option.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{option.description}</p>
-                    
-                    {option.price && (
-                      <div className="text-2xl font-bold text-blue-600 mb-4">{option.price}</div>
-                    )}
-                    
-                    <button
+                {(sectionProps.domainInputs || [
+                  { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: '' },
+                  { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: '' },
+                  { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: '' }
+                ]).map((input: any, index: number) => (
+                  <div key={input.id} className="relative">
+                    <input
+                      type="text"
+                      placeholder={input.placeholder}
+                      value={input.value}
                       className={cn(
-                        "w-full py-3 px-4 rounded-lg font-semibold transition-colors",
-                        option.isRecommended
-                          ? "bg-orange-500 hover:bg-orange-600 text-white"
-                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                        "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200",
+                        deviceType === 'mobile' ? 'text-base' : 'text-lg'
                       )}
-                    >
-                      Seleziona
-                    </button>
+                      readOnly={readOnly}
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <span className="text-gray-400 text-sm">🌐</span>
+                    </div>
                   </div>
                 ))}
+                
+                <div className="text-center mt-6">
+                  <p className="text-sm text-gray-500">
+                    I domini verranno verificati e ti contatteremo per confermare la disponibilità
+                  </p>
+                </div>
               </div>
               
               <div className="text-center mt-8">

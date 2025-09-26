@@ -87,6 +87,13 @@ const PublishModal = ({ isOpen, onClose, onConfirm, siteName }: {
             Stai per pubblicare il sito <strong>"{siteName}"</strong>.
           </p>
           
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-sm text-green-800">
+              <strong>✅ Richiesta inviata!</strong> La tua richiesta è stata mandata agli amministratori. 
+              Entro 4 giorni il sito sarà pubblicato e verrai aggiornato per email quando il sito è terminato.
+            </p>
+          </div>
+          
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <p className="text-sm text-yellow-800">
               <strong>⚠️ Importante:</strong> Dopo la pubblicazione non sarà più possibile modificare il sito. 
