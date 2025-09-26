@@ -20,6 +20,13 @@ export default function PreviewPage() {
     const loadProject = async () => {
       if (!params.siteId) return;
       
+      console.log('🔍 DEBUG PreviewPage:', {
+        siteId: params.siteId,
+        isAdmin,
+        user: user ? { id: user.id, email: user.email } : null,
+        adminSession: localStorage.getItem('admin_session')
+      });
+      
       try {
         let foundProject = null;
         
@@ -27,10 +34,16 @@ export default function PreviewPage() {
           // Se è admin, carica il progetto direttamente tramite slug
           console.log('🔍 Admin: Caricamento progetto per anteprima:', params.siteId);
           foundProject = await ProjectService.getProjectBySlug(params.siteId as string);
+          console.log('🔍 Admin: Risultato ricerca progetto:', foundProject);
         } else if (user) {
           // Se è utente normale, carica solo i suoi progetti
+          console.log('🔍 Utente normale: Caricamento progetti utente:', user.id);
           const userProjects = await ProjectService.getUserProjects(user.id);
+          console.log('🔍 Utente normale: Progetti trovati:', userProjects.length);
           foundProject = userProjects.find(p => p.slug === params.siteId);
+          console.log('🔍 Utente normale: Progetto trovato per slug:', foundProject);
+        } else {
+          console.log('❌ Nessun utente autenticato e non è admin');
         }
         
         if (foundProject) {

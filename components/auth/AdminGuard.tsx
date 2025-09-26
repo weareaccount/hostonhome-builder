@@ -104,24 +104,40 @@ export function useIsAdmin() {
     const checkSession = () => {
       try {
         const sessionData = localStorage.getItem('admin_session');
+        console.log('🔍 DEBUG useIsAdmin - sessionData:', sessionData);
+        
         if (!sessionData) {
+          console.log('🔍 DEBUG useIsAdmin - Nessuna sessione admin trovata');
           setIsAdmin(false);
           return;
         }
 
         const session: AdminSession = JSON.parse(sessionData);
+        console.log('🔍 DEBUG useIsAdmin - session:', session);
+        
         const loginTime = new Date(session.loginTime);
         const now = new Date();
         const hoursElapsed = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
         
+        console.log('🔍 DEBUG useIsAdmin - Verifiche:', {
+          hoursElapsed,
+          sessionEmail: session.email,
+          adminEmail: ADMIN_EMAIL,
+          emailMatch: session.email === ADMIN_EMAIL,
+          sessionValid: hoursElapsed <= 8 && session.email === ADMIN_EMAIL
+        });
+        
         if (hoursElapsed > 8 || session.email !== ADMIN_EMAIL) {
+          console.log('🔍 DEBUG useIsAdmin - Sessione non valida, rimuovo');
           localStorage.removeItem('admin_session');
           setIsAdmin(false);
           return;
         }
 
+        console.log('🔍 DEBUG useIsAdmin - Sessione valida, admin riconosciuto');
         setIsAdmin(true);
       } catch (error) {
+        console.log('🔍 DEBUG useIsAdmin - Errore:', error);
         setIsAdmin(false);
       }
     };
