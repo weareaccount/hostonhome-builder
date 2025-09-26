@@ -226,22 +226,30 @@ export default function AdminPreviewPage() {
          const domainSection = mockSite.pages[0].sections.find(s => s.type === 'DOMAIN_NAME');
          let domainInputs = domainSection?.props?.domainInputs || [];
 
-         // Se non ci sono domini nella sezione, prova a caricarli dal campo domain_names
-         if (domainInputs.length === 0 && project) {
-           console.log('🔍 Admin Preview - Caricamento domini dal campo domain_names...');
+         // Carica domini dal campo domain_names se disponibile
+         if (project && project.id) {
+           console.log('🔍 Admin Preview - Caricamento domini dal campo domain_names per progetto:', project.id);
            ProjectService.getDomainNames(project.id).then(domainNames => {
              if (domainNames.length > 0) {
                console.log('✅ Admin Preview - Domini caricati dal campo domain_names:', domainNames);
                // Aggiorna l'array domainInputs per il rendering
                domainInputs = domainNames;
+             } else {
+               console.log('⚠️ Admin Preview - Nessun dominio trovato nel campo domain_names');
              }
            }).catch(error => {
              console.error('❌ Admin Preview - Errore nel caricamento domini:', error);
+           });
+         } else {
+           console.log('⚠️ Admin Preview - Progetto non disponibile per caricamento domini:', {
+             hasProject: !!project,
+             projectId: project?.id
            });
          }
 
          // Debug: log dei domini trovati
          console.log('🔍 DEBUG Admin Preview - Domini:', {
+           project: project ? { id: project.id, name: project.name } : 'null',
            domainSection,
            domainInputs,
            sectionsCount: mockSite.pages[0].sections.length,

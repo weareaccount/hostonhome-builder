@@ -1129,7 +1129,8 @@ export function ElementorStyleBuilder({
           projectId,
           domainInputs: updatedSection.props.domainInputs,
           sectionId,
-          allSections: updatedSections.length
+          allSections: updatedSections.length,
+          domainInputsStringified: JSON.stringify(updatedSection.props.domainInputs, null, 2)
         });
         
         // Salva domini separatamente nel campo domain_names
