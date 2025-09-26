@@ -225,6 +225,14 @@ export default function AdminPreviewPage() {
   // Trova la sezione DOMAIN_NAME per mostrare i domini
   const domainSection = mockSite.pages[0].sections.find(s => s.type === 'DOMAIN_NAME');
   const domainInputs = domainSection?.props?.domainInputs || [];
+  
+  // Debug: log dei domini trovati
+  console.log('🔍 DEBUG Admin Preview - Domini:', {
+    domainSection,
+    domainInputs,
+    sectionsCount: mockSite.pages[0].sections.length,
+    allSections: mockSite.pages[0].sections.map(s => ({ type: s.type, hasProps: !!s.props }))
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -234,20 +242,29 @@ export default function AdminPreviewPage() {
         </div>
       </div>
       
-      {/* Mostra domini se presenti */}
-      {domainInputs.length > 0 && (
-        <div className="fixed top-16 right-4 z-50 max-w-sm">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-lg">
-            <h3 className="text-sm font-semibold text-blue-800 mb-2">🌐 Domini proposti dall'utente:</h3>
+      {/* Mostra domini se presenti - posizione più visibile */}
+      {domainInputs.length > 0 ? (
+        <div className="fixed top-16 left-4 z-50 max-w-sm">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-green-800 mb-2">🌐 Domini proposti dall'utente:</h3>
             <div className="space-y-1">
               {domainInputs.map((input: any, index: number) => (
-                <div key={input.id} className="text-xs text-blue-700 bg-white px-2 py-1 rounded border">
+                <div key={input.id} className="text-xs text-green-700 bg-white px-2 py-1 rounded border">
                   {input.value || `Dominio ${index + 1} (vuoto)`}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-blue-600 mt-2 italic">
+            <p className="text-xs text-green-600 mt-2 italic">
               Questi domini sono stati inseriti dall'utente nel builder
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="fixed top-16 left-4 z-50 max-w-sm">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-yellow-800 mb-2">⚠️ Nessun dominio trovato</h3>
+            <p className="text-xs text-yellow-700">
+              L'utente non ha ancora inserito domini nella sezione "Nome del Dominio"
             </p>
           </div>
         </div>
