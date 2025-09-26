@@ -2731,8 +2731,8 @@ export function InteractiveThemePreview({
 }: InteractiveThemePreviewProps) {
   const [editingSection, setEditingSection] = useState<Section | null>(null);
   const layoutStyle = LAYOUT_STYLES[layoutType];
-  const accentColor = ACCENT_COLORS[theme.accent];
-  const fontClass = FONT_CLASSES[theme.font];
+  const accentColor = ACCENT_COLORS[theme?.accent || 'BLUE'];
+  const fontClass = FONT_CLASSES[theme?.font || 'INTER'];
   
   // Debug logging per tema
   console.log('🎨 Tema applicato:', {
