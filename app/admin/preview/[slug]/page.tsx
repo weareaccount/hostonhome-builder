@@ -12,16 +12,23 @@ export default function AdminPreviewPage() {
   const isAdmin = useIsAdmin();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
     const loadProject = async () => {
       if (!params.slug) return;
       
-      console.log('🔍 DEBUG AdminPreviewPage:', {
+      // Debug info per troubleshooting
+      const debugData = {
         slug: params.slug,
         isAdmin,
-        adminSession: typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null
-      });
+        adminSession: typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null,
+        timestamp: new Date().toISOString(),
+        userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server'
+      };
+      
+      console.log('🔍 DEBUG AdminPreviewPage:', debugData);
+      setDebugInfo(debugData);
       
       // Controllo admin più permissivo per anteprima (solo client-side)
       const adminSession = typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null;
@@ -87,6 +94,15 @@ export default function AdminPreviewPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Caricamento anteprima...</p>
           <p className="text-sm text-gray-500 mt-2">Slug: {params.slug}</p>
+          <p className="text-xs text-gray-400 mt-1">Admin: {isAdmin ? '✅' : '❌'}</p>
+          
+          {/* Debug info durante il loading */}
+          {debugInfo && (
+            <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-left max-w-md mx-auto">
+              <p className="font-semibold mb-2">Debug Info:</p>
+              <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -110,6 +126,15 @@ export default function AdminPreviewPage() {
               <li>Problemi di connessione al database</li>
             </ul>
           </div>
+          
+          {/* Debug info per troubleshooting */}
+          {debugInfo && (
+            <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-left">
+              <p className="font-semibold mb-2">Debug Info:</p>
+              <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
+            </div>
+          )}
+          
           <button 
             onClick={() => window.location.href = '/admin/users'}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
