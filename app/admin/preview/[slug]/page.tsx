@@ -156,9 +156,16 @@ export default function AdminPreviewPage() {
       </div>
       
       <InteractiveThemePreview 
-        site={mockSite}
-        isPreview={true}
-        showAdminBadge={true}
+        layoutType={mockSite.layoutType}
+        theme={mockSite.theme}
+        sections={mockSite.pages[0].sections}
+        onSectionUpdate={() => {}}
+        onSectionDelete={() => {}}
+        onSectionPublish={() => {}}
+        onSectionUnpublish={() => {}}
+        onSectionReorder={() => {}}
+        deviceType="desktop"
+        readOnly={true}
       />
     </div>
   );
