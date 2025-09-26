@@ -61,6 +61,7 @@ interface ElementorStyleBuilderProps {
   onPublish: () => void;
   maxSections: number;
   className?: string;
+  projectId?: string; // ID del progetto per il salvataggio automatico
 }
 
 // Modal di conferma pubblicazione
@@ -718,7 +719,8 @@ export function ElementorStyleBuilder({
   onThemeChange,
   onSave,
   onPublish,
-  maxSections
+  maxSections,
+  projectId
 }: ElementorStyleBuilderProps) {
   // Nothing to change here for gating; gating is handled in parent (builder page)
   const { user } = useAuth();
@@ -1102,21 +1104,23 @@ export function ElementorStyleBuilder({
     
     // Salva automaticamente nel database se è una sezione DOMAIN_NAME
     const updatedSection = updatedSections.find(s => s.id === sectionId);
-    if (updatedSection?.type === 'DOMAIN_NAME' && updatedSection.props.domainInputs) {
+    if (updatedSection?.type === 'DOMAIN_NAME' && updatedSection.props.domainInputs && projectId) {
       try {
-        console.log('💾 Salvataggio automatico domini nel database...', updatedSection.props.domainInputs);
+        console.log('💾 Salvataggio automatico domini nel database...', {
+          projectId,
+          domainInputs: updatedSection.props.domainInputs,
+          sectionId
+        });
         
-        // Trova il progetto corrente per ottenere l'ID
-        const currentProject = await ProjectService.getCurrentProject();
-        if (currentProject) {
-          await ProjectService.updateProject(currentProject.id, {
-            sections: updatedSections
-          });
-          console.log('✅ Domini salvati automaticamente nel database');
-        }
+        await ProjectService.updateProject(projectId, {
+          sections: updatedSections
+        });
+        console.log('✅ Domini salvati automaticamente nel database con ID:', projectId);
       } catch (error) {
         console.error('❌ Errore nel salvataggio automatico domini:', error);
       }
+    } else if (updatedSection?.type === 'DOMAIN_NAME' && !projectId) {
+      console.warn('⚠️ Impossibile salvare domini: projectId non disponibile');
     }
   };
 

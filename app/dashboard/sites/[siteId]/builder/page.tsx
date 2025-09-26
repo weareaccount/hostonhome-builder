@@ -573,6 +573,7 @@ export default function BuilderPage() {
         onSave={handleSave}
         onPublish={handlePublish}
         maxSections={getPlanLimits().maxSections}
+        projectId={realProject?.id}
       />
     </div>
   );
