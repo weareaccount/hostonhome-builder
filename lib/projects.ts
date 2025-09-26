@@ -195,19 +195,34 @@ export class ProjectService {
           return localProject || null;
         }
         
-        console.log('✅ Progetto trovato su Supabase:', project?.id);
-        
-        // Debug specifico per sezioni DOMAIN_NAME nel caricamento
-        if (project?.sections && Array.isArray(project.sections)) {
-          const domainSections = project.sections.filter((s: any) => s.type === 'DOMAIN_NAME');
-          if (domainSections.length > 0) {
-            console.log('🔍 DEBUG getProject - Sezioni DOMAIN_NAME caricate:', domainSections);
-          } else {
-            console.log('⚠️ DEBUG getProject - Nessuna sezione DOMAIN_NAME trovata nelle sezioni caricate');
-          }
-        }
-        
-        return project;
+            console.log('✅ Progetto trovato su Supabase:', project?.id);
+
+            // Debug specifico per sezioni DOMAIN_NAME nel caricamento
+            if (project?.sections && Array.isArray(project.sections)) {
+              const domainSections = project.sections.filter((s: any) => s.type === 'DOMAIN_NAME');
+              if (domainSections.length > 0) {
+                console.log('🔍 DEBUG getProject - Sezioni DOMAIN_NAME caricate:', domainSections);
+              } else {
+                console.log('⚠️ DEBUG getProject - Nessuna sezione DOMAIN_NAME trovata nelle sezioni caricate');
+              }
+              
+              // Debug completo delle sezioni caricate
+              console.log('🔍 DEBUG getProject - Tutte le sezioni caricate:', {
+                sectionsType: typeof project.sections,
+                sectionsLength: project.sections.length,
+                sectionsStringified: JSON.stringify(project.sections, null, 2),
+                allSectionTypes: project.sections.map((s: any) => s.type)
+              });
+            } else {
+              console.log('⚠️ DEBUG getProject - Sezioni non valide:', {
+                hasSections: !!project?.sections,
+                isArray: Array.isArray(project?.sections),
+                sectionsType: typeof project?.sections,
+                sectionsValue: project?.sections
+              });
+            }
+
+            return project;
       } catch (error) {
         console.warn('⚠️ Fallback a progetti locali per ID:', projectId, 'errore:', error);
         const projects = this.getLocalProjects();
@@ -322,6 +337,16 @@ export class ProjectService {
           setTimeout(() => reject(new Error('Timeout: operazione troppo lenta')), 10000)
         );
         
+        // Debug specifico per le sezioni prima del salvataggio
+        if (data.sections) {
+          console.log('🔍 DEBUG updateProject - Sezioni da salvare:', {
+            sectionsType: typeof data.sections,
+            sectionsLength: Array.isArray(data.sections) ? data.sections.length : 'non array',
+            sectionsStringified: JSON.stringify(data.sections, null, 2),
+            domainSections: data.sections.filter((s: any) => s.type === 'DOMAIN_NAME')
+          });
+        }
+
         const updatePromise = supabase
           .from('projects')
           .update({
@@ -339,12 +364,23 @@ export class ProjectService {
           throw error;
         }
         
-        // Debug specifico per sezioni DOMAIN_NAME
+        // Debug specifico per sezioni DOMAIN_NAME dopo il salvataggio
         if (data.sections) {
           const domainSections = data.sections.filter((s: any) => s.type === 'DOMAIN_NAME');
           if (domainSections.length > 0) {
             console.log('🔍 DEBUG updateProject - Sezioni DOMAIN_NAME salvate:', domainSections);
           }
+        }
+
+        // Debug del progetto restituito da Supabase
+        if (project) {
+          console.log('🔍 DEBUG updateProject - Progetto restituito da Supabase:', {
+            id: project.id,
+            sectionsType: typeof project.sections,
+            sectionsLength: Array.isArray(project.sections) ? project.sections.length : 'non array',
+            sectionsStringified: JSON.stringify(project.sections, null, 2),
+            domainSectionsReturned: Array.isArray(project.sections) ? project.sections.filter((s: any) => s.type === 'DOMAIN_NAME') : []
+          });
         }
         
         // Salva anche localmente come backup
