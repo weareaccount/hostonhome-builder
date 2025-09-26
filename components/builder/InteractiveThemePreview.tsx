@@ -2358,15 +2358,25 @@ const SectionComponent = ({
             domain3: sectionProps.domainInputs?.[2]?.value || ''
           });
 
+          // Aggiorna i valori quando cambiano le props
+          useEffect(() => {
+            setDomainValues({
+              domain1: sectionProps.domainInputs?.[0]?.value || '',
+              domain2: sectionProps.domainInputs?.[1]?.value || '',
+              domain3: sectionProps.domainInputs?.[2]?.value || ''
+            });
+          }, [sectionProps.domainInputs]);
+
           const handleDomainChange = (domainId: string, value: string) => {
-            setDomainValues(prev => ({ ...prev, [domainId]: value }));
+            const newValues = { ...domainValues, [domainId]: value };
+            setDomainValues(newValues);
             // Aggiorna la sezione con i nuovi valori
             onSectionUpdate(section.id, {
               ...sectionProps,
               domainInputs: [
-                { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: domainId === 'domain1' ? value : domainValues.domain1 },
-                { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: domainId === 'domain2' ? value : domainValues.domain2 },
-                { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: domainId === 'domain3' ? value : domainValues.domain3 }
+                { id: 'domain1', placeholder: 'es. ilmiobnb.it', value: newValues.domain1 },
+                { id: 'domain2', placeholder: 'es. ilmiobnb.com', value: newValues.domain2 },
+                { id: 'domain3', placeholder: 'es. ilmiobnb.eu', value: newValues.domain3 }
               ]
             });
           };
