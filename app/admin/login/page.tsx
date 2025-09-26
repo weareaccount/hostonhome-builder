@@ -32,11 +32,18 @@ export default function AdminLogin() {
       // Verifica credenziali admin
       if (formData.email === ADMIN_CREDENTIALS.email && formData.password === ADMIN_CREDENTIALS.password) {
         // Salva la sessione admin nel localStorage
-        localStorage.setItem('admin_session', JSON.stringify({
+        const sessionData = {
           email: ADMIN_CREDENTIALS.email,
           loginTime: new Date().toISOString(),
           sessionId: `admin_${Date.now()}`
-        }));
+        };
+        
+        localStorage.setItem('admin_session', JSON.stringify(sessionData));
+        
+        // Debug: verifica che la sessione sia stata salvata
+        const savedSession = localStorage.getItem('admin_session');
+        console.log('🔍 DEBUG Admin Login - Sessione salvata:', savedSession);
+        console.log('🔍 DEBUG Admin Login - Sessione verificata:', JSON.parse(savedSession || '{}'));
 
         // Redirect alla dashboard admin
         router.push('/admin');
