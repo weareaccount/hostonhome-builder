@@ -5,26 +5,39 @@ import { useParams } from 'next/navigation';
 import { InteractiveThemePreview } from '@/components/builder/InteractiveThemePreview';
 import { ProjectService, Project } from '@/lib/projects';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useIsAdmin } from '@/components/auth/AdminGuard';
 import { Section, LayoutType, ThemeAccent, ThemeFont } from '@/types';
 import { isSubscriptionActive, getSubscriptionBlockReason } from '@/lib/subscription';
 
 export default function PreviewPage() {
   const params = useParams();
   const { user } = useAuth();
+  const isAdmin = useIsAdmin();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadProject = async () => {
-      if (!user || !params.siteId) return;
+      if (!params.siteId) return;
       
       try {
-        // Carica il progetto specifico
-        const userProjects = await ProjectService.getUserProjects(user.id);
-        const foundProject = userProjects.find(p => p.slug === params.siteId);
+        let foundProject = null;
+        
+        if (isAdmin) {
+          // Se è admin, carica il progetto direttamente tramite slug
+          console.log('🔍 Admin: Caricamento progetto per anteprima:', params.siteId);
+          foundProject = await ProjectService.getProjectBySlug(params.siteId as string);
+        } else if (user) {
+          // Se è utente normale, carica solo i suoi progetti
+          const userProjects = await ProjectService.getUserProjects(user.id);
+          foundProject = userProjects.find(p => p.slug === params.siteId);
+        }
         
         if (foundProject) {
           setProject(foundProject);
+          console.log('✅ Progetto caricato per anteprima:', foundProject.name);
+        } else {
+          console.log('❌ Progetto non trovato per anteprima:', params.siteId);
         }
       } catch (error) {
         console.error('Errore nel caricamento del progetto:', error);
@@ -34,10 +47,10 @@ export default function PreviewPage() {
     };
 
     loadProject();
-  }, [user, params.siteId]);
+  }, [user, isAdmin, params.siteId]);
 
-  // ✅ CONTROLLO DI ACCESSO RIGOROSO: Blocca completamente l'accesso ai non paganti
-  if (!isSubscriptionActive(user)) {
+  // ✅ CONTROLLO DI ACCESSO RIGOROSO: Blocca completamente l'accesso ai non paganti (tranne admin)
+  if (!isAdmin && !isSubscriptionActive(user)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">

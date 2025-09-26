@@ -171,7 +171,7 @@ export class ProjectService {
     }
   }
 
-  // Ottiene un progetto specifico
+  // Ottiene un progetto specifico per ID
   static async getProject(projectId: string): Promise<Project | null> {
     console.log('🔍 ProjectService.getProject chiamato con ID:', projectId);
     const hasSupabase = this.checkSupabaseConfig();
@@ -210,6 +210,49 @@ export class ProjectService {
       const projects = this.getLocalProjects();
       const localProject = projects.find(p => p.id === projectId);
       console.log('🔍 Progetto locale trovato (no supabase):', localProject?.id || 'null');
+      return localProject || null;
+    }
+  }
+
+  // Ottiene un progetto specifico per slug (per admin)
+  static async getProjectBySlug(slug: string): Promise<Project | null> {
+    console.log('🔍 ProjectService.getProjectBySlug chiamato con slug:', slug);
+    const hasSupabase = this.checkSupabaseConfig();
+    
+    if (hasSupabase) {
+      try {
+        console.log('🔍 Cercando progetto per slug su Supabase...');
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (error) {
+          console.warn('⚠️ Errore nel recupero progetto per slug da Supabase:', error);
+          console.log('⚠️ Fallback a progetti locali...');
+          // Fallback locale
+          const projects = this.getLocalProjects();
+          const localProject = projects.find(p => p.slug === slug);
+          console.log('🔍 Progetto locale trovato per slug:', localProject?.slug || 'null');
+          return localProject || null;
+        }
+        
+        console.log('✅ Progetto trovato per slug su Supabase:', project?.slug);
+        return project;
+      } catch (error) {
+        console.warn('⚠️ Fallback a progetti locali per slug:', slug, 'errore:', error);
+        const projects = this.getLocalProjects();
+        const localProject = projects.find(p => p.slug === slug);
+        console.log('🔍 Progetto locale trovato per slug (catch):', localProject?.slug || 'null');
+        return localProject || null;
+      }
+    } else {
+      // Fallback locale
+      console.log('🔍 Supabase non configurato, uso progetti locali');
+      const projects = this.getLocalProjects();
+      const localProject = projects.find(p => p.slug === slug);
+      console.log('🔍 Progetto locale trovato per slug (no supabase):', localProject?.slug || 'null');
       return localProject || null;
     }
   }
