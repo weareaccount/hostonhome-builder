@@ -222,6 +222,10 @@ export default function AdminPreviewPage() {
     ]
   };
 
+  // Trova la sezione DOMAIN_NAME per mostrare i domini
+  const domainSection = mockSite.pages[0].sections.find(s => s.type === 'DOMAIN_NAME');
+  const domainInputs = domainSection?.props?.domainInputs || [];
+
   return (
     <div className="min-h-screen bg-white">
       <div className="fixed top-4 right-4 z-50">
@@ -229,6 +233,25 @@ export default function AdminPreviewPage() {
           🔒 Anteprima Admin
         </div>
       </div>
+      
+      {/* Mostra domini se presenti */}
+      {domainInputs.length > 0 && (
+        <div className="fixed top-16 right-4 z-50 max-w-sm">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-blue-800 mb-2">🌐 Domini proposti dall'utente:</h3>
+            <div className="space-y-1">
+              {domainInputs.map((input: any, index: number) => (
+                <div key={input.id} className="text-xs text-blue-700 bg-white px-2 py-1 rounded border">
+                  {input.value || `Dominio ${index + 1} (vuoto)`}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-blue-600 mt-2 italic">
+              Questi domini sono stati inseriti dall'utente nel builder
+            </p>
+          </div>
+        </div>
+      )}
       
       <InteractiveThemePreview 
         layoutType={mockSite.layoutType}

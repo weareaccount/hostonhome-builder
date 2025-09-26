@@ -383,6 +383,8 @@ const BuilderHeader = ({
         onConfirm={() => {
           setShowPublishModal(false);
           onPublish();
+          // Mostra feedback di successo
+          alert('✅ Richiesta di pubblicazione inviata con successo! Gli amministratori riceveranno la tua richiesta e ti contatteranno entro 4 giorni.');
         }}
         siteName="Il tuo sito"
         sections={sections}
