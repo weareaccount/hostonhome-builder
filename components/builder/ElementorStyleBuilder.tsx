@@ -1094,11 +1094,30 @@ export function ElementorStyleBuilder({
     }
   };
 
-  const handleSectionUpdate = (sectionId: string, props: any) => {
+  const handleSectionUpdate = async (sectionId: string, props: any) => {
     const updatedSections = sections.map(section =>
       section.id === sectionId ? { ...section, props: { ...section.props, ...props } } : section
     );
     onSectionsChange(updatedSections);
+    
+    // Salva automaticamente nel database se è una sezione DOMAIN_NAME
+    const updatedSection = updatedSections.find(s => s.id === sectionId);
+    if (updatedSection?.type === 'DOMAIN_NAME' && updatedSection.props.domainInputs) {
+      try {
+        console.log('💾 Salvataggio automatico domini nel database...', updatedSection.props.domainInputs);
+        
+        // Trova il progetto corrente per ottenere l'ID
+        const currentProject = await ProjectService.getCurrentProject();
+        if (currentProject) {
+          await ProjectService.updateProject(currentProject.id, {
+            sections: updatedSections
+          });
+          console.log('✅ Domini salvati automaticamente nel database');
+        }
+      } catch (error) {
+        console.error('❌ Errore nel salvataggio automatico domini:', error);
+      }
+    }
   };
 
   const handleSectionDelete = (sectionId: string) => {

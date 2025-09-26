@@ -214,6 +214,40 @@ export class ProjectService {
     }
   }
 
+  // Ottiene il progetto corrente dall'URL o dal localStorage
+  static async getCurrentProject(): Promise<Project | null> {
+    if (typeof window === 'undefined') return null;
+    
+    try {
+      // Prova a ottenere l'ID del progetto dall'URL
+      const pathParts = window.location.pathname.split('/');
+      const siteIdIndex = pathParts.findIndex(part => part === 'sites');
+      if (siteIdIndex !== -1 && pathParts[siteIdIndex + 1]) {
+        const siteId = pathParts[siteIdIndex + 1];
+        console.log('🔍 Progetto corrente da URL:', siteId);
+        
+        // Cerca il progetto per ID
+        const localProjects = this.getLocalProjects();
+        const currentProject = localProjects.find(p => p.id === siteId);
+        if (currentProject) {
+          return currentProject;
+        }
+      }
+      
+      // Fallback: prendi il primo progetto locale
+      const localProjects = this.getLocalProjects();
+      if (localProjects.length > 0) {
+        console.log('🔍 Usando primo progetto locale come corrente:', localProjects[0].id);
+        return localProjects[0];
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ Errore nel recupero progetto corrente:', error);
+      return null;
+    }
+  }
+
   // Ottiene un progetto specifico per slug (per admin)
   static async getProjectBySlug(slug: string): Promise<Project | null> {
     console.log('🔍 ProjectService.getProjectBySlug chiamato con slug:', slug);
