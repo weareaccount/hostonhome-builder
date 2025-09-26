@@ -464,6 +464,20 @@ export default function BuilderPage() {
     }
     
     try {
+      // Debug specifico per sezioni DOMAIN_NAME prima del salvataggio
+      const domainSections = sections.filter(s => s.type === 'DOMAIN_NAME');
+      if (domainSections.length > 0) {
+        console.log('🔍 DEBUG handleSave - Sezioni DOMAIN_NAME trovate:', domainSections);
+        domainSections.forEach((section, index) => {
+          console.log(`🔍 DEBUG handleSave - Sezione DOMAIN_NAME ${index + 1}:`, {
+            id: section.id,
+            domainInputs: section.props?.domainInputs
+          });
+        });
+      } else {
+        console.log('⚠️ DEBUG handleSave - Nessuna sezione DOMAIN_NAME trovata');
+      }
+      
       console.log('💾 Salvando manualmente...', { 
         projectId: realProject.id,
         sectionsCount: sections.length, 
