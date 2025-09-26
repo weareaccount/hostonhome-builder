@@ -196,6 +196,17 @@ export class ProjectService {
         }
         
         console.log('✅ Progetto trovato su Supabase:', project?.id);
+        
+        // Debug specifico per sezioni DOMAIN_NAME nel caricamento
+        if (project?.sections && Array.isArray(project.sections)) {
+          const domainSections = project.sections.filter((s: any) => s.type === 'DOMAIN_NAME');
+          if (domainSections.length > 0) {
+            console.log('🔍 DEBUG getProject - Sezioni DOMAIN_NAME caricate:', domainSections);
+          } else {
+            console.log('⚠️ DEBUG getProject - Nessuna sezione DOMAIN_NAME trovata nelle sezioni caricate');
+          }
+        }
+        
         return project;
       } catch (error) {
         console.warn('⚠️ Fallback a progetti locali per ID:', projectId, 'errore:', error);
@@ -326,6 +337,14 @@ export class ProjectService {
         if (error) {
           console.error('❌ Errore Supabase updateProject:', error);
           throw error;
+        }
+        
+        // Debug specifico per sezioni DOMAIN_NAME
+        if (data.sections) {
+          const domainSections = data.sections.filter((s: any) => s.type === 'DOMAIN_NAME');
+          if (domainSections.length > 0) {
+            console.log('🔍 DEBUG updateProject - Sezioni DOMAIN_NAME salvate:', domainSections);
+          }
         }
         
         // Salva anche localmente come backup
